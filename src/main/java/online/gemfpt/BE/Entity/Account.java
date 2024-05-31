@@ -1,6 +1,7 @@
 package online.gemfpt.BE.Entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,6 +9,7 @@ import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -28,6 +30,12 @@ public class Account implements UserDetails {
     private String email;
     String role ;
     String name;
+    LocalDateTime createDate;
+
+    public void setCreateDateNow() {
+        this.createDate = LocalDateTime.now();
+    }
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
