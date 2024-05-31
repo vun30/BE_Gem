@@ -6,9 +6,11 @@ import online.gemfpt.BE.Service.ProductServices;
 import online.gemfpt.BE.model.ProductsRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 
 
 @RestController
@@ -18,49 +20,9 @@ public class ProductAPI {
     @Autowired
     ProductServices productServices;
 
-    @PostMapping("create-products")
+    @PostMapping("products")
     public ResponseEntity creates (@RequestBody ProductsRequest productsRequest) {
         Product product = productServices.creates(productsRequest);
         return ResponseEntity.ok(product);
     }
-
-
-    @PutMapping("update-products")
-    public ResponseEntity<Product> getProductByBarcode(@RequestBody ProductsRequest productsRequest) {
-        Product product = productServices.updateProductByBarcode(productsRequest);
-        if (product != null) {
-            return ResponseEntity.ok(product);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @GetMapping("view-products")
-    public ResponseEntity<List<Product>> getAllProducts() {
-        List<Product> products = productServices.getAllProducts();
-        return ResponseEntity.ok(products);
-    }
-
-    @PatchMapping("/delete-product/{barcode}")
-    public ResponseEntity<Product> deleteProduct(@PathVariable String barcode) {
-        try {
-            Product updatedProduct = productServices.toggleProductActive(barcode);
-            if (updatedProduct != null) {
-                return ResponseEntity.ok(updatedProduct);
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
 }
-
-
-
-
-
-
-
-

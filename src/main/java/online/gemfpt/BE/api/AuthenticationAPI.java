@@ -4,6 +4,7 @@ import online.gemfpt.BE.Entity.Account;
 import online.gemfpt.BE.Repository.AuthenticationRepository;
 import online.gemfpt.BE.Service.AuthenticationService;
 import online.gemfpt.BE.Service.EmailService;
+import online.gemfpt.BE.Service.ProductServices;
 import online.gemfpt.BE.model.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,11 @@ public class AuthenticationAPI {
     @Autowired
     EmailService emailService;
 
+    @PostMapping("/login-google")
+    public ResponseEntity<AccountResponse> loginGoogle (LoginGoogleRequest loginGoogleRequest){
+        return ResponseEntity.ok(authenticationService.loginGoogle(loginGoogleRequest));
+    }
+
     @GetMapping("test")
     public ResponseEntity test() {
         return ResponseEntity.ok("test");
@@ -32,31 +38,26 @@ public class AuthenticationAPI {
 
     @GetMapping("admin_only")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity getAdmin(){
-        return  ResponseEntity.ok("ok");
-    }
+    public ResponseEntity getAdmin(){return  ResponseEntity.ok("ok");}
 
     @PostMapping("register")
     public ResponseEntity Register (@RequestBody RegisterRequest responseRequest){
         Account  account = authenticationService.register(responseRequest);
         return  ResponseEntity.ok(account);
     }
-
-    @PostMapping("send-mail")
+    @GetMapping("send-mail")
     public void sendMail(){
         EmailDetail emailDetail = new EmailDetail();
-        emailDetail.setRecipient("hoanvu3012@gmail.com");
+        emailDetail.setRecipient("baoyasuohoang@gmail.com");
         emailDetail.setSubject("test123");
         emailDetail.setMsgBody("aaa");
         emailService.sendMailTemplate(emailDetail);
     }
-
     @GetMapping("getAll")
     public ResponseEntity Getallaccount (){
         List<Account> account = authenticationService.all();
         return  ResponseEntity.ok(account);
     }
-
     @PostMapping("login")
     public ResponseEntity login (@RequestBody LoginRequest loginRequest){
 
@@ -64,10 +65,9 @@ public class AuthenticationAPI {
         return ResponseEntity.ok(account);
     }
 
-    @PostMapping("/login-google")
-    public ResponseEntity<AccountResponse> loginGo(@RequestBody LoginGoogleRequest loginGoogleRequest){
-        return ResponseEntity.ok(authenticationService.loginGoogle(loginGoogleRequest));
-    }
+
+
+
 
 
 }
