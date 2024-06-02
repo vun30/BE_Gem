@@ -26,15 +26,23 @@ public class AuthenticationAPI {
     EmailService emailService;
 
     @PostMapping("/login-google")
-    public ResponseEntity<AccountResponse> loginGoogle (LoginGoogleRequest loginGoogleRequest){
+    public ResponseEntity<AccountResponse> loginGoogle (@RequestBody LoginGoogleRequest loginGoogleRequest){
         return ResponseEntity.ok(authenticationService.loginGoogle(loginGoogleRequest));
     }
+    @PostMapping("/forgot_password")
+    public void forgotPassword (@RequestBody ForGotPasswordRequest forGotPasswordRequest) {
+        authenticationService.ForGotPassword(forGotPasswordRequest);
+    }
+    @PostMapping("/reset_password")
+    public void resetpassword (@RequestBody ResetPasswordRequest resetwordRequest) {
+        authenticationService.ResetPassword(resetwordRequest);
+    }
+
 
     @GetMapping("test")
     public ResponseEntity test() {
         return ResponseEntity.ok("test");
     }
-
 
     @GetMapping("/admin_only")
     @PreAuthorize("hasAuthority('ADMIN')")
