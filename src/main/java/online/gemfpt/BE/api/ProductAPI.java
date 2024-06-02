@@ -20,7 +20,7 @@ public class ProductAPI {
     @Autowired
     ProductServices productServices;
 
-    @PostMapping("products")
+    @PostMapping("/products")
     public ResponseEntity creates (@RequestBody ProductsRequest productsRequest) {
         Product product = productServices.creates(productsRequest);
         return ResponseEntity.ok(product);

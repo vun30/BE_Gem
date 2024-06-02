@@ -40,7 +40,9 @@ public class Filter extends OncePerRequestFilter {
             "/login",
             "/Register",
             "/register",
-            "/send-mail"
+            "/send-mail",
+            "/login-google",
+            "/forgot_password"
     );
 
     private boolean isPermitted(String uri){
