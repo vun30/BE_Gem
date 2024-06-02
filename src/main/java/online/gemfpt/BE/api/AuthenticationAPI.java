@@ -36,16 +36,16 @@ public class AuthenticationAPI {
     }
 
 
-    @GetMapping("admin_only")
+    @GetMapping("/admin_only")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity getAdmin(){return  ResponseEntity.ok("ok");}
 
-    @PostMapping("register")
+    @PostMapping("/register")
     public ResponseEntity Register (@RequestBody RegisterRequest responseRequest){
         Account  account = authenticationService.register(responseRequest);
         return  ResponseEntity.ok(account);
     }
-    @GetMapping("send-mail")
+    @GetMapping("/send-mail")
     public void sendMail(){
         EmailDetail emailDetail = new EmailDetail();
         emailDetail.setRecipient("baoyasuohoang@gmail.com");
@@ -53,12 +53,12 @@ public class AuthenticationAPI {
         emailDetail.setMsgBody("aaa");
         emailService.sendMailTemplate(emailDetail);
     }
-    @GetMapping("getAll")
+    @GetMapping("/getAll")
     public ResponseEntity Getallaccount (){
         List<Account> account = authenticationService.all();
         return  ResponseEntity.ok(account);
     }
-    @PostMapping("login")
+    @PostMapping("/login")
     public ResponseEntity login (@RequestBody LoginRequest loginRequest){
 
         Account account = authenticationService.login(loginRequest);

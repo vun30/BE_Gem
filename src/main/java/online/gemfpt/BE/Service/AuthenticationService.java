@@ -18,7 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.SortedMap;
 
 @Service
 
@@ -39,7 +38,10 @@ public class AuthenticationService implements UserDetailsService {
 
     public Account register(RegisterRequest registerRequest){
         Account account = new Account();
+        account.setName(registerRequest.getName());
+        account.setEmail(registerRequest.getEmail());
         account.setPhone(registerRequest.getPhone());
+        account.setCreateDateNow();
         account.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         //xu ly logic register
 
@@ -87,8 +89,6 @@ public class AuthenticationService implements UserDetailsService {
             accountResponse.setToken(token);
         } catch (Exception e){
             System.out.println(e);
-
-
         }
         return accountResponse;
     }
