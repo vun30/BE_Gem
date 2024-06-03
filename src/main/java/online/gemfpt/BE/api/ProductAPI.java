@@ -1,6 +1,7 @@
 package online.gemfpt.BE.api;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import online.gemfpt.BE.Entity.Product;
 import online.gemfpt.BE.Service.ProductServices;
 import online.gemfpt.BE.model.ProductsRequest;
@@ -18,10 +19,14 @@ public class ProductAPI {
     @Autowired
     ProductServices productServices;
 
-    @PostMapping("/products")
-    public ResponseEntity creates (@RequestBody ProductsRequest productsRequest) {
-        Product product = productServices.creates(productsRequest);
-        return ResponseEntity.ok(product);
+    @PostMapping("create-products")
+    public ResponseEntity<?> creates (@RequestBody @Valid ProductsRequest productsRequest) {
+        try {
+            Product product = productServices.creates(productsRequest);
+            return ResponseEntity.ok(product);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PutMapping("/products")
@@ -39,8 +44,7 @@ public class ProductAPI {
         List<Product> products = productServices.getAllProducts();
         return ResponseEntity.ok(products);
     }
-
-    @PatchMapping("/product_by_barcode")
+    @DeleteMapping("/delete-product/{barcode}")
     public ResponseEntity<Product> deleteProduct(@PathVariable String barcode) {
         try {
             Product updatedProduct = productServices.toggleProductActive(barcode);

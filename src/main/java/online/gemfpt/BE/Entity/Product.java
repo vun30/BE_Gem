@@ -1,16 +1,13 @@
 package online.gemfpt.BE.Entity;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.Value;
-
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -20,14 +17,14 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     long id;
     String name;
-    Date CreateTime;
+    LocalDateTime CreateTime;
+    LocalDateTime UpdateTime;
     String descriptions;
     String category;
     double price; // giá này là giá sau khi tính toán ( nhân với giá nguyên liệu + áp giá )
     double priceRate ;  // tỉ lệ áp giá
-    @Min(value = 1)
     int stock;
     String barcode;
     String url; // ảnh
-    boolean Status = true;
+    boolean Status;
 }
