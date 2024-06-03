@@ -7,9 +7,11 @@ import online.gemfpt.BE.Repository.AuthenticationRepository;
 import online.gemfpt.BE.enums.RoleEnum;
 import online.gemfpt.BE.exception.AccountNotFoundException;
 import online.gemfpt.BE.exception.BadRequestException;
+import online.gemfpt.BE.exception.handler.GlobalExceptionHandler;
 import online.gemfpt.BE.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -40,7 +42,15 @@ public class AuthenticationService implements UserDetailsService {
     @Autowired
     EmailService emailService;
 
-    public Account register(RegisterRequest registerRequest){
+    public Account register(RegisterRequest registerRequest) {
+        // Kiểm tra các trường bắt buộc
+        if (registerRequest.getName() == null || registerRequest.getName().isEmpty() ||
+                registerRequest.getEmail() == null || registerRequest.getEmail().isEmpty() ||
+                registerRequest.getPhone() == null || registerRequest.getPhone().isEmpty() ||
+                registerRequest.getPassword() == null || registerRequest.getPassword().isEmpty()) {
+            throw new BadRequestException("Missing required fields");
+        }
+
         Account account = new Account();
         account.setName(registerRequest.getName());
         account.setEmail(registerRequest.getEmail());
@@ -48,9 +58,10 @@ public class AuthenticationService implements UserDetailsService {
         account.setCreateDateNow(account.getCreateDate());
         account.setRole(RoleEnum.STAFF);
         account.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        //xu ly logic register
 
-        // nho repo set data xuong db
+        //xử lý logic register
+
+        // Lưu dữ liệu vào cơ sở dữ liệu
         return authenticationRepository.save(account);
     }
 
@@ -72,16 +83,25 @@ public class AuthenticationService implements UserDetailsService {
     }
 
 
-    public Account login (LoginRequest loginRequest) {
+    public Account login(LoginRequest loginRequest) {
+        try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                     loginRequest.getEmail(),
                     loginRequest.getPassword()
             ));
-        // data qua cacs try =>> acc chinh xac
-        Account account = authenticationRepository.findAccountByEmail(loginRequest.getEmail());
-        String token = tokenService.generateToken(account);
+        } catch (BadCredentialsException ex) {
+            throw new BadCredentialsException("Invalid email or password");
+        }
 
-        AccountResponse accountResponse= new AccountResponse();
+        // Lấy thông tin tài khoản từ cơ sở dữ liệu
+        Account account = authenticationRepository.findAccountByEmail(loginRequest.getEmail());
+        if (account == null) {
+            throw new BadCredentialsException("Invalid email or password");
+        }
+
+        // Tạo token và tạo đối tượng AccountResponse
+        String token = tokenService.generateToken(account);
+        AccountResponse accountResponse = new AccountResponse();
         accountResponse.setEmail(account.getEmail());
         accountResponse.setToken(token);
         accountResponse.setId(account.getId());
@@ -90,8 +110,7 @@ public class AuthenticationService implements UserDetailsService {
         accountResponse.setRole(account.getRole());
         accountResponse.setCreateDateNow(account.getCreateDate());
 
-
-        return  accountResponse;
+        return accountResponse;
     }
     public List<Account> all() {
         return authenticationRepository.findAll();
