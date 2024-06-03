@@ -20,9 +20,13 @@ public class ProductAPI {
     ProductServices productServices;
 
     @PostMapping("create-products")
-    public ResponseEntity creates (@RequestBody @Valid ProductsRequest productsRequest) {
-        Product product = productServices.creates(productsRequest);
-        return ResponseEntity.ok(product);
+    public ResponseEntity<?> creates (@RequestBody @Valid ProductsRequest productsRequest) {
+        try {
+            Product product = productServices.creates(productsRequest);
+            return ResponseEntity.ok(product);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PutMapping("update-products")

@@ -19,6 +19,10 @@ public class ProductServices {
     ProductsRepository productsRepository;
 
     public Product creates(ProductsRequest productsRequest) {
+        Optional<Product> existProduct = productsRepository.findByBarcode(productsRequest.getBarcode());
+        if (existProduct.isPresent()) {
+            throw new IllegalArgumentException("Barcode already exists!");
+        }
         Product product = new Product();
         product.setName(productsRequest.getName());
         product.setDescriptions(productsRequest.getDescriptions());
