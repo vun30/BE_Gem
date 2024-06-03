@@ -37,9 +37,8 @@ public class AuthenticationAPI {
     public void resetpassword (@RequestBody ResetPasswordRequest resetwordRequest) {
         authenticationService.ResetPassword(resetwordRequest);
     }
-
-   @PreAuthorize("hasAuthority('ADMIN') or authentication.principal.Account.id.equals(#id)")
-   @PostMapping("/edit_account")
+    @PostMapping("/edit_account")
+    @PreAuthorize("hasAuthority('ADMIN') or #editAccountRequest.email == authentication.principal.email")
    public ResponseEntity<Account> editAccount(@RequestBody EditAccountRequest editAccountRequest) {
        Account account = authenticationService.editAccount(editAccountRequest);
        return ResponseEntity.ok(account); // Đảm bảo rằng 'account' là kiểu 'Account'

@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import online.gemfpt.BE.enums.RoleEnum;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -31,7 +32,7 @@ public class Account implements UserDetails {
     boolean status = false; // note
     @Column(unique = true)
     private String email;
-    int role ;
+    RoleEnum role ;
     String name;
     LocalDateTime createDate;
 
