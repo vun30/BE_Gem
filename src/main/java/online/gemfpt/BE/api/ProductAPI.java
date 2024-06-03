@@ -24,7 +24,7 @@ public class ProductAPI {
         return ResponseEntity.ok(product);
     }
 
-    @PutMapping("update-products")
+    @PutMapping("/products")
     public ResponseEntity<Product> getProductByBarcode(@RequestBody ProductsRequest productsRequest) {
         Product product = productServices.updateProductByBarcode(productsRequest);
         if (product != null) {
@@ -34,13 +34,13 @@ public class ProductAPI {
         }
     }
 
-    @GetMapping("view-products")
+    @GetMapping("/products")
     public ResponseEntity<List<Product>> getAllProducts() {
         List<Product> products = productServices.getAllProducts();
         return ResponseEntity.ok(products);
     }
 
-    @PatchMapping("/delete-product/{barcode}")
+    @PatchMapping("/product_by_barcode")
     public ResponseEntity<Product> deleteProduct(@PathVariable String barcode) {
         try {
             Product updatedProduct = productServices.toggleProductActive(barcode);

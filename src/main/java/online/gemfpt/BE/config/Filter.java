@@ -43,6 +43,7 @@ public class Filter extends OncePerRequestFilter {
             "/send-mail",
             "/login-google",
             "/forgot_password"
+
     );
 
     private boolean isPermitted(String uri){

@@ -3,7 +3,9 @@ package online.gemfpt.BE.Service;
 import jakarta.persistence.EntityNotFoundException;
 import online.gemfpt.BE.Entity.Product;
 import online.gemfpt.BE.Repository.ProductsRepository;
+import online.gemfpt.BE.exception.BadRequestException;
 import online.gemfpt.BE.model.ProductsRequest;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,21 @@ public class ProductServices {
     ProductsRepository productsRepository;
 
     public Product creates(ProductsRequest productsRequest) {
+        try {
+            Validate.notNull(productsRequest, "ProductsRequest cannot be null");
+            Validate.notBlank(productsRequest.getName(), "Product name cannot be null or empty");
+            Validate.notBlank(productsRequest.getDescriptions(), "Product descriptions cannot be null or empty");
+            Validate.notBlank(productsRequest.getCategory(), "Product category cannot be null or empty");
+            Validate.notNull(productsRequest.getPrice(), "Product price cannot be null");
+            Validate.notNull(productsRequest.getPriceRate(), "Product price rate cannot be null");
+            Validate.notNull(productsRequest.getStock(), "Product stock cannot be null");
+            Validate.notBlank(productsRequest.getUrl(), "Product URL cannot be null or empty");
+            Validate.notNull(productsRequest.getCreateTime(), "Product create time cannot be null");
+            Validate.notBlank(productsRequest.getBarcode(), "Product barcode cannot be null or empty");
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException(e.getMessage());
+        }
+
         Product product = new Product();
         product.setName(productsRequest.getName());
         product.setDescriptions(productsRequest.getDescriptions());

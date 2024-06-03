@@ -25,7 +25,7 @@ public class AuthenticationAPI {
     @Autowired
     EmailService emailService;
 
-    @PostMapping("/login-google")
+    @PostMapping("/login_google")
     public ResponseEntity<AccountResponse> loginGoogle (@RequestBody LoginGoogleRequest loginGoogleRequest){
         return ResponseEntity.ok(authenticationService.loginGoogle(loginGoogleRequest));
     }
@@ -38,8 +38,15 @@ public class AuthenticationAPI {
         authenticationService.ResetPassword(resetwordRequest);
     }
 
+   @PreAuthorize("hasAuthority('ADMIN') or authentication.principal.Account.id.equals(#id)")
+   @PostMapping("/edit_account")
+   public ResponseEntity<Account> editAccount(@RequestBody EditAccountRequest editAccountRequest) {
+       Account account = authenticationService.editAccount(editAccountRequest);
+       return ResponseEntity.ok(account); // Đảm bảo rằng 'account' là kiểu 'Account'
+   }
 
-    @GetMapping("test")
+
+    @GetMapping("/test")
     public ResponseEntity test() {
         return ResponseEntity.ok("test");
     }
@@ -53,7 +60,7 @@ public class AuthenticationAPI {
         Account  account = authenticationService.register(responseRequest);
         return  ResponseEntity.ok(account);
     }
-    @GetMapping("/send-mail")
+    @GetMapping("/send_mail")
     public void sendMail(){
         EmailDetail emailDetail = new EmailDetail();
         emailDetail.setRecipient("baoyasuohoang@gmail.com");
@@ -72,10 +79,6 @@ public class AuthenticationAPI {
         Account account = authenticationService.login(loginRequest);
         return ResponseEntity.ok(account);
     }
-
-
-
-
 
 
 }
