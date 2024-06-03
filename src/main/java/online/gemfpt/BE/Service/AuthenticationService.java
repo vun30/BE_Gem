@@ -5,6 +5,7 @@ import com.google.firebase.auth.FirebaseToken;
 import online.gemfpt.BE.Entity.Account;
 import online.gemfpt.BE.Repository.AuthenticationRepository;
 import online.gemfpt.BE.enums.RoleEnum;
+import online.gemfpt.BE.exception.AccountNotFoundException;
 import online.gemfpt.BE.exception.BadRequestException;
 import online.gemfpt.BE.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -44,25 +45,51 @@ public class AuthenticationService implements UserDetailsService {
         account.setName(registerRequest.getName());
         account.setEmail(registerRequest.getEmail());
         account.setPhone(registerRequest.getPhone());
-        account.setCreateDateNow();
+        account.setCreateDateNow(account.getCreateDate());
         account.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         //xu ly logic register
 
         // nho repo set data xuong db
         return authenticationRepository.save(account);
     }
+
+    public Account editAccount(EditAccountRequest editAccountRequest) {
+        Account account = authenticationRepository.findAccountByEmail(editAccountRequest.getEmail());
+        if (account == null) {
+            throw new AccountNotFoundException("Account not found");
+        }
+
+        // Kiểm tra và chỉ cập nhật các trường không rỗng
+        if (editAccountRequest.getName() != null && !editAccountRequest.getName().isEmpty()) {
+            account.setName(editAccountRequest.getName());
+        }
+        if (editAccountRequest.getDescription() != null && !editAccountRequest.getDescription().isEmpty()) {
+            account.setDescription(editAccountRequest.getDescription());
+        }
+
+        return authenticationRepository.save(account);
+    }
+
+
     public Account login (LoginRequest loginRequest) {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                    loginRequest.getPhone(),
+                    loginRequest.getEmail(),
                     loginRequest.getPassword()
             ));
         // data qua cacs try =>> acc chinh xac
-        Account account = authenticationRepository.findAccountByPhone(loginRequest.getPhone());
+        Account account = authenticationRepository.findAccountByEmail(loginRequest.getEmail());
         String token = tokenService.generateToken(account);
 
         AccountResponse accountResponse= new AccountResponse();
-        accountResponse.setPhone(account.getPhone());
+        accountResponse.setEmail(account.getEmail());
         accountResponse.setToken(token);
+        accountResponse.setId(account.getId());
+        accountResponse.setPhone(account.getPhone());
+        accountResponse.setName(account.getName());
+        accountResponse.setRole(account.getRole());
+        accountResponse.setCreateDateNow(account.getCreateDate());
+
+
         return  accountResponse;
     }
     public List<Account> all() {
@@ -84,12 +111,13 @@ public class AuthenticationService implements UserDetailsService {
                 account = new Account();
                 account.setName(firebaseToken.getName());
                 account.setEmail(email);
-                account.setRole(RoleEnum.ADMIN.name());
+                account.setRole(0);
+                account.setCreateDate(LocalDateTime.now());
                 account = authenticationRepository.save(account);
             }
             accountResponse.setEmail(account.getEmail());
             accountResponse.setId(account.getId());
-            accountResponse.setRole(RoleEnum.ADMIN.name());
+            accountResponse.setRole(0);
             accountResponse.setName(account.getName());
             String token = tokenService.generateToken(account);
             accountResponse.setToken(token);

@@ -6,8 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface AuthenticationRepository  extends JpaRepository<Account,Long> {
-    Account findAccountByEmail (String email);// tim account bang sdt
     Account findAccountByPhone(String phone);
+    Account findAccountByEmail (String email);// tim account bang sdt
+
+
 
 
    // List<Account> findAccounts();

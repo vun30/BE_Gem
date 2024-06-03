@@ -4,7 +4,9 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import online.gemfpt.BE.Entity.Product;
 import online.gemfpt.BE.Repository.ProductsRepository;
+import online.gemfpt.BE.exception.BadRequestException;
 import online.gemfpt.BE.model.ProductsRequest;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -19,6 +21,8 @@ public class ProductServices {
     ProductsRepository productsRepository;
 
     public Product creates(ProductsRequest productsRequest) {
+
+
         Optional<Product> existProduct = productsRepository.findByBarcode(productsRequest.getBarcode());
         if (existProduct.isPresent()) {
             throw new IllegalArgumentException("Barcode already exists!");

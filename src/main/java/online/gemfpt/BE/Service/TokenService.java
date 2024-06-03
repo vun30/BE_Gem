@@ -23,6 +23,9 @@ public class TokenService {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
     }
+    public String extractEmail(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
 
     public String generateToken(Account account) {
         String token =

@@ -29,7 +29,7 @@ public class ProductAPI {
         }
     }
 
-    @PutMapping("update-products")
+    @PutMapping("/products")
     public ResponseEntity<Product> getProductByBarcode(@RequestBody ProductsRequest productsRequest) {
         Product product = productServices.updateProductByBarcode(productsRequest);
         if (product != null) {
@@ -39,12 +39,11 @@ public class ProductAPI {
         }
     }
 
-    @GetMapping("view-products")
+    @GetMapping("/products")
     public ResponseEntity<List<Product>> getAllProducts() {
         List<Product> products = productServices.getAllProducts();
         return ResponseEntity.ok(products);
     }
-
     @DeleteMapping("/delete-product/{barcode}")
     public ResponseEntity<Product> deleteProduct(@PathVariable String barcode) {
         try {

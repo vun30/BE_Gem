@@ -3,6 +3,7 @@ package online.gemfpt.BE.Entity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -17,6 +18,7 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
+@Data
 public class Account implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,14 +27,15 @@ public class Account implements UserDetails {
     @Column (unique = true)
     String phone ;
     String password;
+    String description;
     boolean status = false; // note
     @Column(unique = true)
     private String email;
-    String role ;
+    int role ;
     String name;
     LocalDateTime createDate;
 
-    public void setCreateDateNow() {
+    public void setCreateDateNow(LocalDateTime createDate) {
         this.createDate = LocalDateTime.now();
     }
 
@@ -62,11 +65,5 @@ public class Account implements UserDetails {
     public boolean isCredentialsNonExpired() {
         return true;
     }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
-
 
 }
