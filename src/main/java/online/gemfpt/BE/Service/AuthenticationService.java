@@ -46,6 +46,7 @@ public class AuthenticationService implements UserDetailsService {
         account.setEmail(registerRequest.getEmail());
         account.setPhone(registerRequest.getPhone());
         account.setCreateDateNow(account.getCreateDate());
+        account.setRole(RoleEnum.STAFF);
         account.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         //xu ly logic register
 
@@ -111,13 +112,13 @@ public class AuthenticationService implements UserDetailsService {
                 account = new Account();
                 account.setName(firebaseToken.getName());
                 account.setEmail(email);
-                account.setRole(0);
+                account.setRole(RoleEnum.STAFF);
                 account.setCreateDate(LocalDateTime.now());
                 account = authenticationRepository.save(account);
             }
             accountResponse.setEmail(account.getEmail());
             accountResponse.setId(account.getId());
-            accountResponse.setRole(0);
+            accountResponse.setRole(RoleEnum.STAFF);
             accountResponse.setName(account.getName());
             String token = tokenService.generateToken(account);
             accountResponse.setToken(token);
