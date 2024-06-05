@@ -19,7 +19,7 @@ public class ProductAPI {
     @Autowired
     ProductServices productServices;
 
-    @PostMapping("create-products")
+    @PostMapping("/api/products")
     public ResponseEntity<?> creates (@RequestBody @Valid ProductsRequest productsRequest) {
         try {
             Product product = productServices.creates(productsRequest);
@@ -29,7 +29,7 @@ public class ProductAPI {
         }
     }
 
-    @PutMapping("/products")
+    @PutMapping("/api/products")
     public ResponseEntity<Product> getProductByBarcode(@RequestBody ProductsRequest productsRequest) {
         Product product = productServices.updateProductByBarcode(productsRequest);
         if (product != null) {
@@ -39,12 +39,12 @@ public class ProductAPI {
         }
     }
 
-    @GetMapping("/products")
+    @GetMapping("/api/products")
     public ResponseEntity<List<Product>> getAllProducts() {
         List<Product> products = productServices.getAllProducts();
         return ResponseEntity.ok(products);
     }
-    @DeleteMapping("/delete-product/{barcode}")
+    @DeleteMapping("/api/product/{barcode}")
     public ResponseEntity<Product> deleteProduct(@PathVariable String barcode) {
         try {
             Product updatedProduct = productServices.toggleProductActive(barcode);
