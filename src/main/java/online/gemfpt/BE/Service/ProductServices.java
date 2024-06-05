@@ -53,7 +53,6 @@ public class ProductServices {
                 metal.setDescription(metalRequest.getDescription());
                 metal.setWeight(metalRequest.getWeight());
                 metal.setPricePerWeightUnit(metalRequest.getPricePerWeightUnit());
-                metal.setUnit(metalRequest.getUnit());
                 metal.setProduct(product);
                 return metal;
             }).collect(Collectors.toList());

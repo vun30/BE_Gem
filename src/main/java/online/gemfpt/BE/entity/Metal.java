@@ -1,5 +1,6 @@
 package online.gemfpt.BE.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -30,10 +31,12 @@ public class Metal {
     double unit = 3.75; // 1 chi vàng auto bằng 3,75 gram, unit auto bằng 1 chi vàng
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "productId")
     private Product product;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "metalPriceId")
     private MetalPrice metalPrice;
 
