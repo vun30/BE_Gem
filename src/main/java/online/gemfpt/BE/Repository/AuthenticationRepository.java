@@ -1,9 +1,7 @@
 package online.gemfpt.BE.Repository;
 
-import online.gemfpt.BE.Entity.Account;
+import online.gemfpt.BE.entity.Account;
 import org.springframework.data.jpa.repository.JpaRepository;
-
-import java.util.List;
 
 public interface AuthenticationRepository  extends JpaRepository<Account,Long> {
     Account findAccountByPhone(String phone);

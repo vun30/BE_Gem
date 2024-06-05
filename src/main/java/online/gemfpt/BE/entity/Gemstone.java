@@ -1,4 +1,4 @@
-package online.gemfpt.BE.Entity;
+package online.gemfpt.BE.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;

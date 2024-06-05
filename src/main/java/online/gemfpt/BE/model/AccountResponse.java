@@ -1,11 +1,10 @@
 package online.gemfpt.BE.model;
 
-import jakarta.persistence.Column;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import online.gemfpt.BE.Entity.Account;
+import online.gemfpt.BE.entity.Account;
 @Getter
 @Setter
 @Data

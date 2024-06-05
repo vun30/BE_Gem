@@ -1,20 +1,16 @@
 package online.gemfpt.BE.Service;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.Valid;
-import online.gemfpt.BE.Entity.Gemstone;
-import online.gemfpt.BE.Entity.Metal;
-import online.gemfpt.BE.Entity.Product;
+import online.gemfpt.BE.entity.Gemstone;
+import online.gemfpt.BE.entity.Metal;
+import online.gemfpt.BE.entity.Product;
 import online.gemfpt.BE.Repository.GemstoneRepository;
 import online.gemfpt.BE.Repository.MetalRepository;
 import online.gemfpt.BE.Repository.ProductsRepository;
-import online.gemfpt.BE.exception.BadRequestException;
 import online.gemfpt.BE.model.ProductsRequest;
-import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.annotation.Validated;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -87,7 +83,8 @@ public class ProductServices {
                 .sum();
 
         // Tính giá cuối cùng của sản phẩm
-        double totalPrice = (totalGemstonePrice + totalMetalPrice) * (1 + product.getPriceRate());
+        double totalPrice = (totalGemstonePrice + totalMetalPrice) ;
+        double totalPrice2 = totalPrice + (totalPrice * product.getPrice());
         product.setPrice(totalPrice);
 
         // Lưu sản phẩm và các thành phần của nó

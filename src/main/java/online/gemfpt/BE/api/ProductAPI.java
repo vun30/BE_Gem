@@ -2,7 +2,7 @@ package online.gemfpt.BE.api;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
-import online.gemfpt.BE.Entity.Product;
+import online.gemfpt.BE.entity.Product;
 import online.gemfpt.BE.Service.ProductServices;
 import online.gemfpt.BE.model.ProductsRequest;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,9 +1,9 @@
-package online.gemfpt.BE.Entity;
+package online.gemfpt.BE.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDateTime;
@@ -30,7 +30,7 @@ public class Product {
     @Min(0)
     double price; // giá này là giá sau khi tính toán ( nhân với giá nguyên liệu + áp giá )
 
-    @Min(0)
+    @Min(0) @Max(100)
     double priceRate;  // tỉ lệ áp giá
 
     @Min(0)

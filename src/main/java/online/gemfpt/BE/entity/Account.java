@@ -1,4 +1,4 @@
-package online.gemfpt.BE.Entity;
+package online.gemfpt.BE.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
