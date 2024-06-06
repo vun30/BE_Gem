@@ -1,22 +1,20 @@
 package online.gemfpt.BE.model;
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
+import java.time.LocalDateTime;
+import java.util.List;
 
-@Data
+@Getter
+@Setter
 public class MetalPriceRequest {
-    @NotBlank(message = "Metal name cannot be left blank")
-    private String name;
 
-    private String description;
 
-    @Min(value = 1, message = "Weight must be more than 0")
-    private double weight;
+    @NotNull(message = "Update date cannot be null")
+    private LocalDateTime updateDate;
 
-    @NotBlank(message = "Unit cannot be left blank")
-    private double unit = 3.75;
+    private boolean status;
 
-    @NotBlank(message = "Metal type cannot be left blank")
-    private String type; // thêm trường type để xác định loại kim loại
+    private List<TypeOfMetalRequest> typeOfMetals;
 }

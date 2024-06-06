@@ -37,12 +37,12 @@ public class Metal {
 
     @ManyToOne
     @JsonIgnore
-    @JoinColumn(name = "metalPriceId")
-    private MetalPrice metalPrice;
+    @JoinColumn(name = "typeOfMetalId")
+    private TypeOfMetal typeOfMetal;
 
     // Method to calculate price per weight unit
     public double calculatePricePerWeightUnit() {
-        return (weight / unit) * metalPrice.getSellPrice();
+        return (weight / unit) * typeOfMetal.getSellPrice();
     }
 
     // Method to set price per weight unit
