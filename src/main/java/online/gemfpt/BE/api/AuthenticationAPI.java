@@ -1,10 +1,8 @@
 package online.gemfpt.BE.api;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import online.gemfpt.BE.Entity.Account;
-import online.gemfpt.BE.Repository.AuthenticationRepository;
+import online.gemfpt.BE.entity.Account;
 import online.gemfpt.BE.Service.AuthenticationService;
 import online.gemfpt.BE.Service.EmailService;
-import online.gemfpt.BE.Service.ProductServices;
 import online.gemfpt.BE.model.*;
 
 import org.springframework.beans.factory.annotation.Autowired;

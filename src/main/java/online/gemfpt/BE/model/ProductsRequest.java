@@ -2,26 +2,36 @@ package online.gemfpt.BE.model;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import java.util.Date;
+import java.util.List;
 
 @Data
-public class ProductsRequest {
+public class ProductsRequest { // 2 list for  fe canbe input one orr many metals or gem
     @NotBlank(message = "Name cannot be left blank")
-    String name;
+    private String name;
+
     @NotBlank(message = "Descriptions cannot be left blank")
-    String descriptions;
+    private String descriptions;
+
     @NotBlank(message = "Category cannot be left blank")
-    String category;
-    @Min(value = 1, message = "Price must more than 0")
-    double price; // giá này là giá sau khi tính toán ( nhân với giá nguyên liệu + áp giá )
-    double priceRate ;  // tỉ lệ áp giá
+    private String category;
+
+    @Min(value = 0, message = "Price must be more than 0")
+    private double price;
+
+    private double priceRate;
+
     @Min(value = 1, message = "Must be at least 1 product in stock")
-    int stock;
+    private int stock;
+
     @NotBlank(message = "Barcode cannot be left blank")
-    String barcode;
-    String url; // ảnh
-//    boolean Status = true;
+    private String barcode;
+
+    private String url;
+
+    private List<MetalRequest> metals;
+    // 2 list for  fe canbe input one orr many metals or gem
+
+    private List<GemstoneRequest> gemstones;
 }

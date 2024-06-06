@@ -2,12 +2,11 @@ package online.gemfpt.BE.Service;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
-import online.gemfpt.BE.Entity.Account;
+import online.gemfpt.BE.entity.Account;
 import online.gemfpt.BE.Repository.AuthenticationRepository;
 import online.gemfpt.BE.enums.RoleEnum;
 import online.gemfpt.BE.exception.AccountNotFoundException;
 import online.gemfpt.BE.exception.BadRequestException;
-import online.gemfpt.BE.exception.handler.GlobalExceptionHandler;
 import online.gemfpt.BE.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
