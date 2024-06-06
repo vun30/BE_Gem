@@ -1,6 +1,7 @@
 package online.gemfpt.BE.Service;
 
 import jakarta.persistence.EntityNotFoundException;
+import online.gemfpt.BE.Repository.MetalPriceRepository;
 import online.gemfpt.BE.entity.Gemstone;
 import online.gemfpt.BE.entity.Metal;
 import online.gemfpt.BE.entity.Product;
@@ -20,12 +21,19 @@ import java.util.stream.Collectors;
 @Service
 public class ProductServices {
     @Autowired
-    GemstoneRepository repository;
-    @Autowired
-    MetalRepository metalRepository;
-    @Autowired
-    ProductsRepository productsRepository;
+    private ProductsRepository productsRepository;
 
+    @Autowired
+    private MetalPriceRepository metalPriceRepository;
+
+    @Autowired
+    private online.gemfpt.BE.Service.MetalService metalService;
+
+    @Autowired
+    private GemstoneRepository gemstoneRepository;
+
+    @Autowired
+    private MetalRepository metalRepository;
     public Product creates(ProductsRequest productsRequest) {
         // Kiểm tra xem sản phẩm có tồn tại không
         Optional<Product> existProduct = productsRepository.findByBarcode(productsRequest.getBarcode());
@@ -82,14 +90,14 @@ public class ProductServices {
                 .sum();
 
         // Tính giá cuối cùng của sản phẩm
-        double totalPrice = (totalGemstonePrice + totalMetalPrice) ;
-        double totalPrice2 = totalPrice + (totalPrice * product.getPrice());
-        product.setPrice(totalPrice);
+        double totalPrice = (totalGemstonePrice + totalMetalPrice) * 15 ;
+        double totalPrice2 = totalPrice + (totalPrice * (product.getPriceRate() / 100 ));
+        product.setPrice(totalPrice2);
 
         // Lưu sản phẩm và các thành phần của nó
         Product savedProduct = productsRepository.save(product);
         if (productsRequest.getGemstones() != null) {
-            repository.saveAll(product.getGemstones());
+            gemstoneRepository.saveAll(product.getGemstones());
         }
         if (productsRequest.getMetals() != null) {
             metalRepository.saveAll(product.getMetals());
