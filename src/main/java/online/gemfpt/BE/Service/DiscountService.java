@@ -1,8 +1,12 @@
 package online.gemfpt.BE.Service;
 
 import jakarta.persistence.EntityNotFoundException;
+import online.gemfpt.BE.Repository.DiscountProductRespository;
 import online.gemfpt.BE.Repository.DiscountRepository;
+import online.gemfpt.BE.Repository.ProductsRepository;
 import online.gemfpt.BE.entity.Discount;
+import online.gemfpt.BE.entity.DiscountProduct;
+import online.gemfpt.BE.entity.Product;
 import online.gemfpt.BE.model.DiscountRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,6 +21,12 @@ import java.util.Optional;
 public class DiscountService {
     @Autowired
     private DiscountRepository discountRepository;
+
+    @Autowired
+    private ProductsRepository productRepository;
+
+    @Autowired
+    private DiscountProductRespository discountProductRespository;
 
     public List<Discount> getAllDiscount(){
         return discountRepository.findAll();
@@ -63,5 +73,31 @@ public class DiscountService {
         Discount discount = discountRepository.findById(disID).orElseThrow(() -> new EntityNotFoundException("Discount not found"));
         discount.setStatus(!discount.isStatus());
         return discountRepository.save(discount);
+    }
+
+    public void addProductsToDiscount(Long discountId, List<String> barcodes) {
+        Discount discount = discountRepository.findById(discountId)
+                .orElseThrow(() -> new RuntimeException("Can't find discount!"));
+
+        for (String barcode : barcodes) {
+            Product product = productRepository.findByBarcode(barcode)
+                    .orElseThrow(() -> new RuntimeException("Can't find barcode: " + barcode));
+
+            DiscountProduct discountProduct = new DiscountProduct();
+            discountProduct.setDiscount(discount);
+            discountProduct.setBarcode(barcode); // Thêm mã vạch vào DiscountProduc
+            discountProduct.setDiscountValue(discount.getDiscountRate());
+            discountProduct.setActive(true);
+
+            discountProductRespository.save(discountProduct);
+
+            // Tính toán giá mới sau khi giảm giá
+            double originalPrice = product.getPrice();
+            double discountRate = discount.getDiscountRate() / 100;
+            double newPrice = originalPrice - (originalPrice * discountRate);
+            product.setPrice(newPrice);
+
+            productRepository.save(product);
+        }
     }
 }
