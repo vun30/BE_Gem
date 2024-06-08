@@ -2,9 +2,7 @@ package online.gemfpt.BE.Service;
 
 import jakarta.persistence.EntityNotFoundException;
 import online.gemfpt.BE.Repository.MetalPriceRepository;
-import online.gemfpt.BE.entity.Gemstone;
-import online.gemfpt.BE.entity.Metal;
-import online.gemfpt.BE.entity.Product;
+import online.gemfpt.BE.entity.*;
 import online.gemfpt.BE.Repository.GemstoneRepository;
 import online.gemfpt.BE.Repository.MetalRepository;
 import online.gemfpt.BE.Repository.ProductsRepository;
@@ -14,6 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -107,7 +106,21 @@ public class ProductServices {
 
 
     public List<Product> getAllProducts() {
-        return productsRepository.findAll();
+        List<Product> productList = productsRepository.findAll();
+        for (Product product : productList){
+            double newPrice = product.getPrice();
+            List<Discount> discountList = new ArrayList<>();
+            for (DiscountProduct discountProduct : product.getDiscountProducts()){
+                discountList.add(discountProduct.getDiscount());
+            }
+
+            for (Discount discount : discountList) {
+                double discountRate = discount.getDiscountRate() / 100;
+                newPrice = newPrice - (product.getPrice() * discountRate);
+            }
+            product.setNewPrice(newPrice);
+        }
+        return productList;
     }
 
     public Product getProductByBarcode(Long barcode) {

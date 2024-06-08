@@ -1,5 +1,6 @@
 package online.gemfpt.BE.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -37,15 +38,25 @@ public class Product {
     int stock;
 
     @NotBlank
+    @Column(unique = true)
     String barcode;
 
     String url; // ảnh
 
+    @Transient
+    double newPrice;
+
     boolean status;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Gemstone> gemstones;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Metal> metals;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    private List<DiscountProduct> discountProducts;
 }
