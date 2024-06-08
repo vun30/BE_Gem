@@ -33,76 +33,157 @@ public class ProductServices {
 
     @Autowired
     private MetalRepository metalRepository;
-    public Product creates(ProductsRequest productsRequest) {
-        // Kiểm tra xem sản phẩm có tồn tại không
-        Optional<Product> existProduct = productsRepository.findByBarcode(productsRequest.getBarcode());
-        if (existProduct.isPresent()) {
-            throw new IllegalArgumentException("Barcode already exists!");
+//    public Product creates(ProductsRequest productsRequest) {
+//        // Kiểm tra xem sản phẩm có tồn tại không
+//        Optional<Product> existProduct = productsRepository.findByBarcode(productsRequest.getBarcode());
+//        if (existProduct.isPresent()) {
+//            throw new IllegalArgumentException("Barcode already exists!");
+//        }
+//
+//        // Tạo mới một sản phẩm
+//        Product product = new Product();
+//        product.setName(productsRequest.getName());
+//        product.setDescriptions(productsRequest.getDescriptions());
+//        product.setCategory(productsRequest.getCategory());
+//        product.setPriceRate(productsRequest.getPriceRate());
+//        product.setStock(productsRequest.getStock());
+//        product.setUrl(productsRequest.getUrl());
+//        product.setCreateTime(LocalDateTime.now());
+//        product.setStatus(true);
+//        product.setBarcode(productsRequest.getBarcode());
+//
+//        // Tạo danh sách kim loại từ request
+//        if (productsRequest.getMetals() != null) {
+//            List<Metal> metals = productsRequest.getMetals().stream().map(metalRequest -> {
+//                Metal metal = new Metal();
+//                metal.setName(metalRequest.getName());
+//                metal.setDescription(metalRequest.getDescription());
+//                metal.setWeight(metalRequest.getWeight());
+//                metal.setPricePerWeightUnit(metalRequest.getPricePerWeightUnit());
+//                metal.setProduct(product);
+//                return metal;
+//            }).collect(Collectors.toList());
+//            product.setMetals(metals);
+//        }
+//
+//        // Tạo danh sách đá quý từ request
+//        if (productsRequest.getGemstones() != null) {
+//            List<Gemstone> gemstones = productsRequest.getGemstones().stream().map(gemstoneRequest -> {
+//                Gemstone gemstone = new Gemstone();
+//                gemstone.setDescription(gemstoneRequest.getDescription());
+//                gemstone.setPrice(gemstoneRequest.getPrice());
+//                gemstone.setQuantity(gemstoneRequest.getQuantity());
+//                gemstone.setProduct(product);
+//                return gemstone;
+//            }).collect(Collectors.toList());
+//            product.setGemstones(gemstones);
+//        }
+//
+//        // Tính tổng giá của các thành phần
+//        double totalGemstonePrice = product.getGemstones().stream()
+//                .mapToDouble(gemstone -> gemstone.getPrice() * gemstone.getQuantity())
+//                .sum();
+//
+//        double totalMetalPrice = product.getMetals().stream()
+//                .mapToDouble(metal -> metal.getPricePerWeightUnit() * metal.getWeight())
+//                .sum();
+//
+//        // Tính giá cuối cùng của sản phẩm
+//        double totalPrice = (totalGemstonePrice + totalMetalPrice)  ;
+//        double totalPrice2 = totalPrice + (totalPrice * (product.getPriceRate() / 100 ));
+//        product.setPrice(totalPrice2);
+//
+//        // Lưu sản phẩm và các thành phần của nó
+//        Product savedProduct = productsRepository.save(product);
+//        if (productsRequest.getGemstones() != null) {
+//            gemstoneRepository.saveAll(product.getGemstones());
+//        }
+//        if (productsRequest.getMetals() != null) {
+//            metalRepository.saveAll(product.getMetals());
+//        }
+//        return savedProduct;
+//    }
+public Product creates(ProductsRequest productsRequest) {
+    // Kiểm tra xem sản phẩm có tồn tại không
+    Optional<Product> existProduct = productsRepository.findByBarcode(productsRequest.getBarcode());
+    if (existProduct.isPresent()) {
+        throw new IllegalArgumentException("Barcode already exists!");
+    }
+
+    // Tạo mới một sản phẩm
+    Product product = new Product();
+    product.setName(productsRequest.getName());
+    product.setDescriptions(productsRequest.getDescriptions());
+    product.setCategory(productsRequest.getCategory());
+    product.setPriceRate(productsRequest.getPriceRate());
+    product.setStock(productsRequest.getStock());
+    product.setUrl(productsRequest.getUrl());
+    product.setCreateTime(LocalDateTime.now());
+    product.setStatus(true);
+    product.setBarcode(productsRequest.getBarcode());
+
+    // Tạo danh sách kim loại từ request
+    if (productsRequest.getMetals() != null) {
+        List<Metal> metals = productsRequest.getMetals().stream().map(metalRequest -> {
+            Metal metal = new Metal();
+            metal.setName(metalRequest.getName());
+            metal.setDescription(metalRequest.getDescription());
+            metal.setWeight(metalRequest.getWeight());
+            // Set price per weight unit
+            metalService.setPricePerWeightUnit(metal); // Sử dụng service để set giá
+            metal.setProduct(product);
+            return metal;
+        }).collect(Collectors.toList());
+        product.setMetals(metals);
+    }
+
+    // Tạo danh sách đá quý từ request
+    if (productsRequest.getGemstones() != null) {
+        List<Gemstone> gemstones = productsRequest.getGemstones().stream().map(gemstoneRequest -> {
+            Gemstone gemstone = new Gemstone();
+            gemstone.setDescription(gemstoneRequest.getDescription());
+            gemstone.setPrice(gemstoneRequest.getPrice());
+            gemstone.setQuantity(gemstoneRequest.getQuantity());
+            gemstone.setProduct(product);
+            return gemstone;
+        }).collect(Collectors.toList());
+        product.setGemstones(gemstones);
+    }
+
+    // Tính tổng giá của các kim loại
+    double totalMetalPrice = 0;
+    if (product.getMetals() != null) {
+        for (Metal metal : product.getMetals()) {
+            double metalPrice =  metal.getPricePerWeightUnit();
+            totalMetalPrice += metalPrice;
         }
+    }
 
-        // Tạo mới một sản phẩm
-        Product product = new Product();
-        product.setName(productsRequest.getName());
-        product.setDescriptions(productsRequest.getDescriptions());
-        product.setCategory(productsRequest.getCategory());
-        product.setPriceRate(productsRequest.getPriceRate());
-        product.setStock(productsRequest.getStock());
-        product.setUrl(productsRequest.getUrl());
-        product.setCreateTime(LocalDateTime.now());
-        product.setStatus(true);
-        product.setBarcode(productsRequest.getBarcode());
-
-        // Tạo danh sách kim loại từ request
-        if (productsRequest.getMetals() != null) {
-            List<Metal> metals = productsRequest.getMetals().stream().map(metalRequest -> {
-                Metal metal = new Metal();
-                metal.setName(metalRequest.getName());
-                metal.setDescription(metalRequest.getDescription());
-                metal.setWeight(metalRequest.getWeight());
-                metal.setPricePerWeightUnit(metalRequest.getPricePerWeightUnit());
-                metal.setProduct(product);
-                return metal;
-            }).collect(Collectors.toList());
-            product.setMetals(metals);
-        }
-
-        // Tạo danh sách đá quý từ request
-        if (productsRequest.getGemstones() != null) {
-            List<Gemstone> gemstones = productsRequest.getGemstones().stream().map(gemstoneRequest -> {
-                Gemstone gemstone = new Gemstone();
-                gemstone.setDescription(gemstoneRequest.getDescription());
-                gemstone.setPrice(gemstoneRequest.getPrice());
-                gemstone.setQuantity(gemstoneRequest.getQuantity());
-                gemstone.setProduct(product);
-                return gemstone;
-            }).collect(Collectors.toList());
-            product.setGemstones(gemstones);
-        }
-
-        // Tính tổng giá của các thành phần
-        double totalGemstonePrice = product.getGemstones().stream()
+    // Tính tổng giá của các đá quý
+    double totalGemstonePrice = 0;
+    if (product.getGemstones() != null) {
+        totalGemstonePrice = product.getGemstones().stream()
                 .mapToDouble(gemstone -> gemstone.getPrice() * gemstone.getQuantity())
                 .sum();
-
-        double totalMetalPrice = product.getMetals().stream()
-                .mapToDouble(metal -> metal.getPricePerWeightUnit() * metal.getWeight())
-                .sum();
-
-        // Tính giá cuối cùng của sản phẩm
-        double totalPrice = (totalGemstonePrice + totalMetalPrice) * 15 ;
-        double totalPrice2 = totalPrice + (totalPrice * (product.getPriceRate() / 100 ));
-        product.setPrice(totalPrice2);
-
-        // Lưu sản phẩm và các thành phần của nó
-        Product savedProduct = productsRepository.save(product);
-        if (productsRequest.getGemstones() != null) {
-            gemstoneRepository.saveAll(product.getGemstones());
-        }
-        if (productsRequest.getMetals() != null) {
-            metalRepository.saveAll(product.getMetals());
-        }
-        return savedProduct;
     }
+
+
+    // Tính giá cuối cùng của sản phẩm
+    double totalPrice = totalMetalPrice + totalGemstonePrice;
+    double totalPriceXRate = totalPrice * product.getPriceRate();
+    double totalPrice2 = totalPrice + totalPriceXRate;
+    product.setPrice(totalPrice2);
+
+    // Lưu sản phẩm và các thành phần của nó
+    Product savedProduct = productsRepository.save(product);
+    if (productsRequest.getGemstones() != null) {
+        gemstoneRepository.saveAll(product.getGemstones());
+    }
+    if (productsRequest.getMetals() != null) {
+        metalRepository.saveAll(product.getMetals());
+    }
+    return savedProduct;
+}
 
 
     public List<Product> getAllProducts() {

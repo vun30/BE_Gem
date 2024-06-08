@@ -17,7 +17,15 @@ public class Metal {
     long metalId;
 
     @NotBlank
-    String name;
+    String name;  ///////* PRODUCT METAL : THIS IS GOLD , SILVER ... NOT METAL MATERIALS *************
+    ///////* PRODUCT METAL : THIS IS GOLD , SILVER ... NOT METAL MATERIALS *************
+    ///////* PRODUCT METAL : THIS IS GOLD , SILVER ... NOT METAL MATERIALS *************
+    ///////* PRODUCT METAL : THIS IS GOLD , SILVER ... NOT METAL MATERIALS *************
+    ///////* PRODUCT METAL : THIS IS GOLD , SILVER ... NOT METAL MATERIALS *************
+    ///////* PRODUCT METAL : THIS IS GOLD , SILVER ... NOT METAL MATERIALS *************
+    ///////* PRODUCT METAL : THIS IS GOLD , SILVER ... NOT METAL MATERIALS *************
+    ///////* PRODUCT METAL : THIS IS GOLD , SILVER ... NOT METAL MATERIALS *************
+    ///////* PRODUCT METAL : THIS IS GOLD , SILVER ... NOT METAL MATERIALS *************
 
     String description;
 

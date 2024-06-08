@@ -17,12 +17,12 @@ public class ProductsRequest { // 2 list for  fe canbe input one orr many metals
     @NotBlank(message = "Category cannot be left blank")
     private String category;
 
-    @Min(value = 0, message = "Price must be more than 0")
+    @Min(value = 0, message = "Price must be = or more than 0")
     private double price;
 
     private double priceRate;
 
-    @Min(value = 1, message = "Must be at least 1 product in stock")
+    @Min(value = 0, message = "Must be at least 1 product in stock")
     private int stock;
 
     @NotBlank(message = "Barcode cannot be left blank")

@@ -2,6 +2,7 @@ package online.gemfpt.BE.Service;
 
 import jakarta.persistence.EntityNotFoundException;
 import online.gemfpt.BE.Repository.MetalPriceRepository;
+import online.gemfpt.BE.Repository.TypeOfMetalRepository;
 import online.gemfpt.BE.entity.MetalPrice;
 import online.gemfpt.BE.entity.TypeOfMetal;
 import online.gemfpt.BE.model.MetalPriceRequest;
@@ -18,9 +19,13 @@ public class MetalPriceService {
     @Autowired
     private MetalPriceRepository metalPriceRepository;
 
+    @Autowired
+    private TypeOfMetalRepository typeOfMetalRepository;
+
     public MetalPrice createMetalPrice(MetalPriceRequest metalPriceRequest) {
         // Đặt trạng thái của tất cả các MetalPrice cũ thành false trước khi tạo mới
         deactivateAllMetalPrices();
+        deactivateAllTypeOfMetal();
 
         MetalPrice metalPrice = new MetalPrice();
         metalPrice.setUpdateDate(metalPriceRequest.getUpdateDate());
@@ -32,6 +37,7 @@ public class MetalPriceService {
             typeOfMetal.setMetalType(typeOfMetalRequest.getMetalType());
             typeOfMetal.setSellPrice(typeOfMetalRequest.getSellPrice());
             typeOfMetal.setBuyPrice(typeOfMetalRequest.getBuyPrice());
+            typeOfMetal.setUpdateDate(metalPriceRequest.getUpdateDate());
             typeOfMetal.setMetalPrice(metalPrice);
             typeOfMetals.add(typeOfMetal);
         }
@@ -41,6 +47,21 @@ public class MetalPriceService {
         return metalPriceRepository.save(metalPrice);
     }
 
+    private void deactivateAllTypeOfMetal() {
+        // Đặt trạng thái của tất cả TypeOfMetal thành false
+        List<TypeOfMetal> typeOfMetals = typeOfMetalRepository.findAll();
+        for (TypeOfMetal typeOfMetal : typeOfMetals) {
+            typeOfMetal.setStatus(false);
+            typeOfMetalRepository.save(typeOfMetal);
+        }
+
+        // Đặt trạng thái của tất cả MetalPrice thành false
+        List<MetalPrice> metalPrices = metalPriceRepository.findAll();
+        for (MetalPrice metalPrice : metalPrices) {
+            metalPrice.setStatus(false);
+            metalPriceRepository.save(metalPrice);
+        }
+    }
     private void deactivateAllMetalPrices() {
         List<MetalPrice> metalPrices = getAllMetalPrices();
         for (MetalPrice metalPrice : metalPrices) {
