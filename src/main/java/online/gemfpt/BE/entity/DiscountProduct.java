@@ -3,6 +3,7 @@ package online.gemfpt.BE.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,14 +20,13 @@ public class DiscountProduct {
     private double discountValue;
 
     private boolean isActive;
-    private String barcode;
 
     @ManyToOne
-    @JoinColumn(name = "product_id")
+    @JoinColumn(name = "barcode", referencedColumnName = "barcode", nullable = false)
     private Product product;
 
     @ManyToOne
-    @JoinColumn(name = "discount_id")
+    @JoinColumn(name = "discount_id", nullable = false)
     private Discount discount;
 
 }

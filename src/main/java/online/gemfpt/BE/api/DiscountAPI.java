@@ -60,13 +60,13 @@ public class DiscountAPI {
         }
     }
 
-    @PostMapping("/api/add-product-to-discount")
-    public ResponseEntity<String> addProductToDiscount(@RequestBody List<String> barcodes,@PathVariable Long disID){
-        try {
-            discountService.addProductsToDiscount(disID, barcodes);
-            return ResponseEntity.ok("Successfull");
-        }catch (RuntimeException e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
+//    @PostMapping("/api/add-product-to-discount")
+//    public ResponseEntity<String> addProductToDiscount(@RequestBody List<String> barcodes,@PathVariable Long disID){
+//        try {
+//            discountService.addProductsToDiscount(disID, barcodes);
+//            return ResponseEntity.ok("Successfull");
+//        }catch (RuntimeException e){
+//            return ResponseEntity.badRequest().body(e.getMessage());
+//        }
+//    }
 }

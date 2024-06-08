@@ -31,15 +31,18 @@ public class Discount {
 
     @NotBlank
     private String description;
+
     private boolean status;
 
+    @NotBlank
     private String applicableProducts;
 
+    @NotBlank
     private String pointsCondition;
 
     private LocalDateTime startTime;
     private LocalDateTime endTime;
 
-    @OneToMany(mappedBy = "discount")
+    @OneToMany(mappedBy = "discount", cascade = CascadeType.ALL)
     private List<DiscountProduct> discountProducts;
 }

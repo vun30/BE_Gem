@@ -1,10 +1,10 @@
 package online.gemfpt.BE.model;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.Data;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class DiscountRequest {
@@ -21,7 +21,14 @@ public class DiscountRequest {
     @NotBlank
     String description;
 
+    @NotBlank
     private String applicableProducts;
 
+    @NotBlank
     private String pointsCondition;
+
+    private LocalDateTime endTime;
+
+    @NotEmpty
+    private List<String> barcode;
 }
