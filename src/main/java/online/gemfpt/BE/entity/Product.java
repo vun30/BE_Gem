@@ -48,11 +48,9 @@ public class Product {
 
     boolean status;
 
-    @JsonIgnore
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Gemstone> gemstones;
 
-    @JsonIgnore
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Metal> metals;
 

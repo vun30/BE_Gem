@@ -1,5 +1,6 @@
 package online.gemfpt.BE.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -43,6 +44,7 @@ public class Discount {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "discount", cascade = CascadeType.ALL)
     private List<DiscountProduct> discountProducts;
 }
