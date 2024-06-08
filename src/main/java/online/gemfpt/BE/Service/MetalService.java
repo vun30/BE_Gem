@@ -17,7 +17,7 @@ public class MetalService {
 
     public void setPricePerWeightUnit(Metal metal) {
         Optional<TypeOfMetal> typeOfMetalOpt = typeOfMetalRepository.findByMetalType(metal.getName());
-        if (typeOfMetalOpt.isPresent()) {
+        if (typeOfMetalOpt.isPresent() ) {
             TypeOfMetal typeOfMetal = typeOfMetalOpt.get();
             metal.setTypeOfMetal(typeOfMetal);
             metal.setPricePerWeightUnit();

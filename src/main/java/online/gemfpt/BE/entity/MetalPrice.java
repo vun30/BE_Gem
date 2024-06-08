@@ -27,4 +27,13 @@ public class MetalPrice {
     @OneToMany(mappedBy = "metalPrice", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TypeOfMetal> typeOfMetals;
 
+    // Setter cho typeOfMetals
+    public void setTypeOfMetals(List<TypeOfMetal> typeOfMetals) {
+        this.typeOfMetals = typeOfMetals;
+        // Thiết lập trạng thái cho các TypeOfMetal dựa trên trạng thái của MetalPrice
+        for (TypeOfMetal typeOfMetal : typeOfMetals) {
+            typeOfMetal.setStatus(this.status);
+        }
+    }
+
 }
