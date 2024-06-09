@@ -15,8 +15,6 @@ public class TypeOfMetalRequest {
     @NotBlank(message = "Metal type cannot be blank")
     private String metalType;
 
-    @NotNull(message = "Update date cannot be null")
-    private LocalDateTime updateDate;
 
     @Min(value = 0, message = "Sell price must be non-negative")
     private double sellPrice;
