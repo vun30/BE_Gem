@@ -170,8 +170,7 @@ public Product creates(ProductsRequest productsRequest) {
 
     // Tính giá cuối cùng của sản phẩm
     double totalPrice = totalMetalPrice + totalGemstonePrice;
-    double totalPriceXRate = totalPrice * product.getPriceRate();
-    double totalPrice2 = totalPrice + totalPriceXRate;
+    double totalPrice2 = totalPrice + (totalPrice * product.getPriceRate() / 100);
     product.setPrice(totalPrice2);
 
     // Lưu sản phẩm và các thành phần của nó
