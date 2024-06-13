@@ -15,7 +15,6 @@ public class TypeOfMetalRequest {
     @NotBlank(message = "Metal type cannot be blank")
     private String metalType;
 
-
     @Min(value = 0, message = "Sell price must be non-negative")
     private double sellPrice;
 

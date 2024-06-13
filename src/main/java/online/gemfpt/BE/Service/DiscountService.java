@@ -39,6 +39,7 @@ public class DiscountService {
     }
 
     public Discount createDiscount(DiscountRequest discountRequest){
+        //thêm khi hết hạn tự chuyển status thành false
         Optional<Discount> existID = discountRepository.findById(discountRequest.getDisID());
         if (existID.isPresent()) {
             throw new IllegalArgumentException("Discount id already exists!");

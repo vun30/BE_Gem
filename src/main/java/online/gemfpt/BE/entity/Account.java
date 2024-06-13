@@ -1,7 +1,6 @@
 package online.gemfpt.BE.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
@@ -15,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
-@Entity // danh dau day la 1 entity
+@Entity
 @Getter
 @Setter
 @ToString
@@ -25,21 +24,24 @@ public class Account implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     long id;
 
-    @Column (unique = true)
-    String phone ;
+    @Column(unique = true)
+    String phone;
     String password;
     String description;
-    boolean status = false; // note
+    boolean status = false;
     @Column(unique = true)
     private String email;
-    RoleEnum role ;
+    RoleEnum role;
     String name;
     LocalDateTime createDate;
+
+    @ManyToOne
+    @JoinColumn(name = "counter_id")
+    private Counter counter;
 
     public void setCreateDateNow(LocalDateTime createDate) {
         this.createDate = LocalDateTime.now();
     }
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -50,8 +52,8 @@ public class Account implements UserDetails {
     public String getUsername() {
         return this.phone;
     }
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) // chi tra ve pass luc login
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Override
     public boolean isAccountNonExpired() {
         return true;
@@ -67,4 +69,8 @@ public class Account implements UserDetails {
         return true;
     }
 
+    @Override
+    public boolean isEnabled() {
+        return this.status;
+    }
 }
