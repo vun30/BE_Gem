@@ -1,6 +1,7 @@
 package online.gemfpt.BE.api;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import online.gemfpt.BE.entity.Product;
 import online.gemfpt.BE.Service.ProductServices;
@@ -29,15 +30,20 @@ public class ProductAPI {
         }
     }
 
-    @PutMapping("/products")
-    public ResponseEntity<Product> getProductByBarcode(@RequestBody ProductsRequest productsRequest) {
-        Product product = productServices.updateProductByBarcode(productsRequest);
-        if (product != null) {
-            return ResponseEntity.ok(product);
+    @PutMapping("/products/{barcode}")
+public ResponseEntity<Product> updateProductByBarcode(@PathVariable String barcode, @RequestBody ProductsRequest productsRequest) {
+    try {
+        Long barcodeLong = Long.parseLong(barcode); // Chuyển đổi barcode từ String sang Long
+        Product updatedProduct = productServices.updateProductByBarcode(barcode, productsRequest);
+        if (updatedProduct != null) {
+            return ResponseEntity.ok(updatedProduct);
         } else {
             return ResponseEntity.notFound().build();
         }
+    } catch (NumberFormatException e) {
+        return ResponseEntity.badRequest().build();
     }
+}
 
     @GetMapping("/products")
     public ResponseEntity<List<Product>> getAllProducts() {
@@ -54,6 +60,17 @@ public class ProductAPI {
                 return ResponseEntity.notFound().build();
             }
         } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/products/{barcode}")
+    public ResponseEntity<Product> findProductByBarcode(@PathVariable String barcode) {
+        try {
+            Long barcodeLong = Long.parseLong(barcode);
+            Product product = productServices.getProductByBarcode(barcodeLong);
+            return ResponseEntity.ok(product);
+        } catch (NumberFormatException | EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
     }

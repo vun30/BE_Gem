@@ -14,4 +14,9 @@ public class GemstoneRequest {
 
     @Min(value = 0, message = "Quantity must be more than 0")
     private int quantity;
+
+    @NotBlank(message = "Certificate Code cannot be left blank")
+    private String certificateCode;
+
+    private GemPropertiesRequest gemProperties; // Add this field to include gem properties
 }

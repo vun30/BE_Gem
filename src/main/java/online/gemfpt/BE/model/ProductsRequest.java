@@ -3,11 +3,12 @@ package online.gemfpt.BE.model;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import online.gemfpt.BE.entity.ProductUrl;
 
 import java.util.List;
 
 @Data
-public class ProductsRequest { // 2 list for  fe canbe input one orr many metals or gem
+public class ProductsRequest {
     @NotBlank(message = "Name cannot be left blank")
     private String name;
 
@@ -28,10 +29,8 @@ public class ProductsRequest { // 2 list for  fe canbe input one orr many metals
     @NotBlank(message = "Barcode cannot be left blank")
     private String barcode;
 
-    private String url;
+    private List<ProductUrl> urls;
 
     private List<MetalRequest> metals;
-    // 2 list for  fe canbe input one orr many metals or gem
-
     private List<GemstoneRequest> gemstones;
 }

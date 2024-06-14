@@ -19,8 +19,12 @@ public class Gemstone {
     @NotBlank
     String description;
 
+    String properties;
+
     @NotNull
     double price;
+
+    String certificateCode;
 
     @Min(0)
     int quantity;
@@ -29,4 +33,9 @@ public class Gemstone {
     @JsonIgnore
     @JoinColumn(name = "productId")
     private Product product;
+
+    @JsonIgnore
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "properties_id", referencedColumnName = "id")
+    private GemProperties gemProperties;
 }

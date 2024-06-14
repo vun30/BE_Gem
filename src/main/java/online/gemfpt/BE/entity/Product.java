@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -16,37 +17,37 @@ import java.util.List;
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    long productId;
+    private long productId;
 
     @NotBlank
-    String name;
+    private String name;
 
-    LocalDateTime createTime;
-    LocalDateTime updateTime;
+    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
 
-    String descriptions;
-
-    String category;
+    private String descriptions;
+    private String category;
 
     @Min(0)
-    double price; // giá này là giá sau khi tính toán ( nhân với giá nguyên liệu + áp giá )
+    private double price;
 
     @Min(0) @Max(100)
-    double priceRate;  // tỉ lệ áp giá
+    private double priceRate;
 
     @Min(0)
-    int stock;
+    private int stock;
 
     @NotBlank
     @Column(unique = true)
-    String barcode;
-
-    String url; // ảnh
+    private String barcode;
 
     @Transient
-    double newPrice;
+    private double newPrice;
 
-    boolean status;
+    private boolean status;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductUrl> urls;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Gemstone> gemstones;
