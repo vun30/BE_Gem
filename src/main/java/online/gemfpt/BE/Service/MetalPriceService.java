@@ -10,6 +10,7 @@ import online.gemfpt.BE.model.TypeOfMetalRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,8 +29,12 @@ public class MetalPriceService {
         deactivateAllTypeOfMetal();
 
         MetalPrice metalPrice = new MetalPrice();
-        metalPrice.setUpdateDate(metalPriceRequest.getUpdateDate());
-        metalPrice.setStatus(metalPriceRequest.isStatus());
+
+        // Thiết lập updateDate thành ngày giờ hiện tại
+        metalPrice.setUpdateDate(LocalDateTime.now());
+
+        // Thiết lập status thành true
+        metalPrice.setStatus(true);
 
         List<TypeOfMetal> typeOfMetals = new ArrayList<>();
         for (TypeOfMetalRequest typeOfMetalRequest : metalPriceRequest.getTypeOfMetals()) {
@@ -37,7 +42,10 @@ public class MetalPriceService {
             typeOfMetal.setMetalType(typeOfMetalRequest.getMetalType());
             typeOfMetal.setSellPrice(typeOfMetalRequest.getSellPrice());
             typeOfMetal.setBuyPrice(typeOfMetalRequest.getBuyPrice());
-            typeOfMetal.setUpdateDate(metalPriceRequest.getUpdateDate());
+
+            // Thiết lập updateDate của TypeOfMetal từ MetalPrice
+            typeOfMetal.setUpdateDate(metalPrice.getUpdateDate());
+
             typeOfMetal.setMetalPrice(metalPrice);
             typeOfMetals.add(typeOfMetal);
         }
@@ -46,6 +54,7 @@ public class MetalPriceService {
 
         return metalPriceRepository.save(metalPrice);
     }
+
 
     private void deactivateAllTypeOfMetal() {
         // Đặt trạng thái của tất cả TypeOfMetal thành false
@@ -69,27 +78,33 @@ public class MetalPriceService {
         }
     }
 
-    public MetalPrice updateMetalPrice(Long id, MetalPriceRequest metalPriceRequest) {
-        MetalPrice metalPrice = metalPriceRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Metal price not found with id: " + id));
+    public MetalPrice updateMetalPrice(String metalType, MetalPriceRequest metalPriceRequest) {
+        TypeOfMetal typeOfMetal = typeOfMetalRepository.findByMetalType(metalType)
+                .orElseThrow(() -> new EntityNotFoundException("Type of metal not found with metalType: " + metalType));
 
-        metalPrice.setUpdateDate(metalPriceRequest.getUpdateDate());
-        metalPrice.setStatus(metalPriceRequest.isStatus());
-
-        List<TypeOfMetal> typeOfMetals = new ArrayList<>();
-        for (TypeOfMetalRequest typeOfMetalRequest : metalPriceRequest.getTypeOfMetals()) {
-            TypeOfMetal typeOfMetal = new TypeOfMetal();
-            typeOfMetal.setMetalType(typeOfMetalRequest.getMetalType());
-            typeOfMetal.setSellPrice(typeOfMetalRequest.getSellPrice());
-            typeOfMetal.setBuyPrice(typeOfMetalRequest.getBuyPrice());
-            typeOfMetal.setMetalPrice(metalPrice);
-            typeOfMetals.add(typeOfMetal);
+        MetalPrice metalPrice = typeOfMetal.getMetalPrice();
+        if (metalPrice == null) {
+            throw new EntityNotFoundException("Metal price not found for metal type: " + metalType);
         }
 
-        metalPrice.setTypeOfMetals(typeOfMetals);
+        metalPrice.setUpdateDate(LocalDateTime.now());
+        metalPrice.setStatus(true);
+
+        List<TypeOfMetal> updatedTypeOfMetals = new ArrayList<>();
+        for (TypeOfMetalRequest typeOfMetalRequest : metalPriceRequest.getTypeOfMetals()) {
+            TypeOfMetal updatedTypeOfMetal = new TypeOfMetal();
+            updatedTypeOfMetal.setMetalType(typeOfMetalRequest.getMetalType());
+            updatedTypeOfMetal.setSellPrice(typeOfMetalRequest.getSellPrice());
+            updatedTypeOfMetal.setBuyPrice(typeOfMetalRequest.getBuyPrice());
+            updatedTypeOfMetal.setMetalPrice(metalPrice);
+            updatedTypeOfMetals.add(updatedTypeOfMetal);
+        }
+
+        metalPrice.setTypeOfMetals(updatedTypeOfMetals);
 
         return metalPriceRepository.save(metalPrice);
     }
+
 
     public List<MetalPrice> getAllMetalPrices() {
         return metalPriceRepository.findAll();

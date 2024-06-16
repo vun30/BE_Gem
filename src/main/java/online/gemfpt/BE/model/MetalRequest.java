@@ -11,12 +11,7 @@ public class MetalRequest {
 
     private String description;
 
-    @Min(value = 1, message = "Weight must be more than 0")
+    @Min(value = 0, message = "Weight must be >= 0")
     private double weight;
 
-    @Min(value = 1, message = "Price per weight unit must be more than 0")
-    private double pricePerWeightUnit;
-
-    @NotBlank(message = "Unit cannot be left blank")
-    private String unit;
 }

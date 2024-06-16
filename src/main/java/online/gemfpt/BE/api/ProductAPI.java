@@ -7,6 +7,7 @@ import online.gemfpt.BE.entity.Product;
 import online.gemfpt.BE.Service.ProductServices;
 import online.gemfpt.BE.model.ProductsRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,26 +31,28 @@ public class ProductAPI {
         }
     }
 
-    @PutMapping("/products/{barcode}")
-public ResponseEntity<Product> updateProductByBarcode(@PathVariable String barcode, @RequestBody ProductsRequest productsRequest) {
-    try {
-        Long barcodeLong = Long.parseLong(barcode); // Chuyển đổi barcode từ String sang Long
-        Product updatedProduct = productServices.updateProductByBarcode(barcode, productsRequest);
-        if (updatedProduct != null) {
-            return ResponseEntity.ok(updatedProduct);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    } catch (NumberFormatException e) {
-        return ResponseEntity.badRequest().build();
-    }
-}
-
     @GetMapping("/products")
     public ResponseEntity<List<Product>> getAllProducts() {
         List<Product> products = productServices.getAllProducts();
         return ResponseEntity.ok(products);
     }
+
+    @PatchMapping("/update-product/{barcode}")
+public ResponseEntity<?> updateProduct(@PathVariable String barcode, @RequestBody ProductsRequest productsRequest) {
+    if (barcode == null || barcode.trim().isEmpty()) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Barcode cannot be left blank");
+    }
+    try {
+        Product updatedProduct = productServices.updateProduct(barcode, productsRequest);
+        return ResponseEntity.ok(updatedProduct);
+    } catch (EntityNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found with barcode: " + barcode);
+    } catch (IllegalArgumentException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+}
+
+
     @DeleteMapping("/delete-product/{barcode}")
     public ResponseEntity<Product> deleteProduct(@PathVariable String barcode) {
         try {
@@ -64,11 +67,10 @@ public ResponseEntity<Product> updateProductByBarcode(@PathVariable String barco
         }
     }
 
-    @GetMapping("/products/{barcode}")
+     @GetMapping("/{barcode}")
     public ResponseEntity<Product> findProductByBarcode(@PathVariable String barcode) {
         try {
-            Long barcodeLong = Long.parseLong(barcode);
-            Product product = productServices.getProductByBarcode(barcodeLong);
+            Product product = productServices.getProductByBarcode(barcode);
             return ResponseEntity.ok(product);
         } catch (NumberFormatException | EntityNotFoundException e) {
             return ResponseEntity.notFound().build();

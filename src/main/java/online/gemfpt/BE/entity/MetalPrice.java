@@ -1,8 +1,8 @@
 package online.gemfpt.BE.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,7 +18,9 @@ public class MetalPrice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     long metalPriceId;
 
+    @JsonIgnore
     private String metalType ;
+
 
     @NotNull(message = "Update date cannot be null")
     LocalDateTime updateDate;

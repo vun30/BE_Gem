@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 public class GemstoneRequest {
-    @NotBlank(message = "Description cannot be left blank")
+
     private String description;
 
     @Min(value = 0, message = "Price must be more than 0")
@@ -18,5 +18,14 @@ public class GemstoneRequest {
     @NotBlank(message = "Certificate Code cannot be left blank")
     private String certificateCode;
 
-    private GemPropertiesRequest gemProperties; // Add this field to include gem properties
+    private double carat;
+
+    private String color;
+
+    private String clarity;
+
+    private String cut;
+
+
+
 }

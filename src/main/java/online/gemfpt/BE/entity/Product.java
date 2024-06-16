@@ -31,7 +31,7 @@ public class Product {
     @Min(0)
     private double price;
 
-    @Min(0) @Max(100)
+    @Min(0)
     private double priceRate;
 
     @Min(0)
