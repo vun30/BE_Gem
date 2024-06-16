@@ -21,7 +21,7 @@ public class ProductAPI {
     @Autowired
     ProductServices productServices;
 
-    @PostMapping("create-products")
+    @PostMapping("/api/product")
     public ResponseEntity<?> creates (@RequestBody @Valid ProductsRequest productsRequest) {
         try {
             Product product = productServices.creates(productsRequest);
@@ -31,13 +31,13 @@ public class ProductAPI {
         }
     }
 
-    @GetMapping("/products")
+    @GetMapping("/api/product")
     public ResponseEntity<List<Product>> getAllProducts() {
         List<Product> products = productServices.getAllProducts();
         return ResponseEntity.ok(products);
     }
 
-    @PatchMapping("/update-product/{barcode}")
+    @PatchMapping("/api/product/{barcode}")
 public ResponseEntity<?> updateProduct(@PathVariable String barcode, @RequestBody ProductsRequest productsRequest) {
     if (barcode == null || barcode.trim().isEmpty()) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Barcode cannot be left blank");
@@ -53,7 +53,7 @@ public ResponseEntity<?> updateProduct(@PathVariable String barcode, @RequestBod
 }
 
 
-    @DeleteMapping("/delete-product/{barcode}")
+    @DeleteMapping("/api/product/{barcode}")
     public ResponseEntity<Product> deleteProduct(@PathVariable String barcode) {
         try {
             Product updatedProduct = productServices.toggleProductActive(barcode);
@@ -67,7 +67,7 @@ public ResponseEntity<?> updateProduct(@PathVariable String barcode, @RequestBod
         }
     }
 
-     @GetMapping("/{barcode}")
+     @GetMapping("/api/product/{barcode}")
     public ResponseEntity<Product> findProductByBarcode(@PathVariable String barcode) {
         try {
             Product product = productServices.getProductByBarcode(barcode);

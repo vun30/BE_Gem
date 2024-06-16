@@ -1,12 +1,11 @@
 package online.gemfpt.BE.api;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import online.gemfpt.BE.Service.CartService;
+import online.gemfpt.BE.Service.BillService;
+import online.gemfpt.BE.entity.Bill;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -15,10 +14,16 @@ import java.util.List;
 @CrossOrigin("*")
 public class CartAPI {
     @Autowired
-    CartService cartService;
+    BillService billService;
 
-    @PostMapping("/add")
+    @PostMapping("/api/cart")
     public void addProductToCart(@RequestParam String customerName, @RequestParam int customerPhone, @RequestParam List<String> barcode) {
-        cartService.addToCart(customerName, customerPhone, barcode);
+        billService.addToCart(customerName, customerPhone, barcode);
     }
+
+//    @GetMapping("/api/cart")
+//    public ResponseEntity<List<Bill>> CardDetails(@RequestParam long cartId){
+//        List<Bill> carts = billService.getBillDetails(cartId);
+//        return ResponseEntity.ok(carts);
+//    }
 }
