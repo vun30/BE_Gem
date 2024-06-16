@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface TypeOfMetalRepository extends JpaRepository<TypeOfMetal, Long> {
     Optional<TypeOfMetal> findByMetalType(String metalType);
     Optional<TypeOfMetal> findByMetalTypeAndStatus(String metalType, boolean status);
+
 }

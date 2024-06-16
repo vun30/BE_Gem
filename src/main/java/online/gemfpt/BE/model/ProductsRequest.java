@@ -7,31 +7,23 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class ProductsRequest { // 2 list for  fe canbe input one orr many metals or gem
-    @NotBlank(message = "Name cannot be left blank")
+public class ProductsRequest {
+
     private String name;
 
-    @NotBlank(message = "Descriptions cannot be left blank")
     private String descriptions;
 
-    @NotBlank(message = "Category cannot be left blank")
     private String category;
 
-    @Min(value = 0, message = "Price must be = or more than 0")
-    private double price;
-
+    @Min(0)
     private double priceRate;
-
-    @Min(value = 0, message = "Must be at least 1 product in stock")
-    private int stock;
 
     @NotBlank(message = "Barcode cannot be left blank")
     private String barcode;
 
-    private String url;
+    private List<ProductUrlRequest> urls;
 
     private List<MetalRequest> metals;
-    // 2 list for  fe canbe input one orr many metals or gem
 
     private List<GemstoneRequest> gemstones;
 }
