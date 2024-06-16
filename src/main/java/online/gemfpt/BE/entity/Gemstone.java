@@ -19,8 +19,18 @@ public class Gemstone {
     @NotBlank
     String description;
 
+    String color;
+
+    String clarity;
+
+    String cut;
+
+    double carat;
+
     @NotNull
     double price;
+
+    String certificateCode;
 
     @Min(0)
     int quantity;
@@ -29,4 +39,7 @@ public class Gemstone {
     @JsonIgnore
     @JoinColumn(name = "productId")
     private Product product;
+
+
+
 }

@@ -25,9 +25,9 @@ public class MetalPriceAPI {
         return ResponseEntity.ok(createdMetalPrice);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<MetalPrice> updateMetalPrice(@PathVariable Long id, @RequestBody MetalPriceRequest metalPriceRequest) {
-        MetalPrice updatedMetalPrice = metalPriceService.updateMetalPrice(id, metalPriceRequest);
+    @PutMapping("/{metalType}")
+    public ResponseEntity<MetalPrice> updateMetalPrice(@PathVariable String metalType, @RequestBody MetalPriceRequest metalPriceRequest) {
+        MetalPrice updatedMetalPrice = metalPriceService.updateMetalPrice(metalType, metalPriceRequest);
         return ResponseEntity.ok(updatedMetalPrice);
     }
 
@@ -43,9 +43,9 @@ public class MetalPriceAPI {
         return ResponseEntity.ok(metalPrice);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMetalPrice(@PathVariable Long id) {
-        metalPriceService.deleteMetalPrice(id);
-        return ResponseEntity.noContent().build();
-    }
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<Void> deleteMetalPrice(@PathVariable Long id) {
+//        metalPriceService.deleteMetalPrice(id);
+//        return ResponseEntity.noContent().build();
+//    }
 }
