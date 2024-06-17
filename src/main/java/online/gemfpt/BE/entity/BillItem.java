@@ -1,5 +1,6 @@
 package online.gemfpt.BE.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +13,7 @@ public class BillItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "bill_id")
     private Bill bill;

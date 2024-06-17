@@ -1,5 +1,6 @@
 package online.gemfpt.BE.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,6 +24,7 @@ public class Bill {
     private String voucher;
     private LocalDateTime createTime;
     private boolean status;
+
 
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BillItem> items = new ArrayList<>();  // Khởi tạo danh sách

@@ -79,7 +79,25 @@ public class BillService {
         billRepository.save(bill);
     }
 
-    public List<Bill> getBillDetails(int phone) {
-        return billRepository.findByCustomerPhone(phone);
+    public Bill getBillDetails(long id) {
+        Optional<Bill> optionalBill = billRepository.findById(id);
+        if (optionalBill.isPresent()) {
+            return optionalBill.get();
+        } else {
+            throw new IllegalArgumentException("Invalid bill ID: " + id);
+        }
+    }
+
+    public List<Bill> getAllBillOfCustumer(int customerPhone){
+        return billRepository.findByCustomerPhone(customerPhone);
+    }
+
+    public void deleteBill(long billId){
+        Optional<Bill> bill = billRepository.findById(billId);
+        if(bill.isPresent()){
+            billRepository.deleteById(billId);
+        } else {
+            throw new IllegalArgumentException("Invalid bill ID :" + billId);
+        }
     }
 }
