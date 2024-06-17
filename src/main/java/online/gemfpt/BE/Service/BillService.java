@@ -41,6 +41,7 @@ public class BillService {
             customer = new Customer();
             customer.setName(name);
             customer.setPhone(phone);
+            customer.setPoints(0);
             customer.setCreateTime(LocalDateTime.now());
             customer = customerRepository.save(customer);
         }
@@ -74,6 +75,9 @@ public class BillService {
             totalAmount += product.getPrice();
             bill.getItems().add(billItem);
         }
+
+        double customer_point = totalAmount / 1000;
+        customer.setPoints(customer.getPoints() + customer_point);
 
         bill.setTotalAmount(totalAmount);
         billRepository.save(bill);
