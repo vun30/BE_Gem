@@ -6,6 +6,7 @@ import online.gemfpt.BE.entity.MetalPrice;
 import online.gemfpt.BE.model.MetalPriceRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class MetalPriceAPI {
     @Autowired
     private MetalPriceService metalPriceService;
 
+     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping
     public ResponseEntity<MetalPrice> createMetalPrice(@RequestBody MetalPriceRequest metalPriceRequest) {
         MetalPrice createdMetalPrice = metalPriceService.createMetalPrice(metalPriceRequest);

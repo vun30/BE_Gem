@@ -29,7 +29,7 @@ public class Account implements UserDetails {
     String phone ;
     String password;
     String description;
-    boolean status = false; // note
+    boolean status = true; // note
     @Column(unique = true)
     private String email;
     RoleEnum role ;
@@ -48,8 +48,16 @@ public class Account implements UserDetails {
 
     @Override
     public String getUsername() {
-        return this.phone;
+        return this.email;
     }
+//     @Override
+//    public String getUsername() {
+//        return this.phone;
+//    }
+
+
+
+
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) // chi tra ve pass luc login
 
     @Override
