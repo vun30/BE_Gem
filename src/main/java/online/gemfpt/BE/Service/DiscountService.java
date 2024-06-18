@@ -101,29 +101,5 @@ public class DiscountService {
         return discountRepository.save(discount);
     }
 
-//    public void addProductsToDiscount(Long discountId, List<String> barcodes) {
-//        Discount discount = discountRepository.findById(discountId)
-//                .orElseThrow(() -> new RuntimeException("Can't find discount!"));
-//
-//        for (String barcode : barcodes) {
-//            Product product = productRepository.findByBarcode(barcode)
-//                    .orElseThrow(() -> new RuntimeException("Can't find barcode: " + barcode));
-//
-//            DiscountProduct discountProduct = new DiscountProduct();
-//            discountProduct.setDiscount(discount);
-//            discountProduct.setBarcode(barcode); // Thêm mã vạch vào DiscountProduc
-//            discountProduct.setDiscountValue(discount.getDiscountRate());
-//            discountProduct.setActive(true);
-//
-//            discountProductRespository.save(discountProduct);
-//
-//            // Tính toán giá mới sau khi giảm giá
-//            double originalPrice = product.getPrice();
-//            double discountRate = discount.getDiscountRate() / 100;
-//            double newPrice = originalPrice - (originalPrice * discountRate);
-//            product.setPrice(newPrice);
-//
-//            productRepository.save(product);
-//        }
-//    }
+
 }
