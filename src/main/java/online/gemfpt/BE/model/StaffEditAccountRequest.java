@@ -2,15 +2,17 @@ package online.gemfpt.BE.model;
 
 import jakarta.persistence.Column;
 import lombok.Data;
-import online.gemfpt.BE.enums.RoleEnum;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 @Data
-public class EditAccountRequest {
+public class StaffEditAccountRequest {
+
     private String phone;
     private String description;
-    private boolean status;
     @Column(unique = true)
     private String email;
-    private RoleEnum role;
     private String name;
 }

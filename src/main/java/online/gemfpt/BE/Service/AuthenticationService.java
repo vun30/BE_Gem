@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 
@@ -40,6 +42,7 @@ public class AuthenticationService implements UserDetailsService {
 
     @Autowired
     EmailService emailService;
+
 
     public Account register(RegisterRequest registerRequest) {
         // Kiểm tra các trường bắt buộc
@@ -64,25 +67,56 @@ public class AuthenticationService implements UserDetailsService {
         return authenticationRepository.save(account);
     }
 
-    public Account editAccount(EditAccountRequest editAccountRequest) {
-        Account account = authenticationRepository.findAccountByEmail(editAccountRequest.getEmail());
-        if (account == null) {
-            throw new AccountNotFoundException("Account not found");
-        }
-
-        // Kiểm tra và chỉ cập nhật các trường không rỗng
-        if (editAccountRequest.getName() != null && !editAccountRequest.getName().isEmpty()) {
-            account.setName(editAccountRequest.getName());
-        }
-        if (editAccountRequest.getDescription() != null && !editAccountRequest.getDescription().isEmpty()) {
-            account.setDescription(editAccountRequest.getDescription());
-        }
-
-        return authenticationRepository.save(account);
+   public Account editAccountByEmail(String email, EditAccountRequest editAccountRequest) {
+    Account account = authenticationRepository.findAccountByEmail(email);
+    if (account == null) {
+        throw new AccountNotFoundException("Account not found with email: " + email);
     }
 
+    // Update only non-null fields from editAccountRequest
+    if (editAccountRequest.getPhone() != null) {
+        account.setPhone(editAccountRequest.getPhone());
+    }
+    if (editAccountRequest.getDescription() != null) {
+        account.setDescription(editAccountRequest.getDescription());
+    }
+    if (editAccountRequest.isStatus() != account.isStatus()) {
+        account.setStatus(editAccountRequest.isStatus());
+    }
+    if (editAccountRequest.getRole() != null) {
+        account.setRole(editAccountRequest.getRole());
+    }
+    if (editAccountRequest.getName() != null) {
+        account.setName(editAccountRequest.getName());
+    }
 
-    public Account login(LoginRequest loginRequest) {
+    // Save updated account
+    return authenticationRepository.save(account);
+}
+
+public Account staffEditAccountByEmail(String email, StaffEditAccountRequest staffEditAccountRequest) {
+    Account account = authenticationRepository.findAccountByEmail(email);
+    if (account == null) {
+        throw new AccountNotFoundException("Account not found with email: " + email);
+    }
+
+    // Update only non-null fields from editAccountRequest
+    if (staffEditAccountRequest.getPhone() != null) {
+        account.setPhone(staffEditAccountRequest.getPhone());
+    }
+    if (staffEditAccountRequest.getDescription() != null) {
+        account.setDescription(staffEditAccountRequest.getDescription());
+    }
+    if (staffEditAccountRequest.getName() != null) {
+        account.setName(staffEditAccountRequest.getName());
+    }
+
+    // Save updated account
+    return authenticationRepository.save(account);
+}
+
+
+     public Account login(LoginRequest loginRequest) {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                     loginRequest.getEmail(),
@@ -96,6 +130,11 @@ public class AuthenticationService implements UserDetailsService {
         Account account = authenticationRepository.findAccountByEmail(loginRequest.getEmail());
         if (account == null) {
             throw new BadCredentialsException("Invalid email or password");
+        }
+
+        // Kiểm tra trạng thái của tài khoản
+         if (!account.isStatus()) {
+            throw new BadCredentialsException("Account is inactive");
         }
 
         // Tạo token và tạo đối tượng AccountResponse
@@ -120,31 +159,58 @@ public class AuthenticationService implements UserDetailsService {
         return authenticationRepository.findAccountByPhone(phone) ;
     }
 
-    public AccountResponse loginGoogle (LoginGoogleRequest loginGoogleRequest){
-        AccountResponse accountResponse= new AccountResponse();
-        try{
-            FirebaseToken firebaseToken = FirebaseAuth.getInstance().verifyIdToken(loginGoogleRequest.getToken());
-            String email  = firebaseToken.getEmail();
-            Account account = authenticationRepository.findAccountByEmail(email);
-            if (account == null ){
-                account = new Account();
-                account.setName(firebaseToken.getName());
-                account.setEmail(email);
-                account.setRole(RoleEnum.STAFF);
-                account.setCreateDate(LocalDateTime.now());
-                account = authenticationRepository.save(account);
-            }
-            accountResponse.setEmail(account.getEmail());
-            accountResponse.setId(account.getId());
-            accountResponse.setRole(RoleEnum.STAFF);
-            accountResponse.setName(account.getName());
-            String token = tokenService.generateToken(account);
-            accountResponse.setToken(token);
-        } catch (Exception e){
-            System.out.println(e);
+//    public AccountResponse loginGoogle (LoginGoogleRequest loginGoogleRequest){
+//        AccountResponse accountResponse= new AccountResponse();
+//        try{
+//            FirebaseToken firebaseToken = FirebaseAuth.getInstance().verifyIdToken(loginGoogleRequest.getToken());
+//            String email  = firebaseToken.getEmail();
+//            Account account = authenticationRepository.findAccountByEmail(email);
+//            if (account == null ){
+//                account = new Account();
+//                account.setName(firebaseToken.getName());
+//                account.setEmail(email);
+//                account.setRole(RoleEnum.STAFF);
+//                account.setCreateDate(LocalDateTime.now());
+//                account = authenticationRepository.save(account);
+//            }
+//            accountResponse.setEmail(account.getEmail());
+//            accountResponse.setId(account.getId());
+//            accountResponse.setRole(RoleEnum.STAFF);
+//            accountResponse.setName(account.getName());
+//            String token = tokenService.generateToken(account);
+//            accountResponse.setToken(token);
+//        } catch (Exception e){
+//            System.out.println(e);
+//        }
+//        return accountResponse;
+//    }
+    public AccountResponse loginGoogle(LoginGoogleRequest loginGoogleRequest) {
+    AccountResponse accountResponse = new AccountResponse();
+    try {
+        FirebaseToken firebaseToken = FirebaseAuth.getInstance().verifyIdToken(loginGoogleRequest.getToken());
+        String email = firebaseToken.getEmail();
+        Account account = authenticationRepository.findAccountByEmail(email);
+        if (account == null) {
+            account = new Account();
+            account.setName(firebaseToken.getName());
+            account.setEmail(email);
+            account.setRole(RoleEnum.STAFF);
+            account.setCreateDate(LocalDateTime.now());
+            account = authenticationRepository.save(account);
         }
-        return accountResponse;
+        accountResponse.setEmail(account.getEmail());
+        accountResponse.setId(account.getId());
+        accountResponse.setRole(RoleEnum.STAFF);
+        accountResponse.setName(account.getName());
+        String token = tokenService.generateToken(account);
+        accountResponse.setToken(token);
+    } catch (Exception e) {
+        // Handle specific exceptions and log or throw appropriate errors
+        System.out.println("Exception occurred during Google login: " + e.getMessage());
+        throw new RuntimeException("Error during Google login", e);
     }
+    return accountResponse;
+}
 
     public void ForGotPassword(ForGotPasswordRequest forGotPasswordRequest) {
         Account account = authenticationRepository.findAccountByEmail(forGotPasswordRequest.getEmail());
@@ -179,5 +245,48 @@ public class AuthenticationService implements UserDetailsService {
         Account account = getCurrentAccount();
         account.setPassword(passwordEncoder.encode(resetPasswordRequest.getPassword()));
         authenticationRepository.save(account);
+    }
+
+
+     // Phương thức để lấy thông tin người dùng hiện tại
+    public String getCurrentUserRole() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            return authentication.getAuthorities().stream()
+                    .findFirst()
+                    .map(Object::toString)
+                    .orElse("ROLE_NOT_FOUND");
+        }
+        return "ROLE_NOT_FOUND";
+    }
+
+    // Phương thức chung để kiểm tra vai trò của người dùng
+    private boolean hasRole(String role) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            return authentication.getAuthorities().stream()
+                    .anyMatch(auth -> auth.getAuthority().equals(role));
+        }
+        return false;
+    }
+
+    // Kiểm tra xem người dùng có quyền admin hay không
+    public boolean isAdmin() {
+        return hasRole("ADMIN");
+    }
+
+    // Kiểm tra xem người dùng có quyền manager hay không
+    public boolean isManager() {
+        return hasRole("MANAGER");
+    }
+
+    // Kiểm tra xem người dùng có phải là chính account đang đăng nhập hay không
+    public boolean isCurrentAccount(String email) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof UserDetails) {
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            return userDetails.getUsername().equals(email);
+        }
+        return false;
     }
 }

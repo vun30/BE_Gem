@@ -2,11 +2,16 @@ package online.gemfpt.BE.model;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Getter
+@Setter
 @Data
+
 public class DiscountRequest {
     @NotNull
     private long disID;
