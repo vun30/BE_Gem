@@ -2,11 +2,14 @@ package online.gemfpt.BE.model;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
-import online.gemfpt.BE.enums.TypeEnum;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Getter
+@Setter
 @Data
 public class DiscountRequestForBarcode {
     @NotBlank

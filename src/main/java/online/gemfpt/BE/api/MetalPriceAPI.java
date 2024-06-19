@@ -6,6 +6,7 @@ import online.gemfpt.BE.entity.MetalPrice;
 import online.gemfpt.BE.model.MetalPriceRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,11 +26,11 @@ public class MetalPriceAPI {
         return ResponseEntity.ok(createdMetalPrice);
     }
 
-    @PutMapping("/{metalType}")
-    public ResponseEntity<MetalPrice> updateMetalPrice(@PathVariable String metalType, @RequestBody MetalPriceRequest metalPriceRequest) {
-        MetalPrice updatedMetalPrice = metalPriceService.updateMetalPrice(metalType, metalPriceRequest);
-        return ResponseEntity.ok(updatedMetalPrice);
-    }
+//    @PutMapping("/{metalType}")
+//    public ResponseEntity<MetalPrice> updateMetalPrice(@PathVariable String metalType, @RequestBody MetalPriceRequest metalPriceRequest) {
+//        MetalPrice updatedMetalPrice = metalPriceService.updateMetalPrice(metalType, metalPriceRequest);
+//        return ResponseEntity.ok(updatedMetalPrice);
+//    }
 
     @GetMapping
     public ResponseEntity<List<MetalPrice>> getAllMetalPrices() {
