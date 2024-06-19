@@ -3,13 +3,10 @@ package online.gemfpt.BE.model;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import online.gemfpt.BE.enums.TypeEnum;
 
 import java.util.List;
 
-@Getter
-@Setter
 @Data
 public class ProductsRequest {
 
@@ -17,7 +14,7 @@ public class ProductsRequest {
 
     private String descriptions;
 
-    private String category;
+    private TypeEnum category;
 
     private String oldID;
 

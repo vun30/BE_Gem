@@ -52,6 +52,7 @@ public Product creates(ProductsRequest productsRequest) {
         throw new IllegalArgumentException("Barcode already exists!");
     }
 
+
     // Tạo mới một sản phẩm
     Product product = new Product();
     product.setName(productsRequest.getName());
@@ -346,4 +347,3 @@ private String generateUniqueBarcode(String existingBarcode) {
         return productList;
     }
 }
-

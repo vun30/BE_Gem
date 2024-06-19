@@ -41,7 +41,6 @@ public class BillService {
             customer = new Customer();
             customer.setName(name);
             customer.setPhone(phone);
-            customer.setPoints(0);
             customer.setCreateTime(LocalDateTime.now());
             customer = customerRepository.save(customer);
         }

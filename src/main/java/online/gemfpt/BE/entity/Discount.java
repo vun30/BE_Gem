@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import online.gemfpt.BE.enums.TypeEnum;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,9 +20,6 @@ public class Discount {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-
-    @NotNull
-    private long disID;
 
     @NotBlank
     private String programName;
@@ -37,9 +35,6 @@ public class Discount {
 
     @NotBlank
     private String applicableProducts;
-
-    @NotBlank
-    private String pointsCondition;
 
     private LocalDateTime startTime;
     private LocalDateTime endTime;
