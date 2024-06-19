@@ -4,8 +4,10 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import online.gemfpt.BE.Service.DiscountService;
 import online.gemfpt.BE.entity.Discount;
-import online.gemfpt.BE.entity.Product;
-import online.gemfpt.BE.model.DiscountRequest;
+import online.gemfpt.BE.enums.TypeEnum;
+import online.gemfpt.BE.model.DiscountUpdateRequest;
+import online.gemfpt.BE.model.DiscountCreateRequest;
+import online.gemfpt.BE.model.DiscountRequestForBarcode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,9 +21,8 @@ public class DiscountAPI {
     @Autowired
     DiscountService discountService;
 
-
     @PostMapping("/api/discount")
-    public ResponseEntity<?> create(@RequestBody @Valid DiscountRequest discountRequest){
+    public ResponseEntity<?> create(@RequestBody @Valid DiscountRequestForBarcode discountRequest){
         try {
             Discount discount = discountService.createDiscount(discountRequest);
             return ResponseEntity.ok(discount);
@@ -30,8 +31,28 @@ public class DiscountAPI {
         }
     }
 
+    @PostMapping("/api/discount/cate")
+    public ResponseEntity<Discount> createDiscountForCategory(@Valid @RequestBody DiscountCreateRequest discountRequest, @RequestParam TypeEnum category) {
+        try {
+            Discount discount = discountService.createDiscountForCategory(discountRequest, category);
+            return ResponseEntity.ok(discount);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
+    @PostMapping("/all-products")
+    public ResponseEntity<String> createDiscountForAllProducts(@RequestBody DiscountCreateRequest discountRequest) {
+        try {
+            Discount discount = discountService.createDiscountForAllProducts(discountRequest);
+            return ResponseEntity.ok("Discount applied to all products successfully.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @PutMapping("/api/discount")
-    public ResponseEntity<Discount> getDiscountById(@RequestBody DiscountRequest discountRequest){
+    public ResponseEntity<Discount> getDiscountById(@RequestBody DiscountUpdateRequest discountRequest){
         Discount discount = discountService.updateDiscount(discountRequest);
         if(discount != null){
             return ResponseEntity.ok(discount);
@@ -60,13 +81,5 @@ public class DiscountAPI {
         }
     }
 
-//    @PostMapping("/api/add-product-to-discount")
-//    public ResponseEntity<String> addProductToDiscount(@RequestBody List<String> barcodes,@PathVariable Long disID){
-//        try {
-//            discountService.addProductsToDiscount(disID, barcodes);
-//            return ResponseEntity.ok("Successfull");
-//        }catch (RuntimeException e){
-//            return ResponseEntity.badRequest().body(e.getMessage());
-//        }
-//    }
+
 }

@@ -3,6 +3,7 @@ package online.gemfpt.BE.model;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import online.gemfpt.BE.enums.TypeEnum;
 
 import java.util.List;
 
@@ -13,7 +14,7 @@ public class ProductsRequest {
 
     private String descriptions;
 
-    private String category;
+    private TypeEnum category;
 
     @Min(0)
     private double priceRate;

@@ -4,12 +4,9 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
-public class DiscountRequest {
-    @NotNull
-    private long disID;
+public class DiscountCreateRequest {
 
     @NotBlank
     private String programName;
@@ -19,16 +16,7 @@ public class DiscountRequest {
     private double discountRate;
 
     @NotBlank
-    String description;
-
-    @NotBlank
-    private String applicableProducts;
-
-    @NotBlank
-    private String pointsCondition;
+    private String description;
 
     private LocalDateTime endTime;
-
-    @NotEmpty
-    private List<String> barcode;
 }

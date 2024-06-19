@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
+import online.gemfpt.BE.enums.TypeEnum;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,7 +27,8 @@ public class Product {
     private LocalDateTime updateTime;
 
     private String descriptions;
-    private String category;
+
+    private TypeEnum category;
 
     @Min(0)
     private double price;
