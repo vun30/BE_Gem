@@ -39,6 +39,21 @@ public class AuthenticationAPI {
         authenticationService.ResetPassword(resetwordRequest);
     }
 
+      @DeleteMapping("/delete_account/{email}")
+    public ResponseEntity<Account> deleteAccountByEmail(@PathVariable String email) {
+        // Lấy thông tin người dùng hiện tại từ context
+        Account currentAccount = authenticationService.getCurrentAccount();
+
+        // Kiểm tra xem người dùng hiện tại có vai trò là ADMIN hay không
+        if (currentAccount.getRole() != RoleEnum.ADMIN) {
+            // Nếu không phải ADMIN, trả về lỗi hoặc xử lý phù hợp
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        // Tiếp tục xử lý chỉ khi người dùng có vai trò ADMIN
+        Account account = authenticationService.deleteAccountByEmail(email);
+        return ResponseEntity.ok(account);
+    }
     @PutMapping("/admin_edit_account/{email}")
     public ResponseEntity<Account> editAccountByEmail(@PathVariable String email, @RequestBody EditAccountRequest editAccountRequest) {
         // Lấy thông tin người dùng hiện tại từ context
@@ -54,7 +69,6 @@ public class AuthenticationAPI {
         Account account = authenticationService.editAccountByEmail(email, editAccountRequest);
         return ResponseEntity.ok(account);
     }
-
      @PutMapping("/staff_edit_account/{email}")
     public ResponseEntity<Account> staffEditAccountByEmail(@PathVariable String email, @RequestBody StaffEditAccountRequest staffEditAccountRequest) {
            if (!authenticationService.isCurrentAccount(email)) {
@@ -66,7 +80,6 @@ public class AuthenticationAPI {
     }
 
     @GetMapping("/admin_only")
-    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity getAdmin(){return  ResponseEntity.ok("ok");}
 
     @PostMapping("/register")
@@ -96,12 +109,12 @@ public class AuthenticationAPI {
         List<Account> account = authenticationService.all();
         return  ResponseEntity.ok(account);
     }
+
+
     @PostMapping("/login")
     public ResponseEntity login (@RequestBody LoginRequest loginRequest){
 
         Account account = authenticationService.login(loginRequest);
         return ResponseEntity.ok(account);
     }
-
-
 }

@@ -78,32 +78,32 @@ public class MetalPriceService {
         }
     }
 
-    public MetalPrice updateMetalPrice(String metalType, MetalPriceRequest metalPriceRequest) {
-        TypeOfMetal typeOfMetal = typeOfMetalRepository.findByMetalType(metalType)
-                .orElseThrow(() -> new EntityNotFoundException("Type of metal not found with metalType: " + metalType));
-
-        MetalPrice metalPrice = typeOfMetal.getMetalPrice();
-        if (metalPrice == null) {
-            throw new EntityNotFoundException("Metal price not found for metal type: " + metalType);
-        }
-
-        metalPrice.setUpdateDate(LocalDateTime.now());
-        metalPrice.setStatus(true);
-
-        List<TypeOfMetal> updatedTypeOfMetals = new ArrayList<>();
-        for (TypeOfMetalRequest typeOfMetalRequest : metalPriceRequest.getTypeOfMetals()) {
-            TypeOfMetal updatedTypeOfMetal = new TypeOfMetal();
-            updatedTypeOfMetal.setMetalType(typeOfMetalRequest.getMetalType());
-            updatedTypeOfMetal.setSellPrice(typeOfMetalRequest.getSellPrice());
-            updatedTypeOfMetal.setBuyPrice(typeOfMetalRequest.getBuyPrice());
-            updatedTypeOfMetal.setMetalPrice(metalPrice);
-            updatedTypeOfMetals.add(updatedTypeOfMetal);
-        }
-
-        metalPrice.setTypeOfMetals(updatedTypeOfMetals);
-
-        return metalPriceRepository.save(metalPrice);
-    }
+//    public MetalPrice updateMetalPrice(String metalType, MetalPriceRequest metalPriceRequest) {
+//        TypeOfMetal typeOfMetal = typeOfMetalRepository.findByMetalType(metalType)
+//                .orElseThrow(() -> new EntityNotFoundException("Type of metal not found with metalType: " + metalType));
+//
+//        MetalPrice metalPrice = typeOfMetal.getMetalPrice();
+//        if (metalPrice == null) {
+//            throw new EntityNotFoundException("Metal price not found for metal type: " + metalType);
+//        }
+//
+//        metalPrice.setUpdateDate(LocalDateTime.now());
+//        metalPrice.setStatus(true);
+//
+//        List<TypeOfMetal> updatedTypeOfMetals = new ArrayList<>();
+//        for (TypeOfMetalRequest typeOfMetalRequest : metalPriceRequest.getTypeOfMetals()) {
+//            TypeOfMetal updatedTypeOfMetal = new TypeOfMetal();
+//            updatedTypeOfMetal.setMetalType(typeOfMetalRequest.getMetalType());
+//            updatedTypeOfMetal.setSellPrice(typeOfMetalRequest.getSellPrice());
+//            updatedTypeOfMetal.setBuyPrice(typeOfMetalRequest.getBuyPrice());
+//            updatedTypeOfMetal.setMetalPrice(metalPrice);
+//            updatedTypeOfMetals.add(updatedTypeOfMetal);
+//        }
+//
+//        metalPrice.setTypeOfMetals(updatedTypeOfMetals);
+//
+//        return metalPriceRepository.save(metalPrice);
+//    }
 
 
     public List<MetalPrice> getAllMetalPrices() {
