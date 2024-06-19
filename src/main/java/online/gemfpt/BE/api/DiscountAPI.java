@@ -42,12 +42,12 @@ public class DiscountAPI {
     }
 
     @PostMapping("/all-products")
-    public ResponseEntity<String> createDiscountForAllProducts(@RequestBody DiscountCreateRequest discountRequest) {
+    public ResponseEntity<Discount> createDiscountForAllProducts(@RequestBody DiscountCreateRequest discountRequest) {
         try {
             Discount discount = discountService.createDiscountForAllProducts(discountRequest);
-            return ResponseEntity.ok("Discount applied to all products successfully.");
+            return ResponseEntity.ok(discount);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(null);
         }
     }
 
