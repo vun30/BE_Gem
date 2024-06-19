@@ -22,6 +22,8 @@ public interface ProductsRepository extends JpaRepository<Product,Long> {
 
     List<Product> findByStatus(boolean status);
 
+     List<Product> findByCategory(TypeEnum category);
+
 
 }
 
