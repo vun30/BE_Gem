@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 @SpringBootApplication
 @Service
@@ -46,10 +47,11 @@ public class ProductServices {
 
 public Product creates(ProductsRequest productsRequest) {
     // Kiểm tra xem sản phẩm có tồn tại không
-//    Optional<Product> existProduct = productsRepository.findByBarcode(productsRequest.getBarcode());
-//    if (existProduct.isPresent()) {
-//        throw new IllegalArgumentException("Barcode already exists!");
-//    }
+    Optional<Product> existProduct = productsRepository.findByBarcodeAndStatus(productsRequest.getBarcode(),true);
+    if (existProduct.isPresent()) {
+        throw new IllegalArgumentException("Barcode already exists!");
+    }
+
 
     // Tạo mới một sản phẩm
     Product product = new Product();
@@ -157,7 +159,7 @@ public Product creates(ProductsRequest productsRequest) {
 
 
  public Product getProductByBarcode(String barcode) {
-    Optional<Product> optionalProduct = productsRepository.findByBarcode(barcode);
+    Optional<Product> optionalProduct = productsRepository.findByBarcodeAndStatus(barcode,true);
     if (!optionalProduct.isPresent()) {
         throw new ProductNotFoundException("Product not found with barcode: " + barcode);
     }
@@ -196,7 +198,7 @@ public Product creates(ProductsRequest productsRequest) {
 
  public Product updateAndCreateNewProduct(String barcode, ProductsRequest productsRequest) {
     // Tìm kiếm sản phẩm theo barcode
-    Optional<Product> existingProductOptional = productsRepository.findByBarcode(barcode);
+    Optional<Product> existingProductOptional = productsRepository.findByBarcodeAndStatus(barcode,true);
     if (!existingProductOptional.isPresent()) {
         throw new EntityNotFoundException("Product not found with barcode: " + barcode);
     }
@@ -208,17 +210,27 @@ public Product creates(ProductsRequest productsRequest) {
     existingProduct.setUpdateTime(LocalDateTime.now());
     productsRepository.save(existingProduct);
 
+    // Lấy barcode hiện tại của existingProduct
+    String currentBarcode = existingProduct.getBarcode();
+
+    // Kiểm tra nếu có dấu '|' trong barcode thì chỉ lấy phần sau dấu '|'
+    int indexOfPipe = currentBarcode.indexOf("|");
+    if (indexOfPipe != -1) {
+        currentBarcode = currentBarcode.substring(indexOfPipe + 1);
+    }
+
     // Tạo sản phẩm mới với thông tin từ request
     Product newProduct = new Product();
-    newProduct.setProductId(existingProduct.getProductId());
-    newProduct.setName(productsRequest.getName());
+
+    newProduct.setName( productsRequest.getName());
     newProduct.setDescriptions(productsRequest.getDescriptions());
     newProduct.setCategory(productsRequest.getCategory());
     newProduct.setPriceRate(productsRequest.getPriceRate());
     newProduct.setStock(1);
     newProduct.setUpdateTime(LocalDateTime.now());
     newProduct.setStatus(true);
-    newProduct.setBarcode(productsRequest.getBarcode()); // Set barcode cho sản phẩm mới
+    newProduct.setOldID(String.valueOf(existingProduct.getProductId()));
+     newProduct.setBarcode(generateUniqueBarcode(currentBarcode) +"|"+ existingProduct.getBarcode()); // Set barcode cho sản phẩm mới
 
     // Set URLs
     if (productsRequest.getUrls() != null) {
@@ -297,13 +309,41 @@ public Product creates(ProductsRequest productsRequest) {
 }
 
 
+// hàm tà đạo
+private String generateUniqueBarcode(String existingBarcode) {
+        // Example: Add a prefix "UP:" followed by a unique string to mark an update
+        String prefix = "UP:";
+        String uniqueString = UUID .randomUUID().toString().replace("-", "");
+        return prefix + uniqueString;
+    }
 
 
+////////////------------------------------------------------------------------------/////////////////////
+    // bộ lọc tìm kiếm cho fe
 
+  public List<Product> findProductsInPriceRangeAndStatus(double minPrice, double maxPrice) {
+        return productsRepository.findByPriceBetweenAndStatus(minPrice, maxPrice,true);
+    }
 
+ public List<Product> getAllProductsTrue() {
+        List<Product> productList = productsRepository.findByStatus(true);
 
+        if (productList.isEmpty()) {
+        throw new ProductNotFoundException("No products found!");
+    }
+        for (Product product : productList){
+            double newPrice = product.getPrice();
+            List<Discount> discountList = new ArrayList<>();
+            for (DiscountProduct discountProduct : product.getDiscountProducts()){
+                discountList.add(discountProduct.getDiscount());
+            }
 
+            for (Discount discount : discountList) {
+                double discountRate = discount.getDiscountRate() / 100;
+                newPrice = newPrice - (product.getPrice() * discountRate);
+            }
+            product.setNewPrice(newPrice);
+        }
+        return productList;
+    }
 }
-
-
-

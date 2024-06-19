@@ -30,6 +30,8 @@ public class Product {
 
     private TypeEnum category;
 
+    private String oldID;
+
     @Min(0)
     private double price;
 
