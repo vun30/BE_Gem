@@ -19,6 +19,8 @@ public class ProductsRequest {
 
     private String category;
 
+    private String oldID;
+
     @Min(0)
     private double priceRate;
 

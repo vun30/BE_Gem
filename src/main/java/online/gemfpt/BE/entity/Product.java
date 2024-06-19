@@ -28,6 +28,8 @@ public class Product {
     private String descriptions;
     private String category;
 
+    private String oldID;
+
     @Min(0)
     private double price;
 
