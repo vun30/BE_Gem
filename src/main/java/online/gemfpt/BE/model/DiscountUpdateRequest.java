@@ -2,17 +2,12 @@ package online.gemfpt.BE.model;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import online.gemfpt.BE.enums.TypeEnum;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
-@Getter
-@Setter
 @Data
-
-public class DiscountRequest {
+public class DiscountUpdateRequest {
     @NotNull
     private long disID;
 
@@ -24,7 +19,9 @@ public class DiscountRequest {
     private double discountRate;
 
     @NotBlank
-    String description;
+    private String description;
+
+    private TypeEnum category;
 
     @NotBlank
     private String applicableProducts;
@@ -33,7 +30,4 @@ public class DiscountRequest {
     private String pointsCondition;
 
     private LocalDateTime endTime;
-
-    @NotEmpty
-    private List<String> barcode;
 }

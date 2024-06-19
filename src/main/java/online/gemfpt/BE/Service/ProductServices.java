@@ -46,10 +46,10 @@ public class ProductServices {
 
 public Product creates(ProductsRequest productsRequest) {
     // Kiểm tra xem sản phẩm có tồn tại không
-    Optional<Product> existProduct = productsRepository.findByBarcode(productsRequest.getBarcode());
-    if (existProduct.isPresent()) {
-        throw new IllegalArgumentException("Barcode already exists!");
-    }
+//    Optional<Product> existProduct = productsRepository.findByBarcode(productsRequest.getBarcode());
+//    if (existProduct.isPresent()) {
+//        throw new IllegalArgumentException("Barcode already exists!");
+//    }
 
     // Tạo mới một sản phẩm
     Product product = new Product();
