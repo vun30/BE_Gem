@@ -7,4 +7,6 @@ import java.util.Optional;
 
 public interface ProductsRepository extends JpaRepository<Product,Long> {
     Optional<Product> findByBarcode(String barcode);
+
+     Optional<Product> findByBarcodeAndStatus(String barcode , boolean status);
 }

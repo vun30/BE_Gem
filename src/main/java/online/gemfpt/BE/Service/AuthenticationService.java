@@ -59,6 +59,7 @@ public class AuthenticationService implements UserDetailsService {
         account.setPhone(registerRequest.getPhone());
         account.setCreateDateNow(account.getCreateDate());
         account.setRole(RoleEnum.STAFF);
+        account.setStatus(false);
         account.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
 
         //xử lý logic register
@@ -157,6 +158,15 @@ public Account staffEditAccountByEmail(String email, StaffEditAccountRequest sta
     @Override
     public UserDetails loadUserByUsername(String phone) throws UsernameNotFoundException {
         return authenticationRepository.findAccountByPhone(phone) ;
+    }
+
+    public Account deleteAccountByEmail(String email) {
+        Account account = authenticationRepository.findAccountByEmail(email);
+        if (account == null) {
+            throw new AccountNotFoundException("Account not found with email: " + email);
+        }
+        account.setStatus(false);
+        return authenticationRepository.save(account);
     }
 
 //    public AccountResponse loginGoogle (LoginGoogleRequest loginGoogleRequest){

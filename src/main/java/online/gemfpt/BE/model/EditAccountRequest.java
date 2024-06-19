@@ -10,7 +10,6 @@ public class EditAccountRequest {
     private String description;
     private boolean status;
     @Column(unique = true)
-    private String email;
     private RoleEnum role;
     private String name;
 }
