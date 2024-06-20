@@ -1,14 +1,8 @@
 package online.gemfpt.BE.Service;
 
 import jakarta.transaction.Transactional;
-import online.gemfpt.BE.Repository.BillRepository;
-import online.gemfpt.BE.Repository.BillItemRepository;
-import online.gemfpt.BE.Repository.CustomerRepository;
-import online.gemfpt.BE.Repository.ProductsRepository;
-import online.gemfpt.BE.entity.Bill;
-import online.gemfpt.BE.entity.BillItem;
-import online.gemfpt.BE.entity.Customer;
-import online.gemfpt.BE.entity.Product;
+import online.gemfpt.BE.Repository.*;
+import online.gemfpt.BE.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +25,8 @@ public class BillService {
     @Autowired
     CustomerRepository customerRepository;
 
+    @Autowired
+    DiscountProductRepository discountProductRepository;
     @Transactional
     public void addToCart(String name, int phone, List<String> barcodes) {
         Optional<Customer> optionalCustomer = customerRepository.findByPhone(phone);
@@ -66,13 +62,31 @@ public class BillService {
                 throw new IllegalArgumentException("Invalid product barcode: " + barcode);
             }
 
+        List<DiscountProduct> discountProduct = discountProductRepository.findByProductAndIsActive(product, true);
+            double discount = 0;
+            if(!discountProduct.isEmpty()){
+                discount = discountProduct.get(0).getDiscountValue();
+            }
+
+            double discountedPrice = product.getPrice() - (product.getPrice() * discount / 100);
+            product.setNewPrice(discountedPrice);
+
+            int newQuantity = product.getStock() - 1;
+            if (newQuantity < 0) {
+                throw new IllegalArgumentException("Not enough stock for product: " + barcode);
+            }
             BillItem billItem = new BillItem();
             billItem.setBill(bill);
             billItem.setProduct_barcode(product.getBarcode());
             billItem.setQuantity(1); // Giả định số lượng là 1 để đơn giản hóa
             billItem.setPrice(product.getPrice());
+            billItem.setDiscount(discount);
+            billItem.setNewPrice(product.getNewPrice());
+            product.setStock(newQuantity);
             totalAmount += product.getPrice();
             bill.getItems().add(billItem);
+
+            productsRepository.save(product);
         }
 
         double customer_point = totalAmount / 1000;
