@@ -62,9 +62,8 @@ public class DiscountAPI {
     }
 
     @GetMapping("/api/discount")
-    public ResponseEntity<List<Discount>> getAllDiscounts(){
-        List<Discount> discounts = discountService.getAllDiscount();
-        return ResponseEntity.ok(discounts);
+    public List<Discount> getAllDiscounts(){
+        return discountService.getAllDiscount();
     }
 
     @DeleteMapping("/api/discount/{disID}")

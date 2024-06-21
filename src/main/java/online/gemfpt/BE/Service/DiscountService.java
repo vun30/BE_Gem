@@ -34,7 +34,12 @@ public class DiscountService {
     private DiscountProductRepository discountProductRepository;
 
     public List<Discount> getAllDiscount(){
-        return discountRepository.findAll();
+        List<Discount> discounts = discountRepository.findAll();
+        for(Discount discount : discounts){
+            List<DiscountProduct> discountProducts = discountProductRepository.findByDiscount(discount);
+            discount.setDiscountProducts(discountProducts);
+        }
+        return discounts;
     }
 
     public Discount findDiscountByID(Long disID){
@@ -155,6 +160,12 @@ public class DiscountService {
     public Discount discountStatus(Long disID){
         Discount discount = discountRepository.findById(disID).orElseThrow(() -> new EntityNotFoundException("Discount not found"));
         discount.setStatus(!discount.isStatus());
+
+        List<DiscountProduct> discountProducts = discountProductRepository.findByDiscount(discount);
+        for(DiscountProduct discountProduct : discountProducts){
+            discountProduct.setActive(discount.isStatus());
+            discountProductRepository.save(discountProduct);
+        }
         return discountRepository.save(discount);
     }
 
