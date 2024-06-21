@@ -16,6 +16,7 @@ public class BillItem {
     private int quantity;
     private double price;
     private double discount;
+
     private double newPrice;
 
     @JsonIgnore

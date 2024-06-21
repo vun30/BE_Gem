@@ -47,7 +47,7 @@ public class Product {
     private String barcode;
 
     @Transient
-    private double newPrice;
+    private Double newPrice;
 
     private boolean status;
 

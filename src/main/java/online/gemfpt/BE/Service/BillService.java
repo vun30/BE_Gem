@@ -3,6 +3,7 @@ package online.gemfpt.BE.Service;
 import jakarta.transaction.Transactional;
 import online.gemfpt.BE.Repository.*;
 import online.gemfpt.BE.entity.*;
+import online.gemfpt.BE.exception.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +27,11 @@ public class BillService {
     CustomerRepository customerRepository;
 
     @Autowired
+    AuthenticationService authenticationService;
+
+    @Autowired
     DiscountProductRepository discountProductRepository;
+
     @Transactional
     public void addToCart(String name, int phone, List<String> barcodes) {
         Optional<Customer> optionalCustomer = customerRepository.findByPhone(phone);
@@ -41,9 +46,12 @@ public class BillService {
             customer = customerRepository.save(customer);
         }
 
+        Account account = authenticationService.getCurrentAccount();
+
         Bill bill = new Bill();
         bill.setCustomerName(name);
         bill.setCustomerPhone(phone);
+        bill.setCashier(account.getName());
         bill.setCreateTime(LocalDateTime.now());
         bill.setStatus(true);
         // Khởi tạo danh sách items nếu chưa được khởi tạo
@@ -53,16 +61,27 @@ public class BillService {
 
         double totalAmount = 0;
 
-        for (String barcode : barcodes) {
-            Optional<Product> optionalProduct = productsRepository.findByBarcode(barcode);
-            Product product;
-            if (optionalProduct.isPresent()) {
-                product = optionalProduct.get();
-            } else {
-                throw new IllegalArgumentException("Invalid product barcode: " + barcode);
-            }
+        List<Product> products = productsRepository.findByBarcodeIn(barcodes);
 
-        List<DiscountProduct> discountProduct = discountProductRepository.findByProductAndIsActive(product, true);
+        List<String> productExist = new ArrayList<>();
+        for (String barcode : barcodes){
+            Optional<Product> product = productsRepository.findByBarcode(barcode);
+            if (product.isPresent()) {
+                if (product.get().getStock() <= 0) {
+                    throw new BadRequestException("Out of stock of: " + product.get().getBarcode());
+                }
+            } else {
+                productExist.add(barcode);
+            }
+        }
+
+        if (!productExist.isEmpty()){
+            throw new BadRequestException("Barcode " + productExist.toString() + " don't exist");
+        }
+
+        for (Product product : products) {
+
+            List<DiscountProduct> discountProduct = discountProductRepository.findByProductAndIsActive(product, true);
             double discount = 0;
             if(!discountProduct.isEmpty()){
                 discount = discountProduct.get(0).getDiscountValue();
@@ -71,9 +90,11 @@ public class BillService {
             double discountedPrice = product.getPrice() - (product.getPrice() * discount / 100);
             product.setNewPrice(discountedPrice);
 
+            double totalPrice = product.getNewPrice() != null ? product.getNewPrice() : product.getPrice();
+
             int newQuantity = product.getStock() - 1;
             if (newQuantity < 0) {
-                throw new IllegalArgumentException("Not enough stock for product: " + barcode);
+                throw new BadRequestException("Not enough stock for product: " + product.getBarcode());
             }
             BillItem billItem = new BillItem();
             billItem.setBill(bill);
@@ -81,7 +102,7 @@ public class BillService {
             billItem.setQuantity(1); // Giả định số lượng là 1 để đơn giản hóa
             billItem.setPrice(product.getPrice());
             billItem.setDiscount(discount);
-            billItem.setNewPrice(product.getNewPrice());
+            billItem.setNewPrice(totalPrice);
             product.setStock(newQuantity);
             totalAmount += product.getPrice();
             bill.getItems().add(billItem);

@@ -24,6 +24,7 @@ public interface ProductsRepository extends JpaRepository<Product,Long> {
 
      List<Product> findByCategory(TypeEnum category);
 
+    List<Product> findByBarcodeIn(List<String> barcodes);
 
 }
 

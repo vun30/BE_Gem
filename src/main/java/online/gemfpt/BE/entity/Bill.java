@@ -24,6 +24,7 @@ public class Bill {
     private String voucher;
     private LocalDateTime createTime;
     private boolean status;
+    private String cashier;
 
 
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true)

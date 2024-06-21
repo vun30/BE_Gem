@@ -8,6 +8,7 @@ import online.gemfpt.BE.entity.Discount;
 import online.gemfpt.BE.entity.DiscountProduct;
 import online.gemfpt.BE.entity.Product;
 import online.gemfpt.BE.enums.TypeEnum;
+import online.gemfpt.BE.exception.BadRequestException;
 import online.gemfpt.BE.model.DiscountUpdateRequest;
 import online.gemfpt.BE.model.DiscountCreateRequest;
 import online.gemfpt.BE.model.DiscountRequestForBarcode;
@@ -46,7 +47,7 @@ public class DiscountService {
         for (String barcode : discountRequest.getBarcode()) {
             Optional<Product> product = productRepository.findByBarcode(barcode);
             if (product.isEmpty()) {
-                throw new IllegalArgumentException("Barcode don't exists!");
+                throw new BadRequestException("Barcode don't exists!");
             }
             productList.add(product.get());
         }
@@ -78,7 +79,7 @@ public class DiscountService {
     public Discount createDiscountForCategory(DiscountCreateRequest discountRequest, TypeEnum category){
         List<Product> productList = productRepository.findByCategory(category);
         if (productList.isEmpty()) {
-            throw new IllegalArgumentException("No products found in the specified category.");
+            throw new BadRequestException("No products found in the specified category.");
         }
 
         Discount discount = new Discount();
@@ -109,7 +110,7 @@ public class DiscountService {
     public Discount createDiscountForAllProducts(DiscountCreateRequest discountRequest){
         List<Product> productList = productRepository.findAll();
         if (productList.isEmpty()) {
-            throw new IllegalArgumentException("No products found in the inventory.");
+            throw new BadRequestException("No products found in the inventory.");
         }
 
         Discount discount = new Discount();
