@@ -2,7 +2,6 @@ package online.gemfpt.BE.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
@@ -47,7 +46,7 @@ public class Product {
     private String barcode;
 
     @Transient
-    private double newPrice;
+    private Double newPrice;
 
     private boolean status;
 
@@ -62,5 +61,5 @@ public class Product {
 
     @JsonIgnore
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    private List<DiscountProduct> discountProducts;
+    private List<PromotionProduct> promotionProducts;
 }

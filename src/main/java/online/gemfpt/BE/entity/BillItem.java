@@ -13,6 +13,12 @@ public class BillItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    private int quantity;
+    private double price;
+    private double discount;
+
+    private double newPrice;
+
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "bill_id")
@@ -22,6 +28,5 @@ public class BillItem {
 //    @JoinColumn(name = "product_barcode")
     private String product_barcode;
 
-    private int quantity;
-    private double price;
+
 }

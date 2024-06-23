@@ -3,7 +3,10 @@ package online.gemfpt.BE.api;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import online.gemfpt.BE.Service.BillService;
 import online.gemfpt.BE.entity.Bill;
+import online.gemfpt.BE.entity.Discount;
+import online.gemfpt.BE.exception.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,8 +20,13 @@ public class BillAPI {
     BillService billService;
 
     @PostMapping("/api/bill")
-    public void addProductToCart(@RequestParam String customerName, @RequestParam int customerPhone, @RequestParam List<String> barcode) {
-        billService.addToCart(customerName, customerPhone, barcode);
+    public ResponseEntity<?> addProductToCart(@RequestParam String customerName, @RequestParam int customerPhone, @RequestParam List<String> barcode) {
+        try {
+           Bill bill = billService.addToCart(customerName, customerPhone, barcode);
+            return ResponseEntity.status(HttpStatus.CREATED).body(bill);
+        } catch (BadRequestException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     @GetMapping("/api/bill/{billId}")
@@ -33,7 +41,7 @@ public class BillAPI {
 
     @GetMapping("/api/bill/{customerPhone}")
     public ResponseEntity<List<Bill>> getBillsByCustomerPhone(@PathVariable int customerPhone) {
-        List<Bill> bills = billService.getAllBillOfCustumer(customerPhone);
+        List<Bill> bills = billService.getAllBillOfCustomer(customerPhone);
         return ResponseEntity.ok(bills);
     }
 
@@ -45,5 +53,11 @@ public class BillAPI {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    @PostMapping("/api/bill/{billId}/request")
+    public ResponseEntity<Discount> requestDiscount(@PathVariable long billId, @RequestParam double discount, @RequestParam String reason) {
+        Discount discountRequest = billService.requestDiscount(billId, discount, reason);
+        return ResponseEntity.ok(discountRequest);
     }
 }

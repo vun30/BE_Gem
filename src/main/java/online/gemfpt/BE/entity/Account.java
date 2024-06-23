@@ -1,5 +1,6 @@
 package online.gemfpt.BE.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
@@ -35,6 +36,11 @@ public class Account implements UserDetails {
     RoleEnum role ;
     String name;
     LocalDateTime createDate;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "manager",fetch = FetchType.EAGER)
+    private List<Discount> discountRequests;
+
 
     public void setCreateDateNow(LocalDateTime createDate) {
         this.createDate = LocalDateTime.now();

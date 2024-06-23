@@ -1,17 +1,16 @@
 package online.gemfpt.BE.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
 @Entity
 @Getter
 @Setter
-public class DiscountProduct {
+public class PromotionProduct {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -22,14 +21,12 @@ public class DiscountProduct {
 
     private boolean isActive;
 
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "barcode", referencedColumnName = "barcode", nullable = false)
     private Product product;
 
-    @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "discount_id", nullable = false)
-    private Discount discount;
-
+    @JoinColumn(name = "promotion_id", nullable = false)
+    @JsonBackReference
+    private Promotion promotion;
 }

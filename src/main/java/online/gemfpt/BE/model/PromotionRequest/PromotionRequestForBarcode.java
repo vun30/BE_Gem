@@ -1,4 +1,4 @@
-package online.gemfpt.BE.model;
+package online.gemfpt.BE.model.PromotionRequest;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -11,7 +11,7 @@ import java.util.List;
 @Getter
 @Setter
 @Data
-public class DiscountRequestForBarcode {
+public class PromotionRequestForBarcode {
     @NotBlank
     private String programName;
 

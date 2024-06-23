@@ -1,12 +1,9 @@
 package online.gemfpt.BE.Service;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import online.gemfpt.BE.Repository.*;
 import online.gemfpt.BE.entity.*;
 import online.gemfpt.BE.exception.ProductNotFoundException;
-import online.gemfpt.BE.model.GemstoneRequest;
-import online.gemfpt.BE.model.MetalRequest;
 import online.gemfpt.BE.model.ProductUrlRequest;
 import online.gemfpt.BE.model.ProductsRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -182,13 +179,13 @@ public Product creates(ProductsRequest productsRequest) {
     }
         for (Product product : productList){
             double newPrice = product.getPrice();
-            List<Discount> discountList = new ArrayList<>();
-            for (DiscountProduct discountProduct : product.getDiscountProducts()){
-                discountList.add(discountProduct.getDiscount());
+            List<Promotion> promotionList = new ArrayList<>();
+            for (PromotionProduct promotionProduct : product.getPromotionProducts()){
+                promotionList.add(promotionProduct.getPromotion());
             }
 
-            for (Discount discount : discountList) {
-                double discountRate = discount.getDiscountRate() / 100;
+            for (Promotion promotion : promotionList) {
+                double discountRate = promotion.getDiscountRate() / 100;
                 newPrice = newPrice - (product.getPrice() * discountRate);
             }
             product.setNewPrice(newPrice);
@@ -333,13 +330,13 @@ private String generateUniqueBarcode(String existingBarcode) {
     }
         for (Product product : productList){
             double newPrice = product.getPrice();
-            List<Discount> discountList = new ArrayList<>();
-            for (DiscountProduct discountProduct : product.getDiscountProducts()){
-                discountList.add(discountProduct.getDiscount());
+            List<Promotion> promotionList = new ArrayList<>();
+            for (PromotionProduct promotionProduct : product.getPromotionProducts()){
+                promotionList.add(promotionProduct.getPromotion());
             }
 
-            for (Discount discount : discountList) {
-                double discountRate = discount.getDiscountRate() / 100;
+            for (Promotion promotion : promotionList) {
+                double discountRate = promotion.getDiscountRate() / 100;
                 newPrice = newPrice - (product.getPrice() * discountRate);
             }
             product.setNewPrice(newPrice);

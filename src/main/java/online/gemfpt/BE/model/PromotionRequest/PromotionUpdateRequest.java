@@ -1,4 +1,4 @@
-package online.gemfpt.BE.model;
+package online.gemfpt.BE.model.PromotionRequest;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -7,7 +7,7 @@ import online.gemfpt.BE.enums.TypeEnum;
 import java.time.LocalDateTime;
 
 @Data
-public class DiscountUpdateRequest {
+public class PromotionUpdateRequest {
     @NotNull
     private long disID;
 
