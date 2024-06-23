@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -32,8 +33,11 @@ public class BillService {
     @Autowired
     DiscountProductRepository discountProductRepository;
 
+    @Autowired
+    WarrantyCardRepository warrantyCardRepository;
+
     @Transactional
-    public void addToCart(String name, int phone, List<String> barcodes) {
+    public Bill addToCart(String name, int phone, List<String> barcodes) {
         Optional<Customer> optionalCustomer = customerRepository.findByPhone(phone);
         Customer customer;
         if (optionalCustomer.isPresent()) {
@@ -79,6 +83,8 @@ public class BillService {
             throw new BadRequestException("Barcode " + productExist.toString() + " don't exist");
         }
 
+        bill = billRepository.save(bill);
+
         for (Product product : products) {
 
             List<DiscountProduct> discountProduct = discountProductRepository.findByProductAndIsActive(product, true);
@@ -107,6 +113,15 @@ public class BillService {
             totalAmount += product.getPrice();
             bill.getItems().add(billItem);
 
+            WarrantyCard warrantyCard = new WarrantyCard();
+            warrantyCard.setCustomerName(customer.getName());
+            warrantyCard.setCustomerPhone(customer.getPhone());
+            warrantyCard.setProductBarcode(product.getBarcode());
+            warrantyCard.setPurchaseDate(LocalDateTime.now());
+            warrantyCard.setBill(bill);
+            warrantyCard.setWarrantyExpiryDate(LocalDateTime.now().plus(1, ChronoUnit.YEARS)); // Thời hạn bảo hành 1 năm
+
+            warrantyCardRepository.save(warrantyCard);
             productsRepository.save(product);
         }
 
@@ -114,7 +129,10 @@ public class BillService {
         customer.setPoints(customer.getPoints() + customer_point);
 
         bill.setTotalAmount(totalAmount);
-        billRepository.save(bill);
+        bill = billRepository.save(bill);
+
+
+        return bill;
     }
 
     public Bill getBillDetails(long id) {
@@ -126,7 +144,7 @@ public class BillService {
         }
     }
 
-    public List<Bill> getAllBillOfCustumer(int customerPhone){
+    public List<Bill> getAllBillOfCustomer(int customerPhone){
         return billRepository.findByCustomerPhone(customerPhone);
     }
 

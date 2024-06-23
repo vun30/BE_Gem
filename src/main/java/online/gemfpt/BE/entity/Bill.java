@@ -26,7 +26,10 @@ public class Bill {
     private boolean status;
     private String cashier;
 
+    @OneToMany(mappedBy = "bill")
+    private List<WarrantyCard> warrantyCards;
 
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BillItem> items = new ArrayList<>();  // Khởi tạo danh sách
+
 }
