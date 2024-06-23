@@ -10,7 +10,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class DiscountProduct {
+public class PromotionProduct {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -26,7 +26,7 @@ public class DiscountProduct {
     private Product product;
 
     @ManyToOne
-    @JoinColumn(name = "discount_id", nullable = false)
+    @JoinColumn(name = "promotion_id", nullable = false)
     @JsonBackReference
-    private Discount discount;
+    private Promotion promotion;
 }

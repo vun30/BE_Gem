@@ -3,6 +3,7 @@ package online.gemfpt.BE.api;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import online.gemfpt.BE.Service.BillService;
 import online.gemfpt.BE.entity.Bill;
+import online.gemfpt.BE.entity.Discount;
 import online.gemfpt.BE.exception.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -52,5 +53,11 @@ public class BillAPI {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    @PostMapping("/api/bill/{billId}/request")
+    public ResponseEntity<Discount> requestDiscount(@PathVariable long billId, @RequestParam double discount, @RequestParam String reason) {
+        Discount discountRequest = billService.requestDiscount(billId, discount, reason);
+        return ResponseEntity.ok(discountRequest);
     }
 }

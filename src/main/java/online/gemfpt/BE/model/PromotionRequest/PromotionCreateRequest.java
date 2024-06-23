@@ -1,4 +1,4 @@
-package online.gemfpt.BE.model;
+package online.gemfpt.BE.model.PromotionRequest;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -6,7 +6,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class DiscountCreateRequest {
+public class PromotionCreateRequest {
 
     @NotBlank
     private String programName;

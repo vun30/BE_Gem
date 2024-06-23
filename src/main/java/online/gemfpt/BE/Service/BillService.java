@@ -31,11 +31,13 @@ public class BillService {
     AuthenticationService authenticationService;
 
     @Autowired
-    DiscountProductRepository discountProductRepository;
+    PromotionProductRepository promotionProductRepository;
 
     @Autowired
     WarrantyCardRepository warrantyCardRepository;
 
+    @Autowired
+    DiscountRepository discountRepository;
     @Transactional
     public Bill addToCart(String name, int phone, List<String> barcodes) {
         Optional<Customer> optionalCustomer = customerRepository.findByPhone(phone);
@@ -87,10 +89,10 @@ public class BillService {
 
         for (Product product : products) {
 
-            List<DiscountProduct> discountProduct = discountProductRepository.findByProductAndIsActive(product, true);
+            List<PromotionProduct> promotionProduct = promotionProductRepository.findByProductAndIsActive(product, true);
             double discount = 0;
-            if(!discountProduct.isEmpty()){
-                discount = discountProduct.get(0).getDiscountValue();
+            if(!promotionProduct.isEmpty()){
+                discount = promotionProduct.get(0).getDiscountValue();
             }
 
             double discountedPrice = product.getPrice() - (product.getPrice() * discount / 100);
@@ -156,4 +158,23 @@ public class BillService {
             throw new IllegalArgumentException("Invalid bill ID :" + billId);
         }
     }
+
+    @Transactional
+    public Discount requestDiscount(long billId, double requestedDiscount, String discountReason) {
+        Optional<Bill> optionalBill = billRepository.findById(billId);
+        if (optionalBill.isPresent()) {
+            Bill bill = optionalBill.get();
+            Discount discountRequest = new Discount();
+            discountRequest.setRequestedDiscount(requestedDiscount);
+            discountRequest.setDiscountReason(discountReason);
+            discountRequest.setApproved(false);
+            discountRequest.setRequestTime(LocalDateTime.now());
+            discountRequest.setBill(bill);
+
+            return discountRepository.save(discountRequest);
+        } else {
+            throw new IllegalArgumentException("Invalid bill ID: " + billId);
+        }
+    }
+
 }
