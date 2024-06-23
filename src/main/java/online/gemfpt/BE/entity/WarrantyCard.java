@@ -5,28 +5,24 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
-public class BillItem {
+public class WarrantyCard {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    private int quantity;
-    private double price;
-    private double discount;
-
-    private double newPrice;
+    private String customerName;
+    private int customerPhone;
+    private String productBarcode;
+    private LocalDateTime purchaseDate;
+    private LocalDateTime warrantyExpiryDate;
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "bill_id")
+    @JoinColumn(name = "bill_id", nullable = false)
     private Bill bill;
-
-//    @ManyToOne
-//    @JoinColumn(name = "product_barcode")
-    private String product_barcode;
-
-
 }

@@ -1,14 +1,12 @@
 package online.gemfpt.BE.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import online.gemfpt.BE.enums.TypeEnum;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,7 +37,7 @@ public class Discount {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "discount", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "discount", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonManagedReference
     private List<DiscountProduct> discountProducts;
 }

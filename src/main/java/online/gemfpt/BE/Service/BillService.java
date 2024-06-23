@@ -1,18 +1,14 @@
 package online.gemfpt.BE.Service;
 
 import jakarta.transaction.Transactional;
-import online.gemfpt.BE.Repository.BillRepository;
-import online.gemfpt.BE.Repository.BillItemRepository;
-import online.gemfpt.BE.Repository.CustomerRepository;
-import online.gemfpt.BE.Repository.ProductsRepository;
-import online.gemfpt.BE.entity.Bill;
-import online.gemfpt.BE.entity.BillItem;
-import online.gemfpt.BE.entity.Customer;
-import online.gemfpt.BE.entity.Product;
+import online.gemfpt.BE.Repository.*;
+import online.gemfpt.BE.entity.*;
+import online.gemfpt.BE.exception.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -31,8 +27,17 @@ public class BillService {
     @Autowired
     CustomerRepository customerRepository;
 
+    @Autowired
+    AuthenticationService authenticationService;
+
+    @Autowired
+    DiscountProductRepository discountProductRepository;
+
+    @Autowired
+    WarrantyCardRepository warrantyCardRepository;
+
     @Transactional
-    public void addToCart(String name, int phone, List<String> barcodes) {
+    public Bill addToCart(String name, int phone, List<String> barcodes) {
         Optional<Customer> optionalCustomer = customerRepository.findByPhone(phone);
         Customer customer;
         if (optionalCustomer.isPresent()) {
@@ -45,9 +50,12 @@ public class BillService {
             customer = customerRepository.save(customer);
         }
 
+        Account account = authenticationService.getCurrentAccount();
+
         Bill bill = new Bill();
         bill.setCustomerName(name);
         bill.setCustomerPhone(phone);
+        bill.setCashier(account.getName());
         bill.setCreateTime(LocalDateTime.now());
         bill.setStatus(true);
         // Khởi tạo danh sách items nếu chưa được khởi tạo
@@ -57,29 +65,74 @@ public class BillService {
 
         double totalAmount = 0;
 
-        for (String barcode : barcodes) {
-            Optional<Product> optionalProduct = productsRepository.findByBarcode(barcode);
-            Product product;
-            if (optionalProduct.isPresent()) {
-                product = optionalProduct.get();
+        List<Product> products = productsRepository.findByBarcodeIn(barcodes);
+
+        List<String> productExist = new ArrayList<>();
+        for (String barcode : barcodes){
+            Optional<Product> product = productsRepository.findByBarcode(barcode);
+            if (product.isPresent()) {
+                if (product.get().getStock() <= 0) {
+                    throw new BadRequestException("Out of stock of: " + product.get().getBarcode());
+                }
             } else {
-                throw new IllegalArgumentException("Invalid product barcode: " + barcode);
+                productExist.add(barcode);
+            }
+        }
+
+        if (!productExist.isEmpty()){
+            throw new BadRequestException("Barcode " + productExist.toString() + " don't exist");
+        }
+
+        bill = billRepository.save(bill);
+
+        for (Product product : products) {
+
+            List<DiscountProduct> discountProduct = discountProductRepository.findByProductAndIsActive(product, true);
+            double discount = 0;
+            if(!discountProduct.isEmpty()){
+                discount = discountProduct.get(0).getDiscountValue();
             }
 
+            double discountedPrice = product.getPrice() - (product.getPrice() * discount / 100);
+            product.setNewPrice(discountedPrice);
+
+            double totalPrice = product.getNewPrice() != null ? product.getNewPrice() : product.getPrice();
+
+            int newQuantity = product.getStock() - 1;
+            if (newQuantity < 0) {
+                throw new BadRequestException("Not enough stock for product: " + product.getBarcode());
+            }
             BillItem billItem = new BillItem();
             billItem.setBill(bill);
             billItem.setProduct_barcode(product.getBarcode());
             billItem.setQuantity(1); // Giả định số lượng là 1 để đơn giản hóa
             billItem.setPrice(product.getPrice());
+            billItem.setDiscount(discount);
+            billItem.setNewPrice(totalPrice);
+            product.setStock(newQuantity);
             totalAmount += product.getPrice();
             bill.getItems().add(billItem);
+
+            WarrantyCard warrantyCard = new WarrantyCard();
+            warrantyCard.setCustomerName(customer.getName());
+            warrantyCard.setCustomerPhone(customer.getPhone());
+            warrantyCard.setProductBarcode(product.getBarcode());
+            warrantyCard.setPurchaseDate(LocalDateTime.now());
+            warrantyCard.setBill(bill);
+            warrantyCard.setWarrantyExpiryDate(LocalDateTime.now().plus(1, ChronoUnit.YEARS)); // Thời hạn bảo hành 1 năm
+
+            warrantyCardRepository.save(warrantyCard);
+            productsRepository.save(product);
         }
 
         double customer_point = totalAmount / 1000;
         customer.setPoints(customer.getPoints() + customer_point);
 
         bill.setTotalAmount(totalAmount);
-        billRepository.save(bill);
+        bill = billRepository.save(bill);
+
+
+        return bill;
     }
 
     public Bill getBillDetails(long id) {
@@ -91,7 +144,7 @@ public class BillService {
         }
     }
 
-    public List<Bill> getAllBillOfCustumer(int customerPhone){
+    public List<Bill> getAllBillOfCustomer(int customerPhone){
         return billRepository.findByCustomerPhone(customerPhone);
     }
 
