@@ -51,9 +51,9 @@ public class PromotionAPI {
         }
     }
 
-    @PutMapping("/api/promotion")
-    public ResponseEntity<Promotion> getDiscountById(@RequestBody PromotionUpdateRequest discountRequest){
-        Promotion promotion = promotionService.updatePromotion(discountRequest);
+    @PutMapping("/api/promotion/{id}")
+    public ResponseEntity<Promotion> getDiscountById(@PathVariable Long id,@Valid @RequestBody PromotionUpdateRequest discountRequest){
+        Promotion promotion = promotionService.updatePromotion(discountRequest, id);
         if(promotion != null){
             return ResponseEntity.ok(promotion);
         }else{

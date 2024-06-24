@@ -20,4 +20,8 @@ public class WarrantyService {
     public List<WarrantyCard> getWarrantyByBillId(long billId) {
         return warrantyCardRepository.findByBillId(billId);
     }
+
+    public List<WarrantyCard> getAllWarranty() {
+         return warrantyCardRepository.findAll();
+    }
 }

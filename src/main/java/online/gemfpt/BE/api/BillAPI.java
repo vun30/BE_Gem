@@ -39,7 +39,7 @@ public class BillAPI {
         }
     }
 
-    @GetMapping("/api/bill/{customerPhone}")
+    @GetMapping("/api/bill/customer/{customerPhone}")
     public ResponseEntity<List<Bill>> getBillsByCustomerPhone(@PathVariable int customerPhone) {
         List<Bill> bills = billService.getAllBillOfCustomer(customerPhone);
         return ResponseEntity.ok(bills);

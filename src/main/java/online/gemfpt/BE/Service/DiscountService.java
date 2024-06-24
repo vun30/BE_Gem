@@ -7,11 +7,9 @@ import online.gemfpt.BE.Repository.DiscountRepository;
 import online.gemfpt.BE.entity.Account;
 import online.gemfpt.BE.entity.Bill;
 import online.gemfpt.BE.entity.Discount;
-import online.gemfpt.BE.enums.RoleEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -25,7 +23,6 @@ public class DiscountService {
     @Autowired
     AuthenticationRepository accountRepository;
 
-
     @Transactional
     public Discount approveDiscountRequest(long discountRequestId, long managerId) {
         Optional<Discount> optionalDiscountRequest = discountRepository.findById(discountRequestId);
@@ -33,7 +30,7 @@ public class DiscountService {
             Discount discountRequest = optionalDiscountRequest.get();
             discountRequest.setApproved(true);
 
-            // Tìm và cập nhật thông tin quản lý phê duyệt
+            // Find and update manager information
             Optional<Account> optionalManager = accountRepository.findById(managerId);
             if (optionalManager.isPresent()) {
                 Account manager = optionalManager.get();
@@ -42,9 +39,11 @@ public class DiscountService {
                 throw new IllegalArgumentException("Invalid manager ID: " + managerId);
             }
 
-            // Cập nhật giảm giá vào hóa đơn
+            // Update discount to the bill
             Bill bill = discountRequest.getBill();
-            bill.setDiscount(bill.getDiscount() + discountRequest.getRequestedDiscount());
+            double discountAmount = bill.getTotalAmount() * (discountRequest.getRequestedDiscount() / 100);
+            bill.setDiscount(discountRequest.getRequestedDiscount());
+            bill.setTotalAmount(bill.getTotalAmount() - discountAmount);
             billRepository.save(bill);
 
             return discountRepository.save(discountRequest);
@@ -60,7 +59,7 @@ public class DiscountService {
             Discount discountRequest = optionalDiscountRequest.get();
             discountRequest.setApproved(false);
 
-            // Tìm và cập nhật thông tin quản lý từ chối
+            // Find and update manager information
             Optional<Account> optionalManager = accountRepository.findById(managerId);
             if (optionalManager.isPresent()) {
                 Account manager = optionalManager.get();

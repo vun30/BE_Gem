@@ -88,7 +88,6 @@ public class BillService {
         bill = billRepository.save(bill);
 
         for (Product product : products) {
-
             List<PromotionProduct> promotionProduct = promotionProductRepository.findByProductAndIsActive(product, true);
             double discount = 0;
             if(!promotionProduct.isEmpty()){
@@ -112,7 +111,7 @@ public class BillService {
             billItem.setDiscount(discount);
             billItem.setNewPrice(totalPrice);
             product.setStock(newQuantity);
-            totalAmount += product.getPrice();
+            totalAmount += totalPrice;
             bill.getItems().add(billItem);
 
             WarrantyCard warrantyCard = new WarrantyCard();
@@ -132,7 +131,6 @@ public class BillService {
 
         bill.setTotalAmount(totalAmount);
         bill = billRepository.save(bill);
-
 
         return bill;
     }

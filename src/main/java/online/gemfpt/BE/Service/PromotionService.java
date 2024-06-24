@@ -142,8 +142,8 @@ public class PromotionService {
         return promotion;
     }
 
-    public Promotion updatePromotion(PromotionUpdateRequest discountRequest){
-        Optional<Promotion> discountExist = promotionRepository.findById(discountRequest.getDisID());
+    public Promotion updatePromotion(PromotionUpdateRequest discountRequest, Long promotionId){
+        Optional<Promotion> discountExist = promotionRepository.findById(promotionId);
         if(discountExist.isPresent()){
             Promotion promotion = discountExist.get();
             promotion.setProgramName(discountRequest.getProgramName().isEmpty() ? promotion.getProgramName() : discountRequest.getProgramName());
