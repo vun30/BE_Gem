@@ -8,9 +8,6 @@ import java.time.LocalDateTime;
 
 @Data
 public class PromotionUpdateRequest {
-    @NotNull
-    private long disID;
-
     @NotBlank
     private String programName;
 
@@ -25,9 +22,6 @@ public class PromotionUpdateRequest {
 
     @NotBlank
     private String applicableProducts;
-
-    @NotBlank
-    private String pointsCondition;
 
     private LocalDateTime endTime;
 }

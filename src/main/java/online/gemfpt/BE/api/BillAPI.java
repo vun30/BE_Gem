@@ -5,6 +5,7 @@ import online.gemfpt.BE.Service.BillService;
 import online.gemfpt.BE.entity.Bill;
 import online.gemfpt.BE.entity.Discount;
 import online.gemfpt.BE.exception.BadRequestException;
+import online.gemfpt.BE.model.BillResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,9 +21,9 @@ public class BillAPI {
     BillService billService;
 
     @PostMapping("/api/bill")
-    public ResponseEntity<?> addProductToCart(@RequestParam String customerName, @RequestParam int customerPhone, @RequestParam List<String> barcode) {
+    public ResponseEntity<?> addProductToCart(@RequestParam String customerName, @RequestParam int customerPhone, @RequestParam List<String> barcode, @RequestParam double change) {
         try {
-           Bill bill = billService.addToCart(customerName, customerPhone, barcode);
+           BillResponse bill = billService.addToCart(customerName, customerPhone, barcode, change);
             return ResponseEntity.status(HttpStatus.CREATED).body(bill);
         } catch (BadRequestException e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -39,7 +40,7 @@ public class BillAPI {
         }
     }
 
-    @GetMapping("/api/bill/{customerPhone}")
+    @GetMapping("/api/bill/customer/{customerPhone}")
     public ResponseEntity<List<Bill>> getBillsByCustomerPhone(@PathVariable int customerPhone) {
         List<Bill> bills = billService.getAllBillOfCustomer(customerPhone);
         return ResponseEntity.ok(bills);

@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import online.gemfpt.BE.Repository.*;
 import online.gemfpt.BE.entity.*;
 import online.gemfpt.BE.exception.BadRequestException;
+import online.gemfpt.BE.model.BillResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,7 +40,7 @@ public class BillService {
     @Autowired
     DiscountRepository discountRepository;
     @Transactional
-    public Bill addToCart(String name, int phone, List<String> barcodes) {
+    public BillResponse addToCart(String name, int phone, List<String> barcodes, double customerCash) {
         Optional<Customer> optionalCustomer = customerRepository.findByPhone(phone);
         Customer customer;
         if (optionalCustomer.isPresent()) {
@@ -61,9 +62,13 @@ public class BillService {
         bill.setCustomerName(name);
         bill.setCustomerPhone(phone);
         bill.setCashier(account.getName());
+<<<<<<< feat/voucher
+=======
         bill.setCreateTime(LocalDateTime.now());
         bill.setStalls(account.getStallsWorkingId());
+>>>>>>> main
         bill.setStatus(true);
+        bill.setCreateTime(LocalDateTime.now());
         // Khởi tạo danh sách items nếu chưa được khởi tạo
         if (bill.getItems() == null) {
             bill.setItems(new ArrayList<>());
@@ -92,7 +97,6 @@ public class BillService {
         bill = billRepository.save(bill);
 
         for (Product product : products) {
-
             List<PromotionProduct> promotionProduct = promotionProductRepository.findByProductAndIsActive(product, true);
             double discount = 0;
             if(!promotionProduct.isEmpty()){
@@ -116,7 +120,7 @@ public class BillService {
             billItem.setDiscount(discount);
             billItem.setNewPrice(totalPrice);
             product.setStock(newQuantity);
-            totalAmount += product.getPrice();
+            totalAmount += totalPrice;
             bill.getItems().add(billItem);
 
             WarrantyCard warrantyCard = new WarrantyCard();
@@ -131,14 +135,16 @@ public class BillService {
             productsRepository.save(product);
         }
 
+        double customerChange = payment(totalAmount, customerCash);
+
+
         double customer_point = totalAmount / 1000;
         customer.setPoints(customer.getPoints() + customer_point);
 
         bill.setTotalAmount(totalAmount);
         bill = billRepository.save(bill);
 
-
-        return bill;
+        return new BillResponse(bill, customerChange);
     }
 
     public Bill getBillDetails(long id) {
@@ -160,6 +166,14 @@ public class BillService {
             billRepository.deleteById(billId);
         } else {
             throw new IllegalArgumentException("Invalid bill ID :" + billId);
+        }
+    }
+
+    public double payment(double amount, double customerCash) {
+        if(customerCash >= amount) {
+            return customerCash - amount;
+        } else {
+            throw new BadRequestException("Payment failed");
         }
     }
 

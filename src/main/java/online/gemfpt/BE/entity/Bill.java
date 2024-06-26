@@ -23,7 +23,7 @@ public class Bill {
     private double discount;
     private String voucher;
     private LocalDateTime createTime;
-    private boolean status;
+    private boolean status = false;
     private String cashier;
     private long stalls ;
     private String stalsName;

@@ -1,6 +1,7 @@
 package online.gemfpt.BE.Service;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import online.gemfpt.BE.Repository.PromotionProductRepository;
 import online.gemfpt.BE.Repository.PromotionRepository;
 import online.gemfpt.BE.Repository.ProductsRepository;
@@ -14,6 +15,7 @@ import online.gemfpt.BE.model.PromotionRequest.PromotionCreateRequest;
 import online.gemfpt.BE.model.PromotionRequest.PromotionRequestForBarcode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -142,8 +144,8 @@ public class PromotionService {
         return promotion;
     }
 
-    public Promotion updatePromotion(PromotionUpdateRequest discountRequest){
-        Optional<Promotion> discountExist = promotionRepository.findById(discountRequest.getDisID());
+    public Promotion updatePromotion(PromotionUpdateRequest discountRequest, Long promotionId){
+        Optional<Promotion> discountExist = promotionRepository.findById(promotionId);
         if(discountExist.isPresent()){
             Promotion promotion = discountExist.get();
             promotion.setProgramName(discountRequest.getProgramName().isEmpty() ? promotion.getProgramName() : discountRequest.getProgramName());
@@ -169,5 +171,22 @@ public class PromotionService {
         return promotionRepository.save(promotion);
     }
 
+    @Scheduled(cron = "0 0 0 * * ?") // Chạy hàng ngày vào lúc nửa đêm
+    @Transactional
+    public void updatePromotionStatusBasedOnEndTime() {
+        List<Promotion> promotions = promotionRepository.findAll();
+        LocalDateTime now = LocalDateTime.now();
+        for (Promotion promotion : promotions) {
+            if (promotion.getEndTime().isBefore(now) && promotion.isStatus()) {
+                promotion.setStatus(false);
+                List<PromotionProduct> promotionProducts = promotionProductRepository.findByPromotion(promotion);
+                for (PromotionProduct promotionProduct : promotionProducts) {
+                    promotionProduct.setActive(false);
+                    promotionProductRepository.save(promotionProduct);
+                }
+                promotionRepository.save(promotion);
+            }
+        }
+    }
 
 }
