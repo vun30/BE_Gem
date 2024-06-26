@@ -13,11 +13,11 @@ public class GemstoneRequest {
 
     private String description;
 
-    @Min(value = 0, message = "Price must be more than 0")
+    @Min(value = 0, message = "Price must be  >= 0")
     private double price;
 
-    @Min(value = 0, message = "Quantity must be more than 0")
-    private int quantity;
+    @Min(value = 0, message = "Quantity must be >=  0")
+    private int quantity ;
 
     @NotBlank(message = "Certificate Code cannot be left blank")
     private String certificateCode;

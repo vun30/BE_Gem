@@ -43,6 +43,8 @@ public class Metal {
     @JoinColumn(name = "productId")
     private Product product;
 
+    private double priceMetal;
+
     @ManyToOne
     @JsonIgnore
     @JoinColumn(name = "typeOfMetalId")

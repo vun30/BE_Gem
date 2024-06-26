@@ -33,7 +33,7 @@ public class Gemstone {
     String certificateCode;
 
     @Min(0)
-    int quantity;
+    int quantity  ;
 
     @ManyToOne
     @JsonIgnore

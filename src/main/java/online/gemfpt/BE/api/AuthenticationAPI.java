@@ -39,6 +39,7 @@ public class AuthenticationAPI {
         authenticationService.ResetPassword(resetwordRequest);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
       @DeleteMapping("/delete_account/{email}")
     public ResponseEntity<Account> deleteAccountByEmail(@PathVariable String email) {
         // Lấy thông tin người dùng hiện tại từ context
@@ -54,6 +55,7 @@ public class AuthenticationAPI {
         Account account = authenticationService.deleteAccountByEmail(email);
         return ResponseEntity.ok(account);
     }
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/admin_edit_account/{email}")
     public ResponseEntity<Account> editAccountByEmail(@PathVariable String email, @RequestBody EditAccountRequest editAccountRequest) {
         // Lấy thông tin người dùng hiện tại từ context
@@ -69,18 +71,21 @@ public class AuthenticationAPI {
         Account account = authenticationService.editAccountByEmail(email, editAccountRequest);
         return ResponseEntity.ok(account);
     }
+
+     @PreAuthorize("hasAuthority('ADMIN') or principal.username == authentication.name")
      @PutMapping("/staff_edit_account/{email}")
     public ResponseEntity<Account> staffEditAccountByEmail(@PathVariable String email, @RequestBody StaffEditAccountRequest staffEditAccountRequest) {
-           if (!authenticationService.isCurrentAccount(email)) {
-            // Nếu không phải chính tài khoản đang đăng nhập, trả về lỗi hoặc xử lý phù hợp
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
+//           if (!authenticationService.isCurrentAccount(email)) {
+//            // Nếu không phải chính tài khoản đang đăng nhập, trả về lỗi hoặc xử lý phù hợp
+//            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+//        }
         Account account = authenticationService.staffEditAccountByEmail(email, staffEditAccountRequest);
         return ResponseEntity.ok(account);
     }
 
     @GetMapping("/admin_only")
-    public ResponseEntity getAdmin(){return  ResponseEntity.ok("ok");}
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity getAdmin(){return  ResponseEntity.ok("admin ok");}
 
     @PostMapping("/register")
     public ResponseEntity Register (@RequestBody RegisterRequest responseRequest){
@@ -95,6 +100,8 @@ public class AuthenticationAPI {
         emailDetail.setMsgBody("aaa");
         emailService.sendMailTemplate(emailDetail);
     }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/getAll")
     public ResponseEntity Getallaccount (){
          // Lấy thông tin người dùng hiện tại từ context
@@ -113,7 +120,6 @@ public class AuthenticationAPI {
 
     @PostMapping("/login")
     public ResponseEntity login (@RequestBody LoginRequest loginRequest){
-
         Account account = authenticationService.login(loginRequest);
         return ResponseEntity.ok(account);
     }

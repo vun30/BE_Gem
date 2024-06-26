@@ -15,7 +15,7 @@ public class MetalService {
     @Autowired
     private TypeOfMetalRepository typeOfMetalRepository;
 
-    public void setPricePerWeightUnit(Metal metal) {
+    public double setPricePerWeightUnit(Metal metal) {
         Optional<TypeOfMetal> typeOfMetalOpt = typeOfMetalRepository.findByMetalType(metal.getName());
         if (typeOfMetalOpt.isPresent()) {
             TypeOfMetal typeOfMetal = typeOfMetalOpt.get();
@@ -24,5 +24,6 @@ public class MetalService {
         } else {
             throw new EntityNotFoundException("Type of metal not found for type: " + metal.getName());
         }
+        return 0;
     }
 }

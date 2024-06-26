@@ -6,5 +6,8 @@ import lombok.Getter;
 public enum TypeEnum {
     RING,
     BRACELET,
-    NECKLACE
+    NECKLACE,
+    EARRINGS,
+    ANKLETS,
+
 }
