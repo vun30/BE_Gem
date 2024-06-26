@@ -4,12 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import online.gemfpt.BE.enums.RoleEnum;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
@@ -27,15 +29,34 @@ public class Account implements UserDetails {
     long id;
 
     @Column (unique = true)
-    String phone ;
-    String password;
-    String description;
+    private String phone ;
+
+    @NotBlank
+    private String password;
+
+    private String description;
+
     boolean status = true; // note
+
+    @NotBlank
     @Column(unique = true)
     private String email;
+
     RoleEnum role ;
+
     String name;
+
     LocalDateTime createDate;
+
+    @Column(name = "stalls_working_id")
+    private Long stallsWorkingId;
+
+    private boolean staffWorkingStatus = true;
+
+    private LocalDateTime startWorkingDateTime;
+
+    private LocalDateTime endWorkingDateTime;
+
 
     @JsonIgnore
     @OneToMany(mappedBy = "manager",fetch = FetchType.EAGER)
@@ -49,7 +70,7 @@ public class Account implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return List.of(new SimpleGrantedAuthority(this.role.toString()));
     }
 
     @Override

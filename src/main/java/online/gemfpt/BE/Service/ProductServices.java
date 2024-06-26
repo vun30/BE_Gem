@@ -96,6 +96,7 @@ public Product creates(ProductsRequest productsRequest) {
             metal.setName(metalRequest.getName());
             metal.setDescription(metalRequest.getDescription());
             metal.setWeight(metalRequest.getWeight());
+            metal.setPriceMetal(metalService.setPricePerWeightUnit(metal));
             // Set price per weight unit
             metalService.setPricePerWeightUnit(metal); // Sử dụng service để set giá
             metal.setProduct(product);
@@ -140,19 +141,19 @@ public Product creates(ProductsRequest productsRequest) {
     return savedProduct;
 }
 
-    // Helper method to calculate total metal price
-    private double calculateTotalMetalPrice(List<Metal> metals) {
-        return metals.stream()
-                .mapToDouble(metal -> metal.getPricePerWeightUnit())
-                .sum();
-    }
-
-    // Helper method to calculate total gemstone price
-    private double calculateTotalGemstonePrice(List<Gemstone> gemstones) {
-        return gemstones.stream()
-                .mapToDouble(gemstone -> gemstone.getPrice() * gemstone.getQuantity())
-                .sum();
-    }
+//    // Helper method to calculate total metal price
+//    private double calculateTotalMetalPrice(List<Metal> metals) {
+//        return metals.stream()
+//                .mapToDouble(metal -> metal.getPricePerWeightUnit())
+//                .sum();
+//    }
+//
+//    // Helper method to calculate total gemstone price
+//    private double calculateTotalGemstonePrice(List<Gemstone> gemstones) {
+//        return gemstones.stream()
+//                .mapToDouble(gemstone -> gemstone.getPrice() * gemstone.getQuantity())
+//                .sum();
+//    }
 
 
  public Product getProductByBarcode(String barcode) {
@@ -343,4 +344,40 @@ private String generateUniqueBarcode(String existingBarcode) {
         }
         return productList;
     }
+
+
+    public List<Product> searchProductsByGemstoneAttributes(String color, String clarity, String cut, Double carat) {
+        List<Gemstone> gemstones = gemstoneRepository.findAll();
+
+        List<Gemstone> filteredGemstones = gemstones.stream()
+                .filter(gemstone -> (color == null || gemstone.getColor().equals(color)) &&
+                                    (clarity == null || gemstone.getClarity().equals(clarity)) &&
+                                    (cut == null || gemstone.getCut().equals(cut)) &&
+                                    (carat == null || gemstone.getCarat() == carat))
+                .collect(Collectors.toList());
+
+        return filteredGemstones.stream()
+                .map(Gemstone::getProduct)
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+    public List<Product> searchProductsByMetalType(String metalType) {
+        List<Metal> metals = metalRepository.findAll();
+
+        List<Metal> filteredMetals = metals.stream()
+                .filter(metal -> metal.getTypeOfMetal().getMetalType().equals(metalType))
+                .collect(Collectors.toList());
+
+        return filteredMetals.stream()
+                .map(Metal::getProduct)
+                .distinct()
+                .collect(Collectors.toList());
+    }
+    public List<Product> searchProductsByName(String name) {
+        return productsRepository.findByNameContaining(name);
+    }
+
+
+
 }

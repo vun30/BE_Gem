@@ -25,6 +25,8 @@ public class Bill {
     private LocalDateTime createTime;
     private boolean status = false;
     private String cashier;
+    private long stalls ;
+    private String stalsName;
 
     @OneToMany(mappedBy = "bill")
     private List<WarrantyCard> warrantyCards;

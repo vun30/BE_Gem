@@ -1,9 +1,14 @@
 package online.gemfpt.BE.api;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+<<<<<<< feat/voucher
 import online.gemfpt.BE.entity.Product;
 import online.gemfpt.BE.entity.WarrantyCard;
 import online.gemfpt.BE.Service.WarrantyService;
+=======
+import online.gemfpt.BE.Service.WarrantyService;
+import online.gemfpt.BE.entity.WarrantyCard;
+>>>>>>> main
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

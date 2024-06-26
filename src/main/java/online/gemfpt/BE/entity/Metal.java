@@ -43,7 +43,13 @@ public class Metal {
     @JoinColumn(name = "productId")
     private Product product;
 
+<<<<<<< feat/voucher
     @ManyToOne(fetch = FetchType.EAGER)
+=======
+    private double priceMetal;
+
+    @ManyToOne
+>>>>>>> main
     @JsonIgnore
     @JoinColumn(name = "typeOfMetalId")
     private TypeOfMetal typeOfMetal;
