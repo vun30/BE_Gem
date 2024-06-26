@@ -54,11 +54,15 @@ public class BillService {
 
         Account account = authenticationService.getCurrentAccount();
 
+        if (!account.isStaffWorkingStatus()) {
+    throw new IllegalStateException("Staff is not in working status.");
+}
         Bill bill = new Bill();
         bill.setCustomerName(name);
         bill.setCustomerPhone(phone);
         bill.setCashier(account.getName());
         bill.setCreateTime(LocalDateTime.now());
+        bill.setStalls(account.getStallsWorkingId());
         bill.setStatus(true);
         // Khởi tạo danh sách items nếu chưa được khởi tạo
         if (bill.getItems() == null) {

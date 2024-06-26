@@ -26,5 +26,12 @@ public interface ProductsRepository extends JpaRepository<Product,Long> {
 
     List<Product> findByBarcodeIn(List<String> barcodes);
 
+     @Query("SELECT p FROM Product p JOIN p.metals m WHERE m.typeOfMetal.metalType = :metalType")
+    List<Product> findByMetalType(@Param("metalType") String metalType);
+
+
+    @Query("SELECT p FROM Product p WHERE p.name LIKE %:name%")
+    List<Product> findByNameContaining(@Param("name") String name);
+
 }
 

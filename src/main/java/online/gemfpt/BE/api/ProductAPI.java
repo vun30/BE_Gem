@@ -28,7 +28,7 @@ public class ProductAPI {
     @Autowired
     ProductServices productServices;
 
-    @PostMapping("create-products")
+    @PostMapping("products")
     public ResponseEntity<?> creates (@RequestBody @Valid ProductsRequest productsRequest) {
         try {
             Product product = productServices.creates(productsRequest);
@@ -37,7 +37,7 @@ public class ProductAPI {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    @DeleteMapping("/delete-product/{barcode}")
+    @DeleteMapping("/{barcode}")
     public ResponseEntity<Product> deleteProduct(@PathVariable String barcode) {
         try {
             Product updatedProduct = productServices.toggleProductActive(barcode);
@@ -89,6 +89,12 @@ public ResponseEntity<?> updateOrCreateProduct(@PathVariable String barcode, @Re
         }
     }
 
+    @GetMapping("/search/name")
+    public ResponseEntity<List<Product>> searchProductsByName(@RequestParam("name") String name) {
+        List<Product> products = productServices.searchProductsByName(name);
+        return ResponseEntity.ok(products);
+    }
+
 
     @GetMapping("/search/min-max")
 public ResponseEntity<List<Product>> searchProductsByPriceRangeAndStatus(
@@ -105,5 +111,24 @@ public ResponseEntity<List<Product>> searchProductsByPriceRangeAndStatus(
     // Trả về danh sách sản phẩm nằm trong khoảng giá minPrice đến maxPrice cho client
     return ResponseEntity.ok(productsInPriceRange);
 }
+
+    @GetMapping("/search/gemstone")
+    public ResponseEntity<List<Product>> searchProductsByGemstoneAttributes(
+            @RequestParam(required = false) String color,
+            @RequestParam(required = false) String clarity,
+            @RequestParam(required = false) String cut,
+            @RequestParam(required = false) Double carat) {
+
+        List<Product> products = productServices.searchProductsByGemstoneAttributes(color, clarity, cut, carat);
+        return ResponseEntity.ok(products);
+    }
+
+     // Tìm kiếm sản phẩm theo metal type
+    @GetMapping("/search/metaltype")
+    public ResponseEntity<List<Product>> searchProductsByMetalType(@RequestParam String metalType) {
+        List<Product> products = productServices.searchProductsByMetalType(metalType);
+        return ResponseEntity.ok(products);
+    }
+
 
 }

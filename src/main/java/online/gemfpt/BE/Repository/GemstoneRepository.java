@@ -12,5 +12,6 @@ import java.util.List;
 public interface GemstoneRepository extends JpaRepository<Gemstone, Long> {
      @EntityGraph(attributePaths = "gemProperties")
      List<Gemstone> findByProduct(Product product);
+     List<Gemstone> findByColorAndClarityAndCutAndCarat(String color, String clarity, String cut, Double carat);
 }
 

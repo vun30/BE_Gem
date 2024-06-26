@@ -1,4 +1,4 @@
-package online.gemfpt.BE.service;
+package online.gemfpt.BE.Service;
 
 import online.gemfpt.BE.entity.WarrantyCard;
 import online.gemfpt.BE.Repository.WarrantyCardRepository;
