@@ -38,12 +38,12 @@ public class Metal {
     @NotNull
     double unit = 3.75; // 1 chi vàng auto bằng 3,75 gram, unit auto bằng 1 chi vàng
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JsonIgnore
     @JoinColumn(name = "productId")
     private Product product;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JsonIgnore
     @JoinColumn(name = "typeOfMetalId")
     private TypeOfMetal typeOfMetal;

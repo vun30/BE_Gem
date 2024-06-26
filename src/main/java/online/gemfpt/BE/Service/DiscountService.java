@@ -10,6 +10,7 @@ import online.gemfpt.BE.entity.Discount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -72,5 +73,9 @@ public class DiscountService {
         } else {
             throw new IllegalArgumentException("Invalid discount request ID: " + discountRequestId);
         }
+    }
+
+    public List<Discount> getAll(){
+        return discountRepository.findAll();
     }
 }

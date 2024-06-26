@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @SecurityRequirement(name="api")
 @CrossOrigin("*")
@@ -26,5 +28,11 @@ public class DiscountAPI {
     public ResponseEntity<Discount> denyDiscountRequest(@PathVariable long discountRequestId, @RequestParam long managerId) {
         Discount discountRequest = discountService.denyDiscountRequest(discountRequestId, managerId);
         return ResponseEntity.ok(discountRequest);
+    }
+
+    @GetMapping("/discount")
+    public ResponseEntity<List<Discount>> getDiscount(){
+        List<Discount> discount = discountService.getAll();
+        return ResponseEntity.ok(discount);
     }
 }

@@ -35,7 +35,7 @@ public class Gemstone {
     @Min(0)
     int quantity;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JsonIgnore
     @JoinColumn(name = "productId")
     private Product product;
