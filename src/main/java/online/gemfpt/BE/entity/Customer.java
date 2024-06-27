@@ -20,6 +20,7 @@ public class Customer {
     private String name;
     private int phone;
     private double points;
+    private String rankCus;
     private LocalDateTime createTime;
     private boolean status = true;
 }

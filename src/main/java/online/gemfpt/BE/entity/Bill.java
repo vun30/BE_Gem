@@ -21,7 +21,7 @@ public class Bill {
     private int customerPhone;
     private double totalAmount;
     private double discount;
-    private String voucher;
+    private double voucher;
     private LocalDateTime createTime;
     private boolean status = false;
     private String cashier;

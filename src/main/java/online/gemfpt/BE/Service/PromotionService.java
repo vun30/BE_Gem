@@ -171,22 +171,6 @@ public class PromotionService {
         return promotionRepository.save(promotion);
     }
 
-    @Scheduled(cron = "0 0 0 * * ?") // Chạy hàng ngày vào lúc nửa đêm
-    @Transactional
-    public void updatePromotionStatusBasedOnEndTime() {
-        List<Promotion> promotions = promotionRepository.findAll();
-        LocalDateTime now = LocalDateTime.now();
-        for (Promotion promotion : promotions) {
-            if (promotion.getEndTime().isBefore(now) && promotion.isStatus()) {
-                promotion.setStatus(false);
-                List<PromotionProduct> promotionProducts = promotionProductRepository.findByPromotion(promotion);
-                for (PromotionProduct promotionProduct : promotionProducts) {
-                    promotionProduct.setActive(false);
-                    promotionProductRepository.save(promotionProduct);
-                }
-                promotionRepository.save(promotion);
-            }
-        }
-    }
+
 
 }
