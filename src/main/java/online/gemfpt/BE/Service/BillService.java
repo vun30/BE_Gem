@@ -56,8 +56,8 @@ public class BillService {
         Account account = authenticationService.getCurrentAccount();
 
         if (!account.isStaffWorkingStatus()) {
-    throw new IllegalStateException("Staff is not in working status.");
-}
+            throw new IllegalStateException("Staff is not in working status.");
+        }
         Bill bill = new Bill();
         bill.setCustomerName(name);
         bill.setCustomerPhone(phone);
@@ -106,9 +106,10 @@ public class BillService {
             double totalPrice = product.getNewPrice() != null ? product.getNewPrice() : product.getPrice();
 
             int newQuantity = product.getStock() - 1;
-            if (newQuantity < 0) {
+            if (newQuantity < 0 && !product.isStatus()) {
                 throw new BadRequestException("Not enough stock for product: " + product.getBarcode());
             }
+
             BillItem billItem = new BillItem();
             billItem.setBill(bill);
             billItem.setProduct_barcode(product.getBarcode());
@@ -138,7 +139,26 @@ public class BillService {
         double customer_point = totalAmount / 1000;
         customer.setPoints(customer.getPoints() + customer_point);
 
-        bill.setTotalAmount(totalAmount);
+        double memberDiscount = 0;
+        if (customer.getPoints() >= 5000000) {
+            customer.setRankCus("Diamond");
+            memberDiscount = 10;
+        } else if (customer.getPoints() >= 1000000) {
+            customer.setRankCus("Gold");
+            memberDiscount = 8;
+        } else if (customer.getPoints() >= 100000) {
+            customer.setRankCus("Silver");
+            memberDiscount = 5;
+        } else {
+            customer.setRankCus("Normal");
+        }
+
+        double total = totalAmount - (totalAmount * memberDiscount / 100);
+        bill.setVoucher(memberDiscount);
+
+        customerRepository.save(customer);
+
+        bill.setTotalAmount(total);
         bill = billRepository.save(bill);
 
         return new BillResponse(bill, customerChange);
