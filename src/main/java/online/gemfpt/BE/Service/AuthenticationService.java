@@ -78,7 +78,7 @@ public class AuthenticationService implements UserDetailsService {
         account.setPhone(editAccountRequest.getPhone());
     }
     if (editAccountRequest.getDescription() != null) {
-        account.setDescription("Name: " + editAccountRequest.getName() + " " + "Details:  " + editAccountRequest.getDescription() + " " + "Phone: " + editAccountRequest.getPhone() + " " + "Role"  + " " + editAccountRequest.getRole());
+        account.setDescription(editAccountRequest.getDescription());
     }
     if (editAccountRequest.isStatus() != account.isStatus()) {
         account.setStatus(editAccountRequest.isStatus());
@@ -105,7 +105,7 @@ public Account staffEditAccountByEmail(String email, StaffEditAccountRequest sta
         account.setPhone(staffEditAccountRequest.getPhone());
     }
     if (staffEditAccountRequest.getDescription() != null) {
-        account.setDescription("Name: " + staffEditAccountRequest.getName() + " " + "Details:  " + staffEditAccountRequest.getDescription() + " " + "Phone: " + staffEditAccountRequest.getPhone() + " " + "Role: "  + " " + account.getRole());
+        account.setDescription(staffEditAccountRequest.getDescription());
     }
     if (staffEditAccountRequest.getName() != null) {
         account.setName(staffEditAccountRequest.getName());
@@ -155,8 +155,8 @@ public Account staffEditAccountByEmail(String email, StaffEditAccountRequest sta
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return authenticationRepository.findAccountByEmail(email) ;
+    public UserDetails loadUserByUsername(String phone) throws UsernameNotFoundException {
+        return authenticationRepository.findAccountByPhone(phone) ;
     }
 
     public Account deleteAccountByEmail(String email) {
@@ -234,7 +234,7 @@ public Account staffEditAccountByEmail(String email, StaffEditAccountRequest sta
         emailDetail.setRecipient(account.getEmail());
         emailDetail.setSubject("Reset password for account " + forGotPasswordRequest.getEmail() + "|");
         emailDetail.setMsgBody("");
-        emailDetail.setButtonValue("Reset password");
+        emailDetail.setButtonValue("Reset passwprd");
         emailDetail.setLink("" + tokenService.generateToken(account));// thieu link resset password
         Runnable r = new Runnable() {
             @Override
