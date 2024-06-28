@@ -23,4 +23,5 @@ public class Customer {
     private String rankCus;
     private LocalDateTime createTime;
     private boolean status = true;
+
 }
