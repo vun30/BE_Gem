@@ -12,100 +12,46 @@ import online.gemfpt.BE.entity.Discount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class DiscountService {
     @Autowired
-    BillRepository billRepository;
+    private DiscountRepository discountRepository;
 
     @Autowired
-    DiscountRepository discountRepository;
-
-    @Autowired
-    AuthenticationRepository accountRepository;
-
-    @Autowired
-    CustomerRepository customerRepository;
+    private CustomerRepository customerRepository;
 
     @Transactional
-    public Discount approveDiscountRequest(long discountRequestId, long managerId) {
-        Optional<Discount> optionalDiscountRequest = discountRepository.findById(discountRequestId);
-        if (optionalDiscountRequest.isPresent()) {
-            Discount discountRequest = optionalDiscountRequest.get();
-            discountRequest.setApproved(true);
-
-            // Find and update manager information
-            Optional<Account> optionalManager = accountRepository.findById(managerId);
-            if (optionalManager.isPresent()) {
-                Account manager = optionalManager.get();
-                discountRequest.setManager(manager);
-            } else {
-                throw new IllegalArgumentException("Invalid manager ID: " + managerId);
-            }
-
-            // Update discount to the bill
-            Bill bill = discountRequest.getBill();
-            double discountAmount = bill.getTotalAmount() * (discountRequest.getRequestedDiscount() / 100);
-            double updatedTotalAmount = bill.getTotalAmount() - discountAmount;
-            bill.setDiscount(discountRequest.getRequestedDiscount());
-            bill.setTotalAmount(updatedTotalAmount);
-            bill.setStatus(true);
-
-            // Continue bill processing (points, rank, etc.)
-            Optional<Customer> optionalCustomer = customerRepository.findByPhone(bill.getCustomerPhone());
-            if (optionalCustomer.isPresent()) {
-                Customer customer = optionalCustomer.get();
-                double customerPoints = updatedTotalAmount / 1000;
-                customer.setPoints(customer.getPoints() + customerPoints);
-
-                double memberDiscount = 0;
-                if (customer.getPoints() >= 5000000) {
-                    customer.setRankCus("Diamond");
-                    memberDiscount = 10;
-                } else if (customer.getPoints() >= 1000000) {
-                    customer.setRankCus("Gold");
-                    memberDiscount = 8;
-                } else if (customer.getPoints() >= 100000) {
-                    customer.setRankCus("Silver");
-                    memberDiscount = 5;
-                } else {
-                    customer.setRankCus("Normal");
-                }
-
-                double finalTotalAmount = updatedTotalAmount - (updatedTotalAmount * memberDiscount / 100);
-                bill.setVoucher(memberDiscount);
-                bill.setTotalAmount(finalTotalAmount);
-                customerRepository.save(customer);
-            }
-
-            billRepository.save(bill);
+    public Discount sendDiscountRequest(String customerName, int customerPhone, double requestedDiscount, String discountReason) {
+        Optional<Customer> optionalCustomer = customerRepository.findByPhone(customerPhone);
+        if (optionalCustomer.isPresent()) {
+            Customer customer = optionalCustomer.get();
+            Discount discountRequest = new Discount();
+            discountRequest.setRequestedDiscount(requestedDiscount);
+            discountRequest.setDiscountReason(discountReason);
+            discountRequest.setApproved(false);
+            discountRequest.setRequestTime(LocalDateTime.now());
+            discountRequest.setCustomer(customer);
             return discountRepository.save(discountRequest);
         } else {
-            throw new IllegalArgumentException("Invalid discount request ID: " + discountRequestId);
+            throw new IllegalArgumentException("Customer not found with phone: " + customerPhone);
         }
     }
 
     @Transactional
-    public Discount denyDiscountRequest(long discountRequestId, long managerId) {
-        Optional<Discount> optionalDiscountRequest = discountRepository.findById(discountRequestId);
-        if (optionalDiscountRequest.isPresent()) {
-            Discount discountRequest = optionalDiscountRequest.get();
-            discountRequest.setApproved(false);
-
-            // Find and update manager information
-            Optional<Account> optionalManager = accountRepository.findById(managerId);
-            if (optionalManager.isPresent()) {
-                Account manager = optionalManager.get();
-                discountRequest.setManager(manager);
-            } else {
-                throw new IllegalArgumentException("Invalid manager ID: " + managerId);
-            }
-
+    public Discount respondToDiscountRequest(long discountRequestId, boolean approved, String managerResponse) {
+        Optional<Discount> optionalRequest = discountRepository.findById(discountRequestId);
+        if (optionalRequest.isPresent()) {
+            Discount discountRequest = optionalRequest.get();
+            discountRequest.setApproved(approved);
+            discountRequest.setManagerResponse(managerResponse);
+            discountRequest.setResponseTime(LocalDateTime.now());
             return discountRepository.save(discountRequest);
         } else {
-            throw new IllegalArgumentException("Invalid discount request ID: " + discountRequestId);
+            throw new IllegalArgumentException("Discount request not found with id: " + discountRequestId);
         }
     }
 

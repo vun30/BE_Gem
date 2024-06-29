@@ -17,15 +17,12 @@ public class Discount {
 
     private double requestedDiscount;
     private String discountReason;
-    private boolean isApproved;
+    private boolean approved;
+    private String managerResponse;
     private LocalDateTime requestTime;
+    private LocalDateTime responseTime;
 
     @ManyToOne
-    @JoinColumn(name = "bill_id", nullable = false)
-    private Bill bill;
-
-    @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "manager_id")
-    private Account manager; // Người quản lý phê duyệt
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
 }

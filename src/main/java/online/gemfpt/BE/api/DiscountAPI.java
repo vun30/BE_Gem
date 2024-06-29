@@ -1,7 +1,6 @@
-package online.gemfpt.BE.api;
+package online.gemfpt.BE.Controller;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import online.gemfpt.BE.Service.BillService;
 import online.gemfpt.BE.Service.DiscountService;
 import online.gemfpt.BE.entity.Discount;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,21 +17,24 @@ public class DiscountAPI {
     @Autowired
     DiscountService discountService;
 
-    @PostMapping("/{discountRequestId}/approve")
-    public ResponseEntity<Discount> approveDiscountRequest(@PathVariable long discountRequestId, @RequestParam long managerId) {
-        Discount discountRequest = discountService.approveDiscountRequest(discountRequestId, managerId);
+    @PostMapping("/discount/request")
+    public ResponseEntity<Discount> sendDiscountRequest(@RequestParam String customerName,
+                                                               @RequestParam int customerPhone,
+                                                               @RequestParam double requestedDiscount,
+                                                               @RequestParam String discountReason) {
+        Discount discountRequest = discountService.sendDiscountRequest(customerName, customerPhone, requestedDiscount, discountReason);
         return ResponseEntity.ok(discountRequest);
     }
 
-    @PostMapping("/{discountRequestId}/deny")
-    public ResponseEntity<Discount> denyDiscountRequest(@PathVariable long discountRequestId, @RequestParam long managerId) {
-        Discount discountRequest = discountService.denyDiscountRequest(discountRequestId, managerId);
-        return ResponseEntity.ok(discountRequest);
+    @GetMapping("discount")
+    public ResponseEntity<List<Discount>> getAllDiscountRequests() {
+        List<Discount> requests = discountService.getAll();
+        return ResponseEntity.ok(requests);
     }
 
-    @GetMapping("/discount")
-    public ResponseEntity<List<Discount>> getDiscount(){
-        List<Discount> discount = discountService.getAll();
-        return ResponseEntity.ok(discount);
+    @PostMapping("discount/respond")
+    public ResponseEntity<Discount> respondToDiscountRequest(@RequestParam long discountRequestId, @RequestParam boolean approved, @RequestParam String managerResponse) {
+        Discount discountRequest = discountService.respondToDiscountRequest(discountRequestId, approved, managerResponse);
+        return ResponseEntity.ok(discountRequest);
     }
 }

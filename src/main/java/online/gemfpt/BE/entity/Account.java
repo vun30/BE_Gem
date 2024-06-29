@@ -58,10 +58,6 @@ public class Account implements UserDetails {
     private LocalDateTime endWorkingDateTime;
 
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "manager",fetch = FetchType.EAGER)
-    private List<Discount> discountRequests;
-
 
     public void setCreateDateNow(LocalDateTime createDate) {
         this.createDate = LocalDateTime.now();

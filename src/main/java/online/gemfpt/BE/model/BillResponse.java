@@ -10,5 +10,4 @@ import online.gemfpt.BE.entity.Bill;
 @AllArgsConstructor
 public class BillResponse {
     private Bill bill;
-    private double customerChange;
 }
