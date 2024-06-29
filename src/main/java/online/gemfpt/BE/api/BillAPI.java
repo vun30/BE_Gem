@@ -21,9 +21,9 @@ public class BillAPI {
     BillService billService;
 
     @PostMapping("/api/bill")
-    public ResponseEntity<?> addProductToCart(@RequestParam String customerName, @RequestParam int customerPhone, @RequestParam List<String> barcode, @RequestParam double change, @RequestParam(required = false) Double requestedDiscount, @RequestParam(required = false) String discountReason) {
+    public ResponseEntity<?> addProductToCart(@RequestParam String customerName, @RequestParam int customerPhone, @RequestParam List<String> barcode, @RequestParam double discounts) {
         try {
-            BillResponse bill = billService.addToCart(customerName, customerPhone, barcode, change, requestedDiscount, discountReason);
+            BillResponse bill = billService.addToCart(customerName, customerPhone, barcode, discounts);
             return ResponseEntity.status(HttpStatus.CREATED).body(bill);
         } catch (BadRequestException e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -56,9 +56,5 @@ public class BillAPI {
         }
     }
 
-    @PostMapping("/api/bill/{billId}/request")
-    public ResponseEntity<Discount> requestDiscount(@PathVariable long billId, @RequestParam double discount, @RequestParam String reason) {
-        Discount discountRequest = billService.requestDiscount(billId, discount, reason);
-        return ResponseEntity.ok(discountRequest);
-    }
+
 }

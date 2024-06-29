@@ -41,7 +41,7 @@ public class BillService {
     DiscountRepository discountRepository;
 
     @Transactional
-    public BillResponse addToCart(String name, int phone, List<String> barcodes, double customerCash, Double requestedDiscount, String discountReason) {
+    public BillResponse addToCart(String name, int phone, List<String> barcodes, double discounts) {
         Optional<Customer> optionalCustomer = customerRepository.findByPhone(phone);
         Customer customer;
         if (optionalCustomer.isPresent()) {
@@ -77,7 +77,7 @@ public class BillService {
         List<Product> products = productsRepository.findByBarcodeIn(barcodes);
 
         List<String> productExist = new ArrayList<>();
-        for (String barcode : barcodes){
+        for (String barcode : barcodes) {
             Optional<Product> product = productsRepository.findByBarcode(barcode);
             if (product.isPresent()) {
                 if (product.get().getStock() <= 0) {
@@ -88,16 +88,17 @@ public class BillService {
             }
         }
 
-        if (!productExist.isEmpty()){
+        if (!productExist.isEmpty()) {
             throw new BadRequestException("Barcode " + productExist.toString() + " don't exist");
         }
 
         bill = billRepository.save(bill);
 
+        List<WarrantyCard> warrantyCards = new ArrayList<>();
         for (Product product : products) {
             List<PromotionProduct> promotionProduct = promotionProductRepository.findByProductAndIsActive(product, true);
             double discount = 0;
-            if(!promotionProduct.isEmpty()){
+            if (!promotionProduct.isEmpty()) {
                 discount = promotionProduct.get(0).getDiscountValue();
             }
 
@@ -107,7 +108,7 @@ public class BillService {
             double totalPrice = product.getNewPrice() != null ? product.getNewPrice() : product.getPrice();
 
             int newQuantity = product.getStock() - 1;
-            if (newQuantity < 0 ) {
+            if (newQuantity < 0) {
                 throw new BadRequestException("Not enough stock for product: " + product.getBarcode());
             }
 
@@ -129,54 +130,42 @@ public class BillService {
             warrantyCard.setPurchaseDate(LocalDateTime.now());
             warrantyCard.setBill(bill);
             warrantyCard.setWarrantyExpiryDate(LocalDateTime.now().plus(1, ChronoUnit.YEARS)); // Thời hạn bảo hành 1 năm
+            warrantyCards.add(warrantyCard);
 
             warrantyCardRepository.save(warrantyCard);
             productsRepository.save(product);
         }
 
-        if (requestedDiscount != null && discountReason != null) {
-            Discount discountRequest = new Discount();
-            discountRequest.setRequestedDiscount(requestedDiscount);
-            discountRequest.setDiscountReason(discountReason);
-            discountRequest.setApproved(false);
-            discountRequest.setRequestTime(LocalDateTime.now());
-            discountRequest.setBill(bill);
-            discountRepository.save(discountRequest);
+        double customer_point = totalAmount / 1000;
+        customer.setPoints(customer.getPoints() + customer_point);
 
-            bill.setStatus(false);
-            bill.setTotalAmount(totalAmount);
+        double memberDiscount = 0;
+        if (customer.getPoints() >= 5000000) {
+            customer.setRankCus("Diamond");
+            memberDiscount = 10;
+        } else if (customer.getPoints() >= 1000000) {
+            customer.setRankCus("Gold");
+            memberDiscount = 8;
+        } else if (customer.getPoints() >= 100000) {
+            customer.setRankCus("Silver");
+            memberDiscount = 5;
         } else {
-            double customerChange = payment(totalAmount, customerCash);
-
-            double customer_point = totalAmount / 1000;
-            customer.setPoints(customer.getPoints() + customer_point);
-
-            double memberDiscount = 0;
-            if (customer.getPoints() >= 5000000) {
-                customer.setRankCus("Diamond");
-                memberDiscount = 10;
-            } else if (customer.getPoints() >= 1000000) {
-                customer.setRankCus("Gold");
-                memberDiscount = 8;
-            } else if (customer.getPoints() >= 100000) {
-                customer.setRankCus("Silver");
-                memberDiscount = 5;
-            } else {
-                customer.setRankCus("Normal");
-            }
-
-            double total = totalAmount - (totalAmount * memberDiscount / 100);
-            bill.setVoucher(memberDiscount);
-
-            customerRepository.save(customer);
-
-            bill.setTotalAmount(total);
-            bill = billRepository.save(bill);
-
-            return new BillResponse(bill, customerChange);
+            customer.setRankCus("Normal");
         }
 
-        return new BillResponse(bill, 0);
+        double total = totalAmount - (totalAmount * memberDiscount / 100) - (totalAmount * discounts / 100);
+        bill.setVoucher(memberDiscount);
+        bill.setDiscount(discounts);
+
+        customerRepository.save(customer);
+        bill.setTotalAmount(total);
+        bill = billRepository.save(bill);
+
+        BillResponse billResponse = new BillResponse();
+        billResponse.setBill(bill);
+        billResponse.getBill().setWarrantyCards(warrantyCards);
+
+        return billResponse;
     }
 
     public Bill getBillDetails(long id) {
@@ -188,13 +177,13 @@ public class BillService {
         }
     }
 
-    public List<Bill> getAllBillOfCustomer(int customerPhone){
+    public List<Bill> getAllBillOfCustomer(int customerPhone) {
         return billRepository.findByCustomerPhone(customerPhone);
     }
 
-    public void deleteBill(long billId){
+    public void deleteBill(long billId) {
         Optional<Bill> bill = billRepository.findById(billId);
-        if(bill.isPresent()){
+        if (bill.isPresent()) {
             billRepository.deleteById(billId);
         } else {
             throw new IllegalArgumentException("Invalid bill ID :" + billId);
@@ -202,28 +191,11 @@ public class BillService {
     }
 
     public double payment(double amount, double customerCash) {
-        if(customerCash >= amount) {
+        if (customerCash >= amount) {
             return customerCash - amount;
         } else {
             throw new BadRequestException("Payment failed");
         }
     }
 
-    @Transactional
-    public Discount requestDiscount(long billId, double requestedDiscount, String discountReason) {
-        Optional<Bill> optionalBill = billRepository.findById(billId);
-        if (optionalBill.isPresent()) {
-            Bill bill = optionalBill.get();
-            Discount discountRequest = new Discount();
-            discountRequest.setRequestedDiscount(requestedDiscount);
-            discountRequest.setDiscountReason(discountReason);
-            discountRequest.setApproved(false);
-            discountRequest.setRequestTime(LocalDateTime.now());
-            discountRequest.setBill(bill);
-
-            return discountRepository.save(discountRequest);
-        } else {
-            throw new IllegalArgumentException("Invalid bill ID: " + billId);
-        }
-    }
 }

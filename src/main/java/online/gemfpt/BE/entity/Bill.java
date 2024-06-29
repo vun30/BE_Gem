@@ -34,8 +34,5 @@ public class Bill {
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BillItem> items = new ArrayList<>();  // Khởi tạo danh sách
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Discount> discountRequests = new ArrayList<>();
 
 }
