@@ -8,6 +8,7 @@ import online.gemfpt.BE.entity.Account;
 import online.gemfpt.BE.entity.Metal;
 import online.gemfpt.BE.entity.Product;
 import online.gemfpt.BE.entity.TypeOfMetal;
+import online.gemfpt.BE.enums.TypeOfProductEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -50,35 +51,43 @@ public class ScheduledTasks {
         List<Product> productList = productsRepository.findAll();
 
         for (Product product : productList) {
+             if (!product.isStatus() || product.getStock() < 1 || TypeOfProductEnum.PROCESSING.equals(product.getTypeWhenBuyBack())) {
+            continue; // Bỏ qua sản phẩm không thỏa mãn điều kiện
+        }
             boolean hasMissingTypeOfMetal = false;
             double totalMetalPrice = 0;
             double totalGemstonePrice = 0;
 
             // Tính tổng giá của các kim loại
-            if (product.getMetals() != null && !product.getMetals().isEmpty()) {
-                for (Metal metal : product.getMetals()) {
-                    try {
-                        metalService.setPricePerWeightUnit(metal); // Sử dụng service để set giá
-                        totalMetalPrice += metal.getWeight() * metal.getPricePerWeightUnit();
-                    } catch (EntityNotFoundException e) {
-                        hasMissingTypeOfMetal = true;
-                        // Log the error with product ID
-                        System.out.println("TypeOfMetal not found for product ID: " + product.getProductId() + ", Metal: " + metal.getName());
-                    }
+        if (product.getMetals() != null && !product.getMetals().isEmpty()) {
+            for (Metal metal : product.getMetals()) {
+                // Thực hiện tính giá bán của kim loại thủ công
+                Optional<TypeOfMetal> typeOfMetal = typeOfMetalRepository.findByMetalType(metal.getName());
+                if (typeOfMetal.isPresent()) {
+                    double sellPrice = typeOfMetal.get().getSellPrice();
+                    double metalPrice = (metal.getWeight() / 3.75) * sellPrice;
+                    totalMetalPrice += metalPrice;
+                } else {
+                    hasMissingTypeOfMetal = true;
+                    // Log the error with product ID
+                    System.out.println("TypeOfMetal not found for product ID: " + product.getProductId() + ", Metal: " + metal.getName());
                 }
             }
+        }
 
             // Tính tổng giá của các đá quý
+             totalGemstonePrice = 0;
             if (product.getGemstones() != null) {
                 totalGemstonePrice = product.getGemstones().stream()
                         .mapToDouble(gemstone -> gemstone.getPrice() * gemstone.getQuantity())
                         .sum();
             }
 
+
             // Tính giá cuối cùng của sản phẩm
             double totalPrice = totalMetalPrice + totalGemstonePrice;
             double finalPrice = totalPrice + (totalPrice * product.getPriceRate() / 100);
-            product.setPrice(finalPrice);
+            product.setPrice(finalPrice ); // chia metal.Unit;
 
             // Lưu sản phẩm nếu không có kim loại nào bị thiếu
             if (!hasMissingTypeOfMetal) {

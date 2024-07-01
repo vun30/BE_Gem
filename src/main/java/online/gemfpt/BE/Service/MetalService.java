@@ -26,4 +26,16 @@ public class MetalService {
         }
         return 0;
     }
+
+     public double setPricePerWeightUnitForBuyBack(Metal metal) {
+        Optional<TypeOfMetal> typeOfMetalOpt = typeOfMetalRepository.findByMetalType(metal.getName());
+        if (typeOfMetalOpt.isPresent()) {
+            TypeOfMetal typeOfMetal = typeOfMetalOpt.get();
+            metal.setTypeOfMetal(typeOfMetal);
+            metal.setPriceBuyPerWeightUnit();
+            return metal.getPricePerWeightUnit();
+        } else {
+            throw new EntityNotFoundException("Type of metal not found for type: " + metal.getName());
+        }
+    }
 }
