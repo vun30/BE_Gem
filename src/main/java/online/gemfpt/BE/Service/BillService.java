@@ -3,6 +3,7 @@ package online.gemfpt.BE.Service;
 import jakarta.transaction.Transactional;
 import online.gemfpt.BE.Repository.*;
 import online.gemfpt.BE.entity.*;
+import online.gemfpt.BE.enums.TypeBillEnum;
 import online.gemfpt.BE.exception.BadRequestException;
 import online.gemfpt.BE.model.BillResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,7 @@ public class BillService {
             throw new IllegalStateException("Staff is not in working status.");
         }
         Bill bill = new Bill();
+        bill.setTypeBill(TypeBillEnum.SEll);
         bill.setCustomerName(name);
         bill.setCustomerPhone(phone);
         bill.setCashier(account.getName());
