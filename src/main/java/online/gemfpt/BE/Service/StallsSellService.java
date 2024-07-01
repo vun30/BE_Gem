@@ -45,7 +45,10 @@ public class StallsSellService {
 
 
     @Transactional
-    public Account addAccountOnStalls(Long accountId, AccountOnStallsRequest accountOnStallsRequest) {
+public List<Account> addAccountsOnStalls(List<Long> accountIds, AccountOnStallsRequest accountOnStallsRequest) {
+    List<Account> updatedAccounts = new ArrayList<>();
+
+    for (Long accountId : accountIds) {
         try {
             // Tìm account dựa trên accountId
             Account account = authenticationRepository.findById(accountId)
@@ -73,16 +76,17 @@ public class StallsSellService {
                 account.setEndWorkingDateTime(accountOnStallsRequest.getEndWorkingDateTime());
             }
 
-            // Lưu thông tin cập nhật vào cơ sở dữ liệu và trả về account đã được cập nhật
-            return authenticationRepository.save(account);
-        } catch (AccountNotFoundException ex) {
-            throw ex; // Ném lại ngoại lệ AccountNotFoundException để xử lý ở phần gọi hàm
-        } catch (StallsSellNotFoundException ex) {
-            throw ex; // Ném lại ngoại lệ StallsSellNotFoundException để xử lý ở phần gọi hàm
+            // Lưu thông tin cập nhật vào cơ sở dữ liệu
+            updatedAccounts.add(authenticationRepository.save(account));
+        } catch (AccountNotFoundException | StallsSellNotFoundException ex) {
+            // Xử lý ngoại lệ cụ thể
+            throw ex;
         } catch (Exception ex) {
             throw new AccountNotFoundException("Failed to update account on stalls", ex);
         }
     }
+    return updatedAccounts;
+}
 
     public List<Account> getAllAccounts() {
         return authenticationRepository.findAll();

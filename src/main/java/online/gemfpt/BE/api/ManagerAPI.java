@@ -44,7 +44,7 @@ public class ManagerAPI {
     }
 
 
-    @PostMapping("/create-bill-buy-back")
+    @PostMapping("/Staff-create-bill-buy-back")
     public ResponseEntity<BillBuyBack > createBillAndProducts(@RequestBody List<BuyBackProductRequest > buyBackProductRequests,
                                                              @RequestParam("customerName") String customerName,
                                                              @RequestParam("customerPhone") int customerPhone) {
@@ -52,7 +52,7 @@ public class ManagerAPI {
         return new ResponseEntity<>(billBuyBack, HttpStatus.CREATED);
     }
 
-    @GetMapping("/get-all-bill-buy-back")
+    @GetMapping("/+Staff-get-all-bill-buy-back")
     public ResponseEntity<List<BillBuyBack>> getAllBillBuyBacks() {
         List<BillBuyBack> billBuyBacks = buyBackService.getAllBillBuyBacks();
         return new ResponseEntity<>(billBuyBacks, HttpStatus.OK);
@@ -71,16 +71,16 @@ public class ManagerAPI {
         return ResponseEntity.ok(stallsSell);
     }
 @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER')")
-    @PatchMapping("/{accountId}/updateAccount")
-    public ResponseEntity<Account> updateAccountOnStalls(
-            @PathVariable Long accountId,
-            @RequestBody AccountOnStallsRequest accountOnStallsRequest) {
-        Account account = stallsSellService.addAccountOnStalls(accountId, accountOnStallsRequest);
-        if (account == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(account);
+@PatchMapping("/updateAccounts")
+public ResponseEntity<List<Account>> updateAccountsOnStalls(
+        @RequestParam List<Long> accountIds,
+        @RequestBody AccountOnStallsRequest accountOnStallsRequest) {
+    List<Account> updatedAccounts = stallsSellService.addAccountsOnStalls(accountIds, accountOnStallsRequest);
+    if (updatedAccounts.isEmpty()) {
+        return ResponseEntity.notFound().build();
     }
+    return ResponseEntity.ok(updatedAccounts);
+}
 @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER')")
       @GetMapping("/all-accounts")
     public ResponseEntity<List <Account>> getAllAccounts() {
