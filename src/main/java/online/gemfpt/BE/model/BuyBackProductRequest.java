@@ -4,24 +4,20 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import online.gemfpt.BE.enums.TypeEnum;
-import online.gemfpt.BE.enums.TypeOfProductEnum;
 
 import java.util.List;
 
 @Data
-public class ProductsRequest {
-
+public class BuyBackProductRequest {
     private String name;
 
     private String descriptions;
 
     private TypeEnum category;
 
-    private TypeOfProductEnum typeWhenBuyBack;
-
 
     @Min(0)
-    private double priceRate;
+    private double priceBuyRate;
 
     @NotBlank(message = "Barcode cannot be left blank")
     private String barcode;

@@ -30,6 +30,9 @@ public class Gemstone {
     @NotNull
     double price;
 
+    @Min(0)
+    double buyRate ; //  when buy back => price = price - ( price x priceRate )
+
     String certificateCode;
 
     @Min(0)

@@ -2,6 +2,7 @@ package online.gemfpt.BE.Repository;
 
 import online.gemfpt.BE.entity.Product;
 import online.gemfpt.BE.enums.TypeEnum;
+import online.gemfpt.BE.enums.TypeOfProductEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -32,6 +33,8 @@ public interface ProductsRepository extends JpaRepository<Product,Long> {
 
     @Query("SELECT p FROM Product p WHERE p.name LIKE %:name%")
     List<Product> findByNameContaining(@Param("name") String name);
+
+     List<Product> findByTypeWhenBuyBack(TypeOfProductEnum  typeWhenBuyBack);
 
 }
 

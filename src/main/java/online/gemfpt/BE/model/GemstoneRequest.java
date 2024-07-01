@@ -31,5 +31,8 @@ public class GemstoneRequest {
     private String cut;
 
 
+    @Min(0)
+    double buyRate ; //  when buy back => price = price - ( price x priceRate )
+
 
 }

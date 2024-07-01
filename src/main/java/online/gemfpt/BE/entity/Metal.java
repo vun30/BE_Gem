@@ -59,4 +59,13 @@ public class Metal {
     public void setPricePerWeightUnit() {
         this.pricePerWeightUnit = calculatePricePerWeightUnit();
     }
+
+    // buy back get set
+    public double calculatePriceBuyPerWeightUnit() {
+        return (weight / unit) * typeOfMetal.getBuyPrice();
+    }
+
+    public void setPriceBuyPerWeightUnit() {
+        this.pricePerWeightUnit = calculatePriceBuyPerWeightUnit();
+    }
 }

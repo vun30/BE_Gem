@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import online.gemfpt.BE.enums.TypeEnum;
+import online.gemfpt.BE.enums.TypeOfProductEnum;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,6 +30,8 @@ public class Product {
 
     private TypeEnum category;
 
+    private TypeOfProductEnum typeWhenBuyBack;
+
 
     private String oldID;
 
@@ -37,6 +40,9 @@ public class Product {
 
     @Min(0)
     private double priceRate;
+
+       private double priceBuyRate;
+
 
     @Min(0)
     private int stock;
@@ -62,4 +68,10 @@ public class Product {
     @JsonIgnore
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private List<PromotionProduct> promotionProducts;
+
+
+     @JsonIgnore
+    @ManyToOne // many to one buy back bill
+    @JoinColumn(name = "billBuyBackProduct_id")
+    private BillBuyBack billBuyBack;
 }
