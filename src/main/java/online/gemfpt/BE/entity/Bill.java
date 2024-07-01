@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import online.gemfpt.BE.enums.TypeBillEnum;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -16,6 +17,8 @@ public class Bill {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
+    private TypeBillEnum typeBill;
 
     private String customerName;
     private int customerPhone;
