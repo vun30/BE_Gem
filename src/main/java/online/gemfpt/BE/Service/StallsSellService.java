@@ -2,8 +2,10 @@ package online.gemfpt.BE.Service;
 
 import jakarta.transaction.Transactional;
 import online.gemfpt.BE.Repository.AuthenticationRepository;
+import online.gemfpt.BE.Repository.BillRepository;
 import online.gemfpt.BE.Repository.StallsSellRepository;
 import online.gemfpt.BE.entity.Account;
+import online.gemfpt.BE.entity.Bill;
 import online.gemfpt.BE.entity.StallsSell;
 import online.gemfpt.BE.exception.AccountNotFoundException;
 import online.gemfpt.BE.exception.ProductNotFoundException;
@@ -16,6 +18,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.Year;
+import java.time.YearMonth;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,6 +31,9 @@ public class StallsSellService {
 
     @Autowired
     private AuthenticationRepository authenticationRepository;
+
+    @Autowired
+    private BillRepository billRepository;
 
     public StallsSell createStalls(StallsSellRequest stallsSellRequest) {
         StallsSell stallsSell = new StallsSell();
@@ -118,19 +125,179 @@ public class StallsSellService {
     }
 
     public List<LocalDateTime> getWorkingDatesByAccountId(Long accountId) {
-    Account account = authenticationRepository.findById(accountId)
-            .orElseThrow(() -> new AccountNotFoundException("Account not found with ID: " + accountId));
+        Account account = authenticationRepository.findById(accountId)
+                .orElseThrow(() -> new AccountNotFoundException("Account not found with ID: " + accountId));
 
-    List<LocalDateTime> workingDates = new ArrayList<>();
-    LocalDateTime currentDateTime = account.getStartWorkingDateTime();
+        List<LocalDateTime> workingDates = new ArrayList<>();
+        LocalDateTime currentDateTime = account.getStartWorkingDateTime();
 
-    while (!currentDateTime.isAfter(account.getEndWorkingDateTime())) {
-        workingDates.add(currentDateTime);
-        currentDateTime = currentDateTime.plusDays(1); // Có thể thay đổi thành plusHours(1) hoặc bất kỳ đơn vị thời gian nào phù hợp
+        while (!currentDateTime.isAfter(account.getEndWorkingDateTime())) {
+            workingDates.add(currentDateTime);
+            currentDateTime = currentDateTime.plusDays(1); // Có thể thay đổi thành plusHours(1) hoặc bất kỳ đơn vị thời gian nào phù hợp
+        }
+
+        return workingDates;
     }
 
-    return workingDates;
-}
+    public Map<String, Object> getTotalRevenueStall(Long stallId) {
+        List<Bill> bills = billRepository.findByStalls(stallId);
+        double totalRevenue = 0;
+        Map<String, Integer> staffOrderCount = new HashMap<>();
 
+        for (Bill bill : bills) {
+            totalRevenue += bill.getTotalAmount();
+            String cashier = bill.getCashier();
+            staffOrderCount.put(cashier, staffOrderCount.getOrDefault(cashier, 0) + 1);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("stallId", stallId);
+        result.put("totalRevenue", totalRevenue);
+        result.put("staffOrderCount", staffOrderCount);
+
+        return result;
+    }
+
+
+    public Map<String, Object> getTotalByStaff(String cashier) {
+        List<Bill> bills = billRepository.findByCashier(cashier);
+        double totalRevenue = 0;
+        int orderCount = bills.size();
+
+        for (Bill bill : bills) {
+            totalRevenue += bill.getTotalAmount();
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("cashier", cashier);
+        result.put("totalRevenue", totalRevenue);
+        result.put("orderCount", orderCount);
+
+        return result;
+    }
+
+
+    public List<Map<String, Object>> getAllStallsRevenue() {
+        List<StallsSell> stallsList = stallsSellRepository.findAll();
+        List<Map<String, Object>> stallsRevenueList = new ArrayList<>();
+        for (StallsSell stalls : stallsList) {
+            List<Bill> bills = billRepository.findByStalls(stalls.getStallsSellId());
+            double totalRevenue = 0;
+            Map<String, Integer> staffOrderCount = new HashMap<>();
+
+            for (Bill bill : bills) {
+                totalRevenue += bill.getTotalAmount();
+                String cashier = bill.getCashier();
+                staffOrderCount.put(cashier, staffOrderCount.getOrDefault(cashier, 0) + 1);
+            }
+
+            Map<String, Object> stallsRevenue = new HashMap<>();
+            stallsRevenue.put("stallsId", stalls.getStallsSellId());
+            stallsRevenue.put("stallsName", stalls.getStallsSellName());
+            stallsRevenue.put("totalRevenue", totalRevenue);
+            stallsRevenue.put("staffOrderCount", staffOrderCount);
+            stallsRevenueList.add(stallsRevenue);
+        }
+        return stallsRevenueList;
+    }
+
+
+    public List<Map<String, Object>> getTotalByStaff() {
+        List<Account> accountList = authenticationRepository.findAll();
+        List<Map<String, Object>> employeesRevenueList = new ArrayList<>();
+        for (Account account : accountList) {
+            List<Bill> bills = billRepository.findByCashier(account.getName());
+            double totalRevenue = 0;
+            int orderCount = bills.size();
+
+            for (Bill bill : bills) {
+                totalRevenue += bill.getTotalAmount();
+            }
+
+            Map<String, Object> employeeRevenue = new HashMap<>();
+            employeeRevenue.put("employeeId", account.getId());
+            employeeRevenue.put("employeeName", account.getName());
+            employeeRevenue.put("totalRevenue", totalRevenue);
+            employeeRevenue.put("orderCount", orderCount);
+            employeesRevenueList.add(employeeRevenue);
+        }
+        return employeesRevenueList;
+    }
+
+    public Map<String, Object> getMonthlyRevenueStall(Long stallId, YearMonth yearMonth) {
+        List<Bill> bills = billRepository.findByStalls(stallId).stream()
+                .filter(bill -> YearMonth.from(bill.getCreateTime()).equals(yearMonth))
+                .collect(Collectors.toList());
+
+        double totalRevenue = bills.stream().mapToDouble(Bill::getTotalAmount).sum();
+        Map<String, Integer> staffOrderCount = new HashMap<>();
+        for (Bill bill : bills) {
+            String cashier = bill.getCashier();
+            staffOrderCount.put(cashier, staffOrderCount.getOrDefault(cashier, 0) + 1);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("stallId", stallId);
+        result.put("yearMonth", yearMonth.toString());
+        result.put("totalRevenue", totalRevenue);
+        result.put("staffOrderCount", staffOrderCount);
+
+        return result;
+    }
+
+    public Map<String, Object> getYearlyRevenueStall(Long stallId, Year year) {
+        List<Bill> bills = billRepository.findByStalls(stallId).stream()
+                .filter(bill -> Year.from(bill.getCreateTime()).equals(year))
+                .collect(Collectors.toList());
+
+        double totalRevenue = bills.stream().mapToDouble(Bill::getTotalAmount).sum();
+        Map<String, Integer> staffOrderCount = new HashMap<>();
+        for (Bill bill : bills) {
+            String cashier = bill.getCashier();
+            staffOrderCount.put(cashier, staffOrderCount.getOrDefault(cashier, 0) + 1);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("stallId", stallId);
+        result.put("year", year.toString());
+        result.put("totalRevenue", totalRevenue);
+        result.put("staffOrderCount", staffOrderCount);
+
+        return result;
+    }
+
+    public Map<String, Object> getMonthlyRevenueByStaff(String cashier, YearMonth yearMonth) {
+        List<Bill> bills = billRepository.findByCashier(cashier).stream()
+                .filter(bill -> YearMonth.from(bill.getCreateTime()).equals(yearMonth))
+                .collect(Collectors.toList());
+
+        double totalRevenue = bills.stream().mapToDouble(Bill::getTotalAmount).sum();
+        int orderCount = bills.size();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("cashier", cashier);
+        result.put("yearMonth", yearMonth.toString());
+        result.put("totalRevenue", totalRevenue);
+        result.put("orderCount", orderCount);
+
+        return result;
+    }
+
+    public Map<String, Object> getYearlyRevenueByStaff(String cashier, Year year) {
+        List<Bill> bills = billRepository.findByCashier(cashier).stream()
+                .filter(bill -> Year.from(bill.getCreateTime()).equals(year))
+                .collect(Collectors.toList());
+
+        double totalRevenue = bills.stream().mapToDouble(Bill::getTotalAmount).sum();
+        int orderCount = bills.size();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("cashier", cashier);
+        result.put("year", year.toString());
+        result.put("totalRevenue", totalRevenue);
+        result.put("orderCount", orderCount);
+
+        return result;
+    }
 
 }

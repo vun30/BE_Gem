@@ -1,5 +1,6 @@
 package online.gemfpt.BE.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -18,7 +19,11 @@ public class WarrantyCard {
     private String customerName;
     private int customerPhone;
     private String productBarcode;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime purchaseDate;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime warrantyExpiryDate;
 
     @JsonIgnore

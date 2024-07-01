@@ -190,12 +190,6 @@ public class BillService {
         }
     }
 
-    public double payment(double amount, double customerCash) {
-        if (customerCash >= amount) {
-            return customerCash - amount;
-        } else {
-            throw new BadRequestException("Payment failed");
-        }
-    }
+
 
 }

@@ -10,4 +10,7 @@ import java.util.Optional;
 public interface BillRepository extends JpaRepository<Bill, Long> {
     Optional<Bill> findById(Long id);
     List<Bill> findByCustomerPhone(int customerPhone);
+    List<Bill> findByStalls(Long stalls);
+    List<Bill> findByCashier(String cashier);
+    long countByCashier(String cashier);
 }

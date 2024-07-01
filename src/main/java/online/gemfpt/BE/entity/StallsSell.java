@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class StallsSell {
-
     @Id
     @GeneratedValue (strategy = GenerationType .IDENTITY)
     private Long stallsSellId;
