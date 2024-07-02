@@ -25,7 +25,7 @@ public class DiscountService {
     private CustomerRepository customerRepository;
 
     @Transactional
-    public Discount sendDiscountRequest(String customerName, int customerPhone, double requestedDiscount, String discountReason) {
+    public Discount sendDiscountRequest(String customerName, String customerPhone, double requestedDiscount, String discountReason) {
         Optional<Customer> optionalCustomer = customerRepository.findByPhone(customerPhone);
         if (optionalCustomer.isPresent()) {
             Customer customer = optionalCustomer.get();

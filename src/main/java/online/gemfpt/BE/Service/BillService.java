@@ -39,20 +39,17 @@ public class BillService {
     WarrantyCardRepository warrantyCardRepository;
 
     @Autowired
-    DiscountRepository discountRepository;
+    CustomerService customerService;
 
     @Transactional
-    public BillResponse addToCart(String name, int phone, List<String> barcodes, double discounts) {
-        Optional<Customer> optionalCustomer = customerRepository.findByPhone(phone);
-        Customer customer;
-        if (optionalCustomer.isPresent()) {
-            customer = optionalCustomer.get();
-        } else {
-            customer = new Customer();
-            customer.setName(name);
-            customer.setPhone(phone);
-            customer.setCreateTime(LocalDateTime.now());
-            customer = customerRepository.save(customer);
+    public BillResponse addToCart(String phone, List<String> barcodes, Double discounts) {
+        if(phone.isEmpty()) {
+            throw new IllegalStateException("Phone number can not be empty!");
+        }
+
+        Optional<Customer> customer = customerRepository.findByPhone(phone);
+        if (customer.isEmpty()){
+            throw new IllegalStateException("This phone number isn't sign up");
         }
 
         Account account = authenticationService.getCurrentAccount();
@@ -62,7 +59,7 @@ public class BillService {
         }
         Bill bill = new Bill();
         bill.setTypeBill(TypeBillEnum.SEll);
-        bill.setCustomerName(name);
+        bill.setCustomerName(customer.get().getName());
         bill.setCustomerPhone(phone);
         bill.setCashier(account.getName());
         bill.setCreateTime(LocalDateTime.now());
@@ -126,8 +123,8 @@ public class BillService {
             bill.getItems().add(billItem);
 
             WarrantyCard warrantyCard = new WarrantyCard();
-            warrantyCard.setCustomerName(customer.getName());
-            warrantyCard.setCustomerPhone(customer.getPhone());
+            warrantyCard.setCustomerName(customer.get().getName());
+            warrantyCard.setCustomerPhone(customer.get().getPhone());
             warrantyCard.setProductBarcode(product.getBarcode());
             warrantyCard.setPurchaseDate(LocalDateTime.now());
             warrantyCard.setBill(bill);
@@ -139,27 +136,29 @@ public class BillService {
         }
 
         double customer_point = totalAmount / 1000;
-        customer.setPoints(customer.getPoints() + customer_point);
+        customer.get().setPoints(customer.get().getPoints() + customer_point);
 
         double memberDiscount = 0;
-        if (customer.getPoints() >= 5000000) {
-            customer.setRankCus("Diamond");
+        if (customer.get().getPoints() >= 5000000) {
+            customer.get().setRankCus("Diamond");
             memberDiscount = 10;
-        } else if (customer.getPoints() >= 1000000) {
-            customer.setRankCus("Gold");
+        } else if (customer.get().getPoints() >= 1000000) {
+            customer.get().setRankCus("Gold");
             memberDiscount = 8;
-        } else if (customer.getPoints() >= 100000) {
-            customer.setRankCus("Silver");
+        } else if (customer.get().getPoints() >= 100000) {
+            customer.get().setRankCus("Silver");
             memberDiscount = 5;
         } else {
-            customer.setRankCus("Normal");
+            customer.get().setRankCus("Normal");
         }
+
+        discounts = discounts == null ? 0 : discounts;
 
         double total = totalAmount - (totalAmount * memberDiscount / 100) - (totalAmount * discounts / 100);
         bill.setVoucher(memberDiscount);
         bill.setDiscount(discounts);
 
-        customerRepository.save(customer);
+        customerRepository.save(customer.get());
         bill.setTotalAmount(total);
         bill = billRepository.save(bill);
 
@@ -179,7 +178,7 @@ public class BillService {
         }
     }
 
-    public List<Bill> getAllBillOfCustomer(int customerPhone) {
+    public List<Bill> getAllBillOfCustomer(String customerPhone) {
         return billRepository.findByCustomerPhone(customerPhone);
     }
 
