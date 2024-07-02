@@ -1,6 +1,7 @@
 package online.gemfpt.BE.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 import online.gemfpt.BE.enums.TypeBillEnum;
@@ -21,7 +22,10 @@ public class BillBuyBack {
     private TypeBillEnum typeBill; // them moi
 
     private String customerName;
-    private int customerPhone;
+
+    @Pattern(regexp = "^(\\+84|0)\\d{9,10}$", message = "Invalid phone number")
+    private String customerPhone;
+
     private double totalAmount;
     private LocalDateTime createTime;
     private boolean status = false;

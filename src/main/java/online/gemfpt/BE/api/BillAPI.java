@@ -1,6 +1,7 @@
 package online.gemfpt.BE.api;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import online.gemfpt.BE.Service.BillService;
 import online.gemfpt.BE.entity.Bill;
 import online.gemfpt.BE.entity.Discount;
@@ -21,9 +22,9 @@ public class BillAPI {
     BillService billService;
 
     @PostMapping("/api/bill")
-    public ResponseEntity<?> addProductToCart(@RequestParam String customerName, @RequestParam int customerPhone, @RequestParam List<String> barcode, @RequestParam double discounts) {
+    public ResponseEntity<?> addProductToCart(@RequestParam String customerPhone, @RequestParam List<String> barcode,@Valid @RequestParam(required = false) Double discounts) {
         try {
-            BillResponse bill = billService.addToCart(customerName, customerPhone, barcode, discounts);
+            BillResponse bill = billService.addToCart(customerPhone, barcode, discounts);
             return ResponseEntity.status(HttpStatus.CREATED).body(bill);
         } catch (BadRequestException e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -41,7 +42,7 @@ public class BillAPI {
     }
 
     @GetMapping("/api/bill/customer/{customerPhone}")
-    public ResponseEntity<List<Bill>> getBillsByCustomerPhone(@PathVariable int customerPhone) {
+    public ResponseEntity<List<Bill>> getBillsByCustomerPhone(@PathVariable String customerPhone) {
         List<Bill> bills = billService.getAllBillOfCustomer(customerPhone);
         return ResponseEntity.ok(bills);
     }

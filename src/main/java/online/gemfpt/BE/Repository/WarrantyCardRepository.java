@@ -10,6 +10,6 @@ import java.util.List;
 
 @Repository
 public interface WarrantyCardRepository extends JpaRepository<WarrantyCard,Long> {
-    List<WarrantyCard> findByCustomerPhone(int customerPhone);
+    List<WarrantyCard> findByCustomerPhone(String customerPhone);
     List<WarrantyCard> findByBillId(long billId);
 }

@@ -59,13 +59,13 @@ public class BuyBackService {
      CustomerRepository customerRepository ;
 
 
-public List<Bill> getAllBillOfCustomerForBuy(int customerPhone) {
+public List<Bill> getAllBillOfCustomerForBuy(String customerPhone) {
         return billRepository.findByCustomerPhone(customerPhone);
     }
 
 
     @Transactional
-    public BillBuyBack createBillAndProducts(String customerName, int customerPhone, List<BuyBackProductRequest> buyBackProductRequests) {
+    public BillBuyBack createBillAndProducts(String customerName, String customerPhone, List<BuyBackProductRequest> buyBackProductRequests) {
      // Kiểm tra xem khách hàng đã tồn tại hay chưa
     Optional<Customer> optionalCustomer = customerRepository.findByPhone(customerPhone);
     Customer customer;

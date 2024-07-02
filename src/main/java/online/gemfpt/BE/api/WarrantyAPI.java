@@ -17,7 +17,7 @@ public class WarrantyAPI {
     private WarrantyService warrantyService;
 
     @GetMapping("/phone/{customerPhone}")
-    public List<WarrantyCard> getWarrantyByCustomerPhone(@PathVariable int customerPhone) {
+    public List<WarrantyCard> getWarrantyByCustomerPhone(@PathVariable String customerPhone) {
         return warrantyService.getWarrantyByCustomerPhone(customerPhone);
     }
 

@@ -38,7 +38,7 @@ public class ManagerAPI {
     ProductServices productServices ;
 
       @GetMapping("/bills")
-    public ResponseEntity<List<Bill>> getBillsByCustomerPhone(@RequestParam("customerPhone") int customerPhone) {
+    public ResponseEntity<List<Bill>> getBillsByCustomerPhone(@RequestParam("customerPhone") String customerPhone) {
         List<Bill> bills = buyBackService.getAllBillOfCustomerForBuy(customerPhone);
         return new ResponseEntity<>(bills, HttpStatus.OK);
     }
@@ -47,7 +47,7 @@ public class ManagerAPI {
     @PostMapping("/Staff-create-bill-buy-back")
     public ResponseEntity<BillBuyBack > createBillAndProducts(@RequestBody List<BuyBackProductRequest > buyBackProductRequests,
                                                              @RequestParam("customerName") String customerName,
-                                                             @RequestParam("customerPhone") int customerPhone) {
+                                                             @RequestParam("customerPhone") String customerPhone) {
         BillBuyBack billBuyBack = buyBackService.createBillAndProducts(customerName, customerPhone, buyBackProductRequests);
         return new ResponseEntity<>(billBuyBack, HttpStatus.CREATED);
     }

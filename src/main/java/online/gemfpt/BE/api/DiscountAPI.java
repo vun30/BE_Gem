@@ -1,4 +1,4 @@
-package online.gemfpt.BE.Controller;
+package online.gemfpt.BE.api;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import online.gemfpt.BE.Service.DiscountService;
@@ -19,7 +19,7 @@ public class DiscountAPI {
 
     @PostMapping("/discount/request")
     public ResponseEntity<Discount> sendDiscountRequest(@RequestParam String customerName,
-                                                               @RequestParam int customerPhone,
+                                                               @RequestParam String customerPhone,
                                                                @RequestParam double requestedDiscount,
                                                                @RequestParam String discountReason) {
         Discount discountRequest = discountService.sendDiscountRequest(customerName, customerPhone, requestedDiscount, discountReason);
