@@ -38,7 +38,6 @@ public class MoneymanagementAPI {
 
 
     @GetMapping("/{stallsSellId}/change-history")
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER')")
     public ResponseEntity<List<MoneyChangeHistory>> getStallsChangeHistory(
             @PathVariable Long stallsSellId) {
         List<MoneyChangeHistory> changeHistory = stallsSellService.getMoneyChangeHistory(stallsSellId);
