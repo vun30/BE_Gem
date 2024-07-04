@@ -23,4 +23,6 @@ public class StallsSell {
     private LocalDateTime stallsSellCreateTime;
 
     private boolean stallsSellStatus;
+
+    private double money;
 }

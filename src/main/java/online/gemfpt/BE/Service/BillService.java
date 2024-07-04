@@ -4,7 +4,9 @@ import jakarta.transaction.Transactional;
 import online.gemfpt.BE.Repository.*;
 import online.gemfpt.BE.entity.*;
 import online.gemfpt.BE.enums.TypeBillEnum;
+import online.gemfpt.BE.enums.TypeMoneyChange;
 import online.gemfpt.BE.exception.BadRequestException;
+import online.gemfpt.BE.exception.StallsSellNotFoundException;
 import online.gemfpt.BE.model.BillResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,6 +42,13 @@ public class BillService {
 
     @Autowired
     CustomerService customerService;
+
+    @Autowired
+    StallsSellRepository stallsSellRepository ;
+
+
+    @Autowired
+    MoneyChangeHistoryRepository moneyChangeHistoryRepository ;
 
     @Transactional
     public BillResponse addToCart(String phone, List<String> barcodes, Double discounts) {
@@ -161,6 +170,24 @@ public class BillService {
         customerRepository.save(customer.get());
         bill.setTotalAmount(total);
         bill = billRepository.save(bill);
+
+         // Cộng tiền vào quầy và lưu lại
+    StallsSell stallsSell = stallsSellRepository.findById(account.getStallsWorkingId())
+            .orElseThrow(() -> new StallsSellNotFoundException("Không tìm thấy quầy bán với ID: " + account.getStallsWorkingId()));
+    stallsSell.setMoney(stallsSell.getMoney() + total);
+    stallsSellRepository.save(stallsSell);
+
+     // Tạo và lưu lịch sử thay đổi tiền
+    MoneyChangeHistory moneyChangeHistory = new MoneyChangeHistory();
+    moneyChangeHistory.setStallsSell(stallsSell);
+    moneyChangeHistory.setChangeDateTime(LocalDateTime.now());
+    moneyChangeHistory.setAmount(total);
+    moneyChangeHistory.setStatus("Sell ");
+    moneyChangeHistory.setBillId(bill.getId());
+    moneyChangeHistory.setTypeChange(TypeMoneyChange.ADD);
+    moneyChangeHistoryRepository.save(moneyChangeHistory);
+
+
 
         BillResponse billResponse = new BillResponse();
         billResponse.setBill(bill);

@@ -12,4 +12,6 @@ public class StallsSellNotFoundException extends RuntimeException {
      public StallsSellNotFoundException(String message, Throwable cause) {
         super(message, cause);
     }
+
+
 }
