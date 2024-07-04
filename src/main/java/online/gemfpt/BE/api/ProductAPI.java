@@ -67,18 +67,18 @@ public ResponseEntity<?> updateOrCreateProduct(@PathVariable String barcode, @Re
     }
 }
 
-@PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER')")
-@PutMapping("/update-product-buyback-to-sell{barcode}")
-public ResponseEntity<?> updateOrCreateProductBuyBack(@PathVariable String barcode, @RequestBody @Valid ProductsRequest productsRequest) {
-    try {
-        Product updatedProduct = productServices.updateAndCreateNewProductBuyBack(barcode, productsRequest);
-        return ResponseEntity.ok(updatedProduct);
-    } catch (EntityNotFoundException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found with barcode: " + barcode);
-    } catch (IllegalArgumentException e) {
-        return ResponseEntity.badRequest().body(e.getMessage());
-    }
-}
+//@PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER')")
+//@PutMapping("/update-product-buyback-to-sell{barcode}")
+//public ResponseEntity<?> updateOrCreateProductBuyBack(@PathVariable String barcode, @RequestBody @Valid ProductsRequest productsRequest) {
+//    try {
+//        Product updatedProduct = productServices.updateAndCreateNewProductBuyBack(barcode, productsRequest);
+//        return ResponseEntity.ok(updatedProduct);
+//    } catch (EntityNotFoundException e) {
+//        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found with barcode: " + barcode);
+//    } catch (IllegalArgumentException e) {
+//        return ResponseEntity.badRequest().body(e.getMessage());
+//    }
+//}
 
 //---------search--------------------------///
 

@@ -2,13 +2,13 @@ package online.gemfpt.BE.api;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import online.gemfpt.BE.Service.BuyBackService;
+import online.gemfpt.BE.Service.PolicyService;
 import online.gemfpt.BE.Service.ProductServices;
 import online.gemfpt.BE.Service.StallsSellService;
 import online.gemfpt.BE.entity.*;
+import online.gemfpt.BE.enums.TypeMoneyChange;
 import online.gemfpt.BE.enums.TypeOfProductEnum;
-import online.gemfpt.BE.model.AccountOnStallsRequest;
-import online.gemfpt.BE.model.BuyBackProductRequest;
-import online.gemfpt.BE.model.StallsSellRequest;
+import online.gemfpt.BE.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @SecurityRequirement(name = "api")
@@ -42,21 +41,20 @@ public class ManagerAPI {
         List<Bill> bills = buyBackService.getAllBillOfCustomerForBuy(customerPhone);
         return new ResponseEntity<>(bills, HttpStatus.OK);
     }
+//
+//    @PostMapping("/Staff-create-bill-buy-back")
+//    public ResponseEntity<BillBuyBack > createBillAndProducts(@RequestBody List<BuyBackProductRequest > buyBackProductRequests,
+//                                                             @RequestParam("customerName") String customerName,
+//                                                             @RequestParam("customerPhone") String customerPhone) {
+//        BillBuyBack billBuyBack = buyBackService.createBillAndProducts(customerName, customerPhone, buyBackProductRequests);
+//        return new ResponseEntity<>(billBuyBack, HttpStatus.CREATED);
+//    }
 
-
-    @PostMapping("/Staff-create-bill-buy-back")
-    public ResponseEntity<BillBuyBack > createBillAndProducts(@RequestBody List<BuyBackProductRequest > buyBackProductRequests,
-                                                             @RequestParam("customerName") String customerName,
-                                                             @RequestParam("customerPhone") String customerPhone) {
-        BillBuyBack billBuyBack = buyBackService.createBillAndProducts(customerName, customerPhone, buyBackProductRequests);
-        return new ResponseEntity<>(billBuyBack, HttpStatus.CREATED);
-    }
-
-    @GetMapping("/+Staff-get-all-bill-buy-back")
-    public ResponseEntity<List<BillBuyBack>> getAllBillBuyBacks() {
-        List<BillBuyBack> billBuyBacks = buyBackService.getAllBillBuyBacks();
-        return new ResponseEntity<>(billBuyBacks, HttpStatus.OK);
-    }
+//    @GetMapping("/+Staff-get-all-bill-buy-back")
+//    public ResponseEntity<List<BillBuyBack>> getAllBillBuyBacks() {
+//        List<BillBuyBack> billBuyBacks = buyBackService.getAllBillBuyBacks();
+//        return new ResponseEntity<>(billBuyBacks, HttpStatus.OK);
+//    }
 
     @GetMapping("/by-type")
     public ResponseEntity<List<Product >> getProductsByTypeWhenBuyBack(@RequestParam TypeOfProductEnum  typeWhenBuyBack) {
@@ -70,6 +68,7 @@ public class ManagerAPI {
         StallsSell stallsSell = stallsSellService.createStalls(stallsSellRequest);
         return ResponseEntity.ok(stallsSell);
     }
+
 @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER')")
 @PatchMapping("/updateAccounts")
 public ResponseEntity<List<Account>> updateAccountsOnStalls(
@@ -81,12 +80,14 @@ public ResponseEntity<List<Account>> updateAccountsOnStalls(
     }
     return ResponseEntity.ok(updatedAccounts);
 }
+
 @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER')")
       @GetMapping("/all-accounts")
     public ResponseEntity<List <Account>> getAllAccounts() {
         List<Account> accounts = stallsSellService.getAllAccounts();
         return ResponseEntity.ok(accounts);
     }
+
 @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER')")
     @GetMapping("/active-accounts")
     public ResponseEntity<List<Account>> getAllActiveStaffAccounts() {
@@ -107,6 +108,7 @@ public ResponseEntity<List<Account>> updateAccountsOnStalls(
         Account account = stallsSellService.getCurrentAccountWorkShift();
         return ResponseEntity.ok(account);
     }
+
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER')")
     @GetMapping("/accounts-by-working-datetime-and-stalls") // search time for see who working in this date
     public ResponseEntity<List<Account>> getAccountsByWorkingDateTimeAndStallsId(
@@ -123,6 +125,23 @@ public ResponseEntity<List<LocalDateTime>> getWorkingDatesByAccountId(@PathVaria
 }
 
 
+ @GetMapping("/all-Stalls")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER')")
+    public ResponseEntity<List<StallsSell>> getAllStalls() {
+        List<StallsSell> stallsList = stallsSellService.getAllStalls();
+        return new ResponseEntity<>(stallsList, HttpStatus.OK);
+    }
+
+  @PutMapping("/{stallsSellId}/status")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER')")
+    public ResponseEntity<String> updateStallsStatus(
+            @PathVariable Long stallsSellId,
+            @RequestParam boolean status) {
+        stallsSellService.updateStallsStatus(stallsSellId, status);
+        String message = status ? "Quầy bán được mở thành công" : "Quầy bán được đóng thành công";
+        return new ResponseEntity<>(message, HttpStatus.OK);
+    }
 }
+
 // code phan role
 //@PreAuthorize("hasAuthority('MANAGER')")

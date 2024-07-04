@@ -4,7 +4,10 @@ import jakarta.transaction.Transactional;
 import online.gemfpt.BE.Repository.*;
 import online.gemfpt.BE.entity.*;
 import online.gemfpt.BE.enums.TypeBillEnum;
+import online.gemfpt.BE.enums.TypeMoneyChange;
 import online.gemfpt.BE.enums.TypeOfProductEnum;
+import online.gemfpt.BE.exception.InsufficientMoneyInStallException;
+import online.gemfpt.BE.exception.StallsSellNotFoundException;
 import online.gemfpt.BE.model.BuyBackProductRequest;
 import online.gemfpt.BE.model.ProductUrlRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +44,9 @@ public class BuyBackService {
     private ProductUrlRepository productUrlRepository;
 
      @Autowired
+     StallsSellRepository stallsSellRepository ;
+
+     @Autowired
      AuthenticationService authenticationService ;
 
      @Autowired
@@ -57,6 +63,9 @@ public class BuyBackService {
 
      @Autowired
      CustomerRepository customerRepository ;
+
+     @Autowired
+     MoneyChangeHistoryRepository    moneyChangeHistoryRepository ;
 
 
 public List<Bill> getAllBillOfCustomerForBuy(String customerPhone) {
@@ -188,6 +197,31 @@ public List<Bill> getAllBillOfCustomerForBuy(String customerPhone) {
             metalRepository.saveAll(product.getMetals());
         }
     }
+
+       // Trừ số tiền từ total vào quầy của account đang login
+    StallsSell stallsSell = stallsSellRepository.findById(account.getStallsWorkingId())
+            .orElseThrow(() -> new StallsSellNotFoundException("Không tìm thấy quầy bán với ID: " + account.getStallsWorkingId()));
+    double totalBillPrice = savedBillBuyBack.getProducts().stream()
+            .mapToDouble(Product::getPrice)
+            .sum();
+
+     // Kiểm tra nếu số tiền trong quầy không đủ để trừ
+    if (stallsSell.getMoney() < totalBillPrice) {
+        throw new InsufficientMoneyInStallException("Số tiền trong quầy không đủ để thực hiện giao dịch này") ;
+    }
+
+    // Trừ số tiền và lưu lại vào quầy
+    stallsSell.setMoney(stallsSell.getMoney() - totalBillPrice);
+    stallsSellRepository.save(stallsSell);
+
+      MoneyChangeHistory moneyChangeHistory = new MoneyChangeHistory();
+    moneyChangeHistory.setStallsSell(stallsSell);
+    moneyChangeHistory.setChangeDateTime(LocalDateTime.now());
+    moneyChangeHistory.setAmount(totalBillPrice); // Số tiền thay đổi là âm do làm giảm số tiền trong quầy
+        moneyChangeHistory.setBillId(billBuyBack.getId());
+          moneyChangeHistory.setStatus("Buy Back");
+        moneyChangeHistory.setTypeChange(TypeMoneyChange.WITHDRAW);
+    moneyChangeHistoryRepository.save(moneyChangeHistory);
 
     // Calculate total amount of the bill
     double totalAmount = savedBillBuyBack.getProducts().stream()

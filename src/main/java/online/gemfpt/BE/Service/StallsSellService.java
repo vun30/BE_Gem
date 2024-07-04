@@ -3,14 +3,18 @@ package online.gemfpt.BE.Service;
 import jakarta.transaction.Transactional;
 import online.gemfpt.BE.Repository.AuthenticationRepository;
 import online.gemfpt.BE.Repository.BillRepository;
+import online.gemfpt.BE.Repository.MoneyChangeHistoryRepository;
 import online.gemfpt.BE.Repository.StallsSellRepository;
 import online.gemfpt.BE.entity.Account;
 import online.gemfpt.BE.entity.Bill;
+import online.gemfpt.BE.entity.MoneyChangeHistory;
 import online.gemfpt.BE.entity.StallsSell;
+import online.gemfpt.BE.enums.TypeMoneyChange;
 import online.gemfpt.BE.exception.AccountNotFoundException;
 import online.gemfpt.BE.exception.ProductNotFoundException;
 import online.gemfpt.BE.exception.StallsSellNotFoundException;
 import online.gemfpt.BE.model.AccountOnStallsRequest;
+import online.gemfpt.BE.model.MoneyChangeRequest;
 import online.gemfpt.BE.model.StallsSellRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -34,6 +38,13 @@ public class StallsSellService {
 
     @Autowired
     private BillRepository billRepository;
+
+    @Autowired
+    private MoneyChangeHistoryRepository moneyChangeHistoryRepository;
+
+     public List<StallsSell> getAllStalls() {
+        return stallsSellRepository.findAll();
+    }
 
     public StallsSell createStalls(StallsSellRequest stallsSellRequest) {
         StallsSell stallsSell = new StallsSell();
@@ -302,6 +313,48 @@ public List<Account> addAccountsOnStalls(List<Long> accountIds, AccountOnStallsR
         result.put("orderCount", orderCount);
 
         return result;
+    }
+
+     @Transactional
+    public MoneyChangeHistory  changeMoneyInStalls(MoneyChangeRequest  moneyChangeRequest, TypeMoneyChange typeChange) {
+        // Lấy thông tin quầy bán theo ID
+        StallsSell stallsSell = stallsSellRepository.findById(moneyChangeRequest.getStallsSellId())
+                .orElseThrow(() -> new StallsSellNotFoundException("Không tìm thấy quầy bán với ID: " + moneyChangeRequest.getStallsSellId()));
+
+        double amount = moneyChangeRequest.getAmount();
+
+        // Kiểm tra loại giao dịch và điều chỉnh số tiền tương ứng
+        if (typeChange == TypeMoneyChange .WITHDRAW) {
+            amount = -amount;
+        }
+
+        // Cập nhật tổng số tiền trong quầy
+        stallsSell.setMoney(stallsSell.getMoney() + amount);
+        stallsSellRepository.save(stallsSell);
+
+        // Ghi lại lịch sử thay đổi tiền
+        MoneyChangeHistory moneyChangeHistory = new MoneyChangeHistory();
+        moneyChangeHistory.setStallsSell(stallsSell);
+        moneyChangeHistory.setAmount(amount);
+        moneyChangeHistory.setChangeDateTime(LocalDateTime.now());
+        moneyChangeHistory.setBillId(moneyChangeRequest.getBillId());
+        moneyChangeHistory.setStatus("Hoàn thành");
+        moneyChangeHistory.setTypeChange(typeChange);
+
+        // Lưu lại lịch sử thay đổi tiền và trả về bản ghi
+        return moneyChangeHistoryRepository.save(moneyChangeHistory);
+    }
+
+     public void updateStallsStatus(Long stallsSellId, boolean status) {
+        StallsSell stallsSell = stallsSellRepository.findById(stallsSellId)
+                .orElseThrow(() -> new StallsSellNotFoundException("Không tìm thấy quầy bán với ID: " + stallsSellId));
+
+        stallsSell.setStallsSellStatus(status);
+        stallsSellRepository.save(stallsSell);
+    }
+
+    public List<MoneyChangeHistory> getMoneyChangeHistory(Long stallsSellId) {
+        return moneyChangeHistoryRepository.findByStallsSell_StallsSellIdOrderByChangeDateTimeDesc(stallsSellId);
     }
 
 }
