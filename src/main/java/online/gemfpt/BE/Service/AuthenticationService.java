@@ -221,31 +221,32 @@ public Account staffEditAccountByEmail(String email, StaffEditAccountRequest sta
     return accountResponse;
 }
 
-    public void ForGotPassword(ForGotPasswordRequest forGotPasswordRequest) {
-        Account account = authenticationRepository.findAccountByEmail(forGotPasswordRequest.getEmail());
-        if (account == null){
-            try {
-             throw new BadRequestException("Account not found !!");
-            }catch(RuntimeException e ){
-                throw new RuntimeException(e);
-            }
-        }
-        EmailDetail emailDetail = new EmailDetail();
-        emailDetail.setRecipient(account.getEmail());
-        emailDetail.setSubject("Reset password for account " + forGotPasswordRequest.getEmail() + "|");
-        emailDetail.setMsgBody("");
-        emailDetail.setButtonValue("Reset password");
-        emailDetail.setLink("" + tokenService.generateToken(account));// thieu link resset password
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                emailService.sendMailTemplate(emailDetail);
-
-            }
-        };
-        new Thread(r).start();
-
+    public void forGotPassword(ForGotPasswordRequest forGotPasswordRequest) {
+    Account account = authenticationRepository.findAccountByEmail(forGotPasswordRequest.getEmail());
+    if (account == null) {
+        throw new BadRequestException("Account not found !!");
     }
+
+    String token = tokenService.generateToken(account);
+    String resetLink = "http://152.42.182.49/reset-password?token="+ token;
+
+    // Prepare email details
+    EmailDetail emailDetail = new EmailDetail();
+    emailDetail.setRecipient(account.getEmail());
+    emailDetail.setSubject("Đặt lại mật khẩu cho tài khoản " + forGotPasswordRequest.getEmail());
+    emailDetail.setLink(resetLink);
+    emailDetail.setFullname(account.getName());
+    emailDetail.setButtonValue("Reset password");
+
+    Runnable r = new Runnable() {
+        @Override
+        public void run() {
+            emailService.sendMailTemplate(emailDetail);
+        }
+    };
+    new Thread(r).start();
+}
+
     public Account getCurrentAccount(){
         return(Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }

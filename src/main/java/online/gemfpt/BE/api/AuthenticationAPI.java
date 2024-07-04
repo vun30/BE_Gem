@@ -32,8 +32,9 @@ public class AuthenticationAPI {
     }
     @PostMapping("/forgot_password")
     public void forgotPassword (@RequestBody ForGotPasswordRequest forGotPasswordRequest) {
-        authenticationService.ForGotPassword(forGotPasswordRequest);
+        authenticationService.forGotPassword(forGotPasswordRequest);
     }
+
     @PostMapping("/reset_password")
     public void resetpassword (@RequestBody ResetPasswordRequest resetwordRequest) {
         authenticationService.ResetPassword(resetwordRequest);
@@ -83,15 +84,16 @@ public class AuthenticationAPI {
         return ResponseEntity.ok(account);
     }
 
-    @GetMapping("/admin_only")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity getAdmin(){return  ResponseEntity.ok("admin ok");}
+//    @GetMapping("/admin_only")
+//    @PreAuthorize("hasAuthority('ADMIN')")
+//    public ResponseEntity getAdmin(){return  ResponseEntity.ok("admin ok");}
 
     @PostMapping("/register")
     public ResponseEntity Register (@RequestBody RegisterRequest responseRequest){
         Account  account = authenticationService.register(responseRequest);
         return  ResponseEntity.ok(account);
     }
+
     @GetMapping("/send_mail")
     public void sendMail(){
         EmailDetail emailDetail = new EmailDetail();
