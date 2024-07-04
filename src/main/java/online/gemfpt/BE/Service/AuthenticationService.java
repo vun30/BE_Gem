@@ -150,6 +150,38 @@ public Account staffEditAccountByEmail(String email, StaffEditAccountRequest sta
 
         return accountResponse;
     }
+
+        public AccountResponse loginGoogle(LoginGoogleRequest loginGoogleRequest) {
+    AccountResponse accountResponse = new AccountResponse();
+    try {
+        FirebaseToken firebaseToken = FirebaseAuth.getInstance().verifyIdToken(loginGoogleRequest.getToken());
+        String email = firebaseToken.getEmail();
+        Account account = authenticationRepository.findAccountByEmail(email);
+        if (account == null) {
+            account = new Account();
+            account.setName(firebaseToken.getName());
+            account.setEmail(email);
+            account.setRole(RoleEnum.STAFF);
+            account.setCreateDate(LocalDateTime.now());
+            account = authenticationRepository.save(account);
+        }
+        accountResponse.setEmail(account.getEmail());
+        accountResponse.setId(account.getId());
+        accountResponse.setRole(RoleEnum.STAFF);
+        accountResponse.setPhone(account.getPhone());
+        accountResponse.setName(account.getName());
+        accountResponse.setCreateDateNow(account.getCreateDate());
+
+        String token = tokenService.generateToken(account);
+        accountResponse.setToken(token);
+    } catch (Exception e) {
+        // Handle specific exceptions and log or throw appropriate errors
+        System.out.println("Exception occurred during Google login: " + e.getMessage());
+        throw new RuntimeException("Error during Google login", e);
+    }
+    return accountResponse;
+}
+
     public List<Account> all() {
         return authenticationRepository.findAll();
     }
@@ -193,59 +225,34 @@ public Account staffEditAccountByEmail(String email, StaffEditAccountRequest sta
 //        }
 //        return accountResponse;
 //    }
-    public AccountResponse loginGoogle(LoginGoogleRequest loginGoogleRequest) {
-    AccountResponse accountResponse = new AccountResponse();
-    try {
-        FirebaseToken firebaseToken = FirebaseAuth.getInstance().verifyIdToken(loginGoogleRequest.getToken());
-        String email = firebaseToken.getEmail();
-        Account account = authenticationRepository.findAccountByEmail(email);
-        if (account == null) {
-            account = new Account();
-            account.setName(firebaseToken.getName());
-            account.setEmail(email);
-            account.setRole(RoleEnum.STAFF);
-            account.setCreateDate(LocalDateTime.now());
-            account = authenticationRepository.save(account);
-        }
-        accountResponse.setEmail(account.getEmail());
-        accountResponse.setId(account.getId());
-        accountResponse.setRole(RoleEnum.STAFF);
-        accountResponse.setName(account.getName());
-        String token = tokenService.generateToken(account);
-        accountResponse.setToken(token);
-    } catch (Exception e) {
-        // Handle specific exceptions and log or throw appropriate errors
-        System.out.println("Exception occurred during Google login: " + e.getMessage());
-        throw new RuntimeException("Error during Google login", e);
+
+
+    public void forGotPassword(ForGotPasswordRequest forGotPasswordRequest) {
+    Account account = authenticationRepository.findAccountByEmail(forGotPasswordRequest.getEmail());
+    if (account == null) {
+        throw new BadRequestException("Account not found !!");
     }
-    return accountResponse;
+
+    String token = tokenService.generateToken(account);
+    String resetLink = "http://152.42.182.49/reset-password?token="+ token;
+
+    // Prepare email details
+    EmailDetail emailDetail = new EmailDetail();
+    emailDetail.setRecipient(account.getEmail());
+    emailDetail.setSubject("Đặt lại mật khẩu cho tài khoản " + forGotPasswordRequest.getEmail());
+    emailDetail.setLink(resetLink);
+    emailDetail.setFullname(account.getName());
+    emailDetail.setButtonValue("Reset password");
+
+    Runnable r = new Runnable() {
+        @Override
+        public void run() {
+            emailService.sendMailTemplate(emailDetail);
+        }
+    };
+    new Thread(r).start();
 }
 
-    public void ForGotPassword(ForGotPasswordRequest forGotPasswordRequest) {
-        Account account = authenticationRepository.findAccountByEmail(forGotPasswordRequest.getEmail());
-        if (account == null){
-            try {
-             throw new BadRequestException("Account not found !!");
-            }catch(RuntimeException e ){
-                throw new RuntimeException(e);
-            }
-        }
-        EmailDetail emailDetail = new EmailDetail();
-        emailDetail.setRecipient(account.getEmail());
-        emailDetail.setSubject("Reset password for account " + forGotPasswordRequest.getEmail() + "|");
-        emailDetail.setMsgBody("");
-        emailDetail.setButtonValue("Reset password");
-        emailDetail.setLink("" + tokenService.generateToken(account));// thieu link resset password
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                emailService.sendMailTemplate(emailDetail);
-
-            }
-        };
-        new Thread(r).start();
-
-    }
     public Account getCurrentAccount(){
         return(Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }

@@ -22,7 +22,9 @@ public class EmailService {
         try{
             Context context = new Context();
 
-            context.setVariable("name", "Bảo K");
+//            context.setVariable("name", "Bảo K");
+            context.setVariable("name", emailDetail.getFullname());
+            context.setVariable("link", emailDetail.getLink());
 
             String text = templateEngine.process("emailtemplate", context);
 

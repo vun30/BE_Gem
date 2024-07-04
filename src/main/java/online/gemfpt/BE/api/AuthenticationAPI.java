@@ -26,14 +26,22 @@ public class AuthenticationAPI {
     @Autowired
     EmailService emailService;
 
+
     @PostMapping("/login_google")
-    public ResponseEntity<AccountResponse> loginGoogle (@RequestBody LoginGoogleRequest loginGoogleRequest){
-        return ResponseEntity.ok(authenticationService.loginGoogle(loginGoogleRequest));
+public ResponseEntity<AccountResponse> loginGoogle(@RequestBody LoginGoogleRequest loginGoogleRequest) {
+    AccountResponse accountResponse = authenticationService.loginGoogle(loginGoogleRequest);
+    return ResponseEntity.ok(accountResponse);
+}
+       @PostMapping("/login")
+    public ResponseEntity login (@RequestBody LoginRequest loginRequest){
+        Account account = authenticationService.login(loginRequest);
+        return ResponseEntity.ok(account);
     }
     @PostMapping("/forgot_password")
     public void forgotPassword (@RequestBody ForGotPasswordRequest forGotPasswordRequest) {
-        authenticationService.ForGotPassword(forGotPasswordRequest);
+        authenticationService.forGotPassword(forGotPasswordRequest);
     }
+
     @PostMapping("/reset_password")
     public void resetpassword (@RequestBody ResetPasswordRequest resetwordRequest) {
         authenticationService.ResetPassword(resetwordRequest);
@@ -83,15 +91,16 @@ public class AuthenticationAPI {
         return ResponseEntity.ok(account);
     }
 
-    @GetMapping("/admin_only")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity getAdmin(){return  ResponseEntity.ok("admin ok");}
+//    @GetMapping("/admin_only")
+//    @PreAuthorize("hasAuthority('ADMIN')")
+//    public ResponseEntity getAdmin(){return  ResponseEntity.ok("admin ok");}
 
     @PostMapping("/register")
     public ResponseEntity Register (@RequestBody RegisterRequest responseRequest){
         Account  account = authenticationService.register(responseRequest);
         return  ResponseEntity.ok(account);
     }
+
     @GetMapping("/send_mail")
     public void sendMail(){
         EmailDetail emailDetail = new EmailDetail();
@@ -118,9 +127,5 @@ public class AuthenticationAPI {
     }
 
 
-    @PostMapping("/login")
-    public ResponseEntity login (@RequestBody LoginRequest loginRequest){
-        Account account = authenticationService.login(loginRequest);
-        return ResponseEntity.ok(account);
-    }
+
 }
