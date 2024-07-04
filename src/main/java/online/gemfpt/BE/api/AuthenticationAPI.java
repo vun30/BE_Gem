@@ -26,11 +26,12 @@ public class AuthenticationAPI {
     @Autowired
     EmailService emailService;
 
-    @PostMapping("/login_google")
-    public ResponseEntity<AccountResponse> loginGoogle (@RequestBody LoginGoogleRequest loginGoogleRequest){
-        return ResponseEntity.ok(authenticationService.loginGoogle(loginGoogleRequest));
-    }
 
+    @PostMapping("/login_google")
+public ResponseEntity<AccountResponse> loginGoogle(@RequestBody LoginGoogleRequest loginGoogleRequest) {
+    AccountResponse accountResponse = authenticationService.loginGoogle(loginGoogleRequest);
+    return ResponseEntity.ok(accountResponse);
+}
        @PostMapping("/login")
     public ResponseEntity login (@RequestBody LoginRequest loginRequest){
         Account account = authenticationService.login(loginRequest);
