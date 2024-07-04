@@ -150,6 +150,38 @@ public Account staffEditAccountByEmail(String email, StaffEditAccountRequest sta
 
         return accountResponse;
     }
+
+        public AccountResponse loginGoogle(LoginGoogleRequest loginGoogleRequest) {
+    AccountResponse accountResponse = new AccountResponse();
+    try {
+        FirebaseToken firebaseToken = FirebaseAuth.getInstance().verifyIdToken(loginGoogleRequest.getToken());
+        String email = firebaseToken.getEmail();
+        Account account = authenticationRepository.findAccountByEmail(email);
+        if (account == null) {
+            account = new Account();
+            account.setName(firebaseToken.getName());
+            account.setEmail(email);
+            account.setRole(RoleEnum.STAFF);
+            account.setCreateDate(LocalDateTime.now());
+            account = authenticationRepository.save(account);
+        }
+        accountResponse.setEmail(account.getEmail());
+        accountResponse.setId(account.getId());
+        accountResponse.setRole(RoleEnum.STAFF);
+        accountResponse.setPhone(account.getPhone());
+        accountResponse.setName(account.getName());
+        accountResponse.setCreateDateNow(account.getCreateDate());
+
+        String token = tokenService.generateToken(account);
+        accountResponse.setToken(token);
+    } catch (Exception e) {
+        // Handle specific exceptions and log or throw appropriate errors
+        System.out.println("Exception occurred during Google login: " + e.getMessage());
+        throw new RuntimeException("Error during Google login", e);
+    }
+    return accountResponse;
+}
+
     public List<Account> all() {
         return authenticationRepository.findAll();
     }
@@ -193,33 +225,7 @@ public Account staffEditAccountByEmail(String email, StaffEditAccountRequest sta
 //        }
 //        return accountResponse;
 //    }
-    public AccountResponse loginGoogle(LoginGoogleRequest loginGoogleRequest) {
-    AccountResponse accountResponse = new AccountResponse();
-    try {
-        FirebaseToken firebaseToken = FirebaseAuth.getInstance().verifyIdToken(loginGoogleRequest.getToken());
-        String email = firebaseToken.getEmail();
-        Account account = authenticationRepository.findAccountByEmail(email);
-        if (account == null) {
-            account = new Account();
-            account.setName(firebaseToken.getName());
-            account.setEmail(email);
-            account.setRole(RoleEnum.STAFF);
-            account.setCreateDate(LocalDateTime.now());
-            account = authenticationRepository.save(account);
-        }
-        accountResponse.setEmail(account.getEmail());
-        accountResponse.setId(account.getId());
-        accountResponse.setRole(RoleEnum.STAFF);
-        accountResponse.setName(account.getName());
-        String token = tokenService.generateToken(account);
-        accountResponse.setToken(token);
-    } catch (Exception e) {
-        // Handle specific exceptions and log or throw appropriate errors
-        System.out.println("Exception occurred during Google login: " + e.getMessage());
-        throw new RuntimeException("Error during Google login", e);
-    }
-    return accountResponse;
-}
+
 
     public void forGotPassword(ForGotPasswordRequest forGotPasswordRequest) {
     Account account = authenticationRepository.findAccountByEmail(forGotPasswordRequest.getEmail());

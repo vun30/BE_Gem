@@ -30,6 +30,12 @@ public class AuthenticationAPI {
     public ResponseEntity<AccountResponse> loginGoogle (@RequestBody LoginGoogleRequest loginGoogleRequest){
         return ResponseEntity.ok(authenticationService.loginGoogle(loginGoogleRequest));
     }
+
+       @PostMapping("/login")
+    public ResponseEntity login (@RequestBody LoginRequest loginRequest){
+        Account account = authenticationService.login(loginRequest);
+        return ResponseEntity.ok(account);
+    }
     @PostMapping("/forgot_password")
     public void forgotPassword (@RequestBody ForGotPasswordRequest forGotPasswordRequest) {
         authenticationService.forGotPassword(forGotPasswordRequest);
@@ -120,9 +126,5 @@ public class AuthenticationAPI {
     }
 
 
-    @PostMapping("/login")
-    public ResponseEntity login (@RequestBody LoginRequest loginRequest){
-        Account account = authenticationService.login(loginRequest);
-        return ResponseEntity.ok(account);
-    }
+
 }
