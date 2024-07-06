@@ -7,6 +7,7 @@ import online.gemfpt.BE.enums.TypeBillEnum;
 import online.gemfpt.BE.enums.TypeMoneyChange;
 import online.gemfpt.BE.exception.BadRequestException;
 import online.gemfpt.BE.exception.StallsSellNotFoundException;
+import online.gemfpt.BE.model.BillRequest;
 import online.gemfpt.BE.model.BillResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,14 +52,18 @@ public class BillService {
     MoneyChangeHistoryRepository moneyChangeHistoryRepository ;
 
     @Transactional
-    public BillResponse addToCart(String phone, List<String> barcodes, Double discounts) {
-        if(phone.isEmpty()) {
+    public BillResponse addToCart(BillRequest billRequest) {
+        String phone = billRequest.getCustomerPhone();
+        List<String> barcodes = billRequest.getBarcodes();
+        Double discounts = billRequest.getDiscounts();
+
+        if (phone.isEmpty()) {
             throw new IllegalStateException("Phone number can not be empty!");
         }
 
         Optional<Customer> customer = customerRepository.findByPhone(phone);
-        if (customer.isEmpty()){
-            throw new IllegalStateException("This phone number isn't sign up");
+        if (customer.isEmpty()) {
+            throw new IllegalStateException("This phone number isn't signed up");
         }
 
         Account account = authenticationService.getCurrentAccount();
@@ -66,6 +71,7 @@ public class BillService {
         if (!account.isStaffWorkingStatus()) {
             throw new IllegalStateException("Staff is not in working status.");
         }
+
         Bill bill = new Bill();
         bill.setTypeBill(TypeBillEnum.SEll);
         bill.setCustomerName(customer.get().getName());
@@ -74,8 +80,8 @@ public class BillService {
         bill.setCreateTime(LocalDateTime.now());
         bill.setStalls(account.getStallsWorkingId());
         bill.setStatus(true);
-        bill.setCreateTime(LocalDateTime.now());
-        // Khởi tạo danh sách items nếu chưa được khởi tạo
+
+        // Initialize items list if not already initialized
         if (bill.getItems() == null) {
             bill.setItems(new ArrayList<>());
         }
@@ -123,7 +129,7 @@ public class BillService {
             BillItem billItem = new BillItem();
             billItem.setBill(bill);
             billItem.setProduct_barcode(product.getBarcode());
-            billItem.setQuantity(1); // Giả định số lượng là 1 để đơn giản hóa
+            billItem.setQuantity(1); // Assuming quantity is 1 for simplicity
             billItem.setPrice(product.getPrice());
             billItem.setDiscount(discount);
             billItem.setNewPrice(totalPrice);
@@ -137,15 +143,15 @@ public class BillService {
             warrantyCard.setProductBarcode(product.getBarcode());
             warrantyCard.setPurchaseDate(LocalDateTime.now());
             warrantyCard.setBill(bill);
-            warrantyCard.setWarrantyExpiryDate(LocalDateTime.now().plus(1, ChronoUnit.YEARS)); // Thời hạn bảo hành 1 năm
+            warrantyCard.setWarrantyExpiryDate(LocalDateTime.now().plus(1, ChronoUnit.YEARS)); // 1-year warranty period
             warrantyCards.add(warrantyCard);
 
             warrantyCardRepository.save(warrantyCard);
             productsRepository.save(product);
         }
 
-        double customer_point = totalAmount / 1000;
-        customer.get().setPoints(customer.get().getPoints() + customer_point);
+        double customerPoints = totalAmount / 1000;
+        customer.get().setPoints(customer.get().getPoints() + customerPoints);
 
         double memberDiscount = 0;
         if (customer.get().getPoints() >= 5000000) {
@@ -171,23 +177,21 @@ public class BillService {
         bill.setTotalAmount(total);
         bill = billRepository.save(bill);
 
-         // Cộng tiền vào quầy và lưu lại
-    StallsSell stallsSell = stallsSellRepository.findById(account.getStallsWorkingId())
-            .orElseThrow(() -> new StallsSellNotFoundException("Không tìm thấy quầy bán với ID: " + account.getStallsWorkingId()));
-    stallsSell.setMoney(stallsSell.getMoney() + total);
-    stallsSellRepository.save(stallsSell);
+        // Add money to the stall and save it
+        StallsSell stallsSell = stallsSellRepository.findById(account.getStallsWorkingId())
+                .orElseThrow(() -> new StallsSellNotFoundException("Không tìm thấy quầy bán với ID: " + account.getStallsWorkingId()));
+        stallsSell.setMoney(stallsSell.getMoney() + total);
+        stallsSellRepository.save(stallsSell);
 
-     // Tạo và lưu lịch sử thay đổi tiền
-    MoneyChangeHistory moneyChangeHistory = new MoneyChangeHistory();
-    moneyChangeHistory.setStallsSell(stallsSell);
-    moneyChangeHistory.setChangeDateTime(LocalDateTime.now());
-    moneyChangeHistory.setAmount(total);
-    moneyChangeHistory.setStatus("Sell ");
-    moneyChangeHistory.setBillId(bill.getId());
-    moneyChangeHistory.setTypeChange(TypeMoneyChange.ADD);
-    moneyChangeHistoryRepository.save(moneyChangeHistory);
-
-
+        // Create and save money change history
+        MoneyChangeHistory moneyChangeHistory = new MoneyChangeHistory();
+        moneyChangeHistory.setStallsSell(stallsSell);
+        moneyChangeHistory.setChangeDateTime(LocalDateTime.now());
+        moneyChangeHistory.setAmount(total);
+        moneyChangeHistory.setStatus("Sell ");
+        moneyChangeHistory.setBillId(bill.getId());
+        moneyChangeHistory.setTypeChange(TypeMoneyChange.ADD);
+        moneyChangeHistoryRepository.save(moneyChangeHistory);
 
         BillResponse billResponse = new BillResponse();
         billResponse.setBill(bill);
@@ -195,6 +199,7 @@ public class BillService {
 
         return billResponse;
     }
+
 
     public Bill getBillDetails(long id) {
         Optional<Bill> optionalBill = billRepository.findById(id);
