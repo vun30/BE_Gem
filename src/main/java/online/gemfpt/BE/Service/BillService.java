@@ -72,8 +72,8 @@ public class BillService {
     }
 
      // Kiểm tra sử dụng discount
-    if (!customerRepository.existsByPhoneAndDiscounts_Id(phone, discountId)) {
-    throw new CustomerDiscountNotFoundException(phone,discountId) ;
+ if (discountId != null && !customerRepository.existsByPhoneAndDiscounts_Id(phone, discountId)) {
+    throw new CustomerDiscountNotFoundException(phone, discountId);
 }
 
     Bill bill = new Bill();
@@ -173,7 +173,7 @@ public class BillService {
     }
 
     // Retrieve and apply the discount
-    double discountRate = 0;
+double discountRate = 0;
 if (discountId != null) {
     Discount discount = discountRepository.findById(discountId)
             .orElseThrow(() -> new IllegalStateException("Discount not found with id: " + discountId));
