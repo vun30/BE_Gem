@@ -357,4 +357,45 @@ public List<Account> addAccountsOnStalls(List<Long> accountIds, AccountOnStallsR
         return moneyChangeHistoryRepository.findByStallsSell_StallsSellIdOrderByChangeDateTimeDesc(stallsSellId);
     }
 
+    public Map<Long, List<Double>> getMonthlyRevenueForEachStall() {
+        List<StallsSell> stallsList = stallsSellRepository.findAll();
+        Map<Long, List<Double>> result = new HashMap<>();
+
+        for (StallsSell stall : stallsList) {
+            double[] monthlyRevenue = new double[12];
+            List<Bill> bills = billRepository.findByStalls(stall.getStallsSellId());
+            for (Bill bill : bills) {
+                int month = bill.getCreateTime().getMonthValue() - 1;
+                monthlyRevenue[month] += bill.getTotalAmount();
+            }
+
+            List<Double> revenueList = Arrays.stream(monthlyRevenue).boxed().collect(Collectors.toList());
+            result.put(stall.getStallsSellId(), revenueList);
+        }
+
+        return result;
+    }
+
+    public Map<Long, List<Double>> getYearlyRevenueForEachStall() {
+        List<StallsSell> stallsList = stallsSellRepository.findAll();
+        Map<Long, List<Double>> result = new HashMap<>();
+
+        for (StallsSell stall : stallsList) {
+            double[] yearRevenue = new double[6];
+            List<Bill> bills = billRepository.findByStalls(stall.getStallsSellId());
+            for (Bill bill : bills) {
+                int year = bill.getCreateTime().getYear() - 2019; // Adjust the base year as needed
+                if (year >= 0 && year < 6) {
+                    yearRevenue[year] += bill.getTotalAmount();
+                }
+            }
+
+            List<Double> revenueList = Arrays.stream(yearRevenue).boxed().collect(Collectors.toList());
+            result.put(stall.getStallsSellId(), revenueList);
+        }
+
+        return result;
+    }
+
+
 }
