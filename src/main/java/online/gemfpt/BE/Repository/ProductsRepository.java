@@ -16,8 +16,8 @@ public interface ProductsRepository extends JpaRepository<Product,Long> {
     @Query("SELECT p FROM Product p WHERE p.barcode = :barcode OR p.barcode LIKE CONCAT('%|', :barcode)")
     Optional<Product> findByBarcode(@Param("barcode") String barcode);
 
-    @Query("SELECT p FROM Product p WHERE (p.barcode = :barcode OR p.barcode LIKE CONCAT('%|', :barcode)) AND p.status = :status")
-    Optional<Product> findByBarcodeAndStatus(@Param("barcode") String barcode, @Param("status") boolean status);
+    @Query("SELECT p FROM Product p WHERE (SUBSTRING_INDEX(p.barcode, '|', -1) = :barcode) AND p.status = :status")
+Optional<Product> findByBarcodeAndStatus(@Param("barcode") String barcode, @Param("status") boolean status);
 
     List<Product> findByPriceBetweenAndStatus(double minPrice, double maxPrice, boolean status);
 

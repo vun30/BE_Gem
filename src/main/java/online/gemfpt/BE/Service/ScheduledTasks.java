@@ -96,18 +96,18 @@ public class ScheduledTasks {
         }
     }
 
-  @Scheduled(fixedRate = 1000) // 1s
-    public void updateProductStatusByTypeWhenBuyBack() {
-        List<Product> productList = productsRepository.findAll();
-
-        for (Product product : productList) {
-            if (product.getTypeWhenBuyBack() == null || TypeOfProductEnum.PROCESSINGDONE.equals(product.getTypeWhenBuyBack())) {
-                product.setStatus(true);
-            } else if (TypeOfProductEnum.PROCESSING.equals(product.getTypeWhenBuyBack())) {
-                product.setStatus(false);
-            }
-            productsRepository.save(product);
-        }
-    }
+//  @Scheduled(fixedRate = 1000) // 1s
+//    public void updateProductStatusByTypeWhenBuyBack() {
+//        List<Product> productList = productsRepository.findAll();
+//
+//        for (Product product : productList) {
+//            if (product.getTypeWhenBuyBack() == null || TypeOfProductEnum.PROCESSINGDONE.equals(product.getTypeWhenBuyBack())) {
+//                product.setStatus(true);
+//            } else if (TypeOfProductEnum.PROCESSING.equals(product.getTypeWhenBuyBack())) {
+//                product.setStatus(false);
+//            }
+//            productsRepository.save(product);
+//        }
+//    }
 
 }
