@@ -6,6 +6,7 @@ import online.gemfpt.BE.Service.BillService;
 import online.gemfpt.BE.entity.Bill;
 import online.gemfpt.BE.entity.Discount;
 import online.gemfpt.BE.exception.BadRequestException;
+import online.gemfpt.BE.model.BillRequest;
 import online.gemfpt.BE.model.BillResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,14 +22,15 @@ public class BillAPI {
     @Autowired
     BillService billService;
 
-@PostMapping("/api/bill")
-public ResponseEntity<?> addProductToCart(@RequestParam String customerPhone, @RequestParam List<String> barcode, @Valid @RequestParam(required = false) Long discountId) {
-    try {
-        BillResponse bill = billService.addToCart(customerPhone, barcode, discountId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(bill);
-    } catch (BadRequestException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-    }}
+     @PostMapping("/api/bill")
+    public ResponseEntity<?> addProductToCart(@Valid @RequestBody BillRequest billRequest) {
+        try {
+            BillResponse billResponse = billService.addToCart(billRequest);
+            return ResponseEntity.ok(billResponse);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 
     @GetMapping("/api/bill/{billId}")
     public ResponseEntity<Bill> getBillDetails(@RequestParam long id) {

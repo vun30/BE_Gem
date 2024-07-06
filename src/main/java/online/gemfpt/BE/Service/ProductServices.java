@@ -498,4 +498,9 @@ private String generateUniqueBarcode(String existingBarcode) {
         return productsRepository.findByTypeWhenBuyBack(typeWhenBuyBack);
     }
 
+    public Product getProductById(Long productId) {
+    return productsRepository.findById(productId)
+            .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + productId));
+}
+
 }

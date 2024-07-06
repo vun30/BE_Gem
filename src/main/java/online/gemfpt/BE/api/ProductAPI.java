@@ -147,5 +147,15 @@ public ResponseEntity<List<Product>> searchProductsByPriceRangeAndStatus(
         return ResponseEntity.ok(products);
     }
 
+      @GetMapping("/{productId}")
+    public ResponseEntity<?> getProductById(@PathVariable("productId") Long productId) {
+        try {
+            Product product = productServices.getProductById(productId);
+            return ResponseEntity.ok(product);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
 
 }
