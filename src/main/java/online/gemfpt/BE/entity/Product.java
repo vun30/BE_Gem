@@ -44,7 +44,7 @@ public class Product {
        private double priceBuyRate;
 
 
-    @Min(0)
+
     private int stock;
 
     @NotBlank

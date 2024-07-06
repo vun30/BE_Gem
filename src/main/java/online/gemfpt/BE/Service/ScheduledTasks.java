@@ -24,10 +24,10 @@ public class ScheduledTasks {
     private AuthenticationRepository authenticationRepository;
 
     @Autowired
-    ProductsRepository productsRepository ;
+    ProductsRepository productsRepository;
 
     @Autowired
-    TypeOfMetalRepository typeOfMetalRepository  ;
+    TypeOfMetalRepository typeOfMetalRepository;
 
     @Autowired
     MetalService metalService;
@@ -46,68 +46,71 @@ public class ScheduledTasks {
             }
         }
     }
-      @Scheduled(fixedRate = 1000) // 10s
+
+    @Scheduled(fixedRate = 10000) // 10s
     public void updateProductPricesByTypeOfMetal() {
         List<Product> productList = productsRepository.findAll();
 
         for (Product product : productList) {
-             if (!product.isStatus() || product.getStock() < 1 ) {
-            continue; // Bỏ qua sản phẩm không thỏa mãn điều kiện
-        }
+            // Kiểm tra trạng thái và số lượng tồn kho
+            if (!product.isStatus() || product.getStock() <= 0) {
+                continue; // Bỏ qua sản phẩm không thỏa mãn điều kiện
+            }
+
             boolean hasMissingTypeOfMetal = false;
             double totalMetalPrice = 0;
             double totalGemstonePrice = 0;
 
             // Tính tổng giá của các kim loại
-        if (product.getMetals() != null && !product.getMetals().isEmpty()) {
-            for (Metal metal : product.getMetals()) {
-                // Thực hiện tính giá bán của kim loại thủ công
-                Optional<TypeOfMetal> typeOfMetal = typeOfMetalRepository.findByMetalType(metal.getName());
-                if (typeOfMetal.isPresent()) {
-                    double sellPrice = typeOfMetal.get().getSellPrice();
-                    double metalPrice = (metal.getWeight() / 3.75) * sellPrice;
-                    totalMetalPrice += metalPrice;
-                } else {
-                    hasMissingTypeOfMetal = true;
-                    // Log the error with product ID
-                    System.out.println("TypeOfMetal not found for product ID: " + product.getProductId() + ", Metal: " + metal.getName());
+            if (product.getMetals() != null && !product.getMetals().isEmpty()) {
+                for (Metal metal : product.getMetals()) {
+                    // Thực hiện tính giá bán của kim loại thủ công
+                    Optional<TypeOfMetal> typeOfMetal = typeOfMetalRepository.findByMetalType(metal.getName());
+                    if (typeOfMetal.isPresent()) {
+                        double sellPrice = typeOfMetal.get().getSellPrice();
+                        double metalPrice = (metal.getWeight() / 3.75) * sellPrice;
+                        totalMetalPrice += metalPrice;
+                    } else {
+                        hasMissingTypeOfMetal = true;
+                        // Log the error with product ID
+                        System.out.println("TypeOfMetal not found for product ID: " + product.getProductId() + ", Metal: " + metal.getName());
+                        break; // Thoát khỏi vòng lặp kim loại nếu có lỗi
+                    }
                 }
             }
-        }
+
+            // Nếu có lỗi với kim loại, bỏ qua sản phẩm này
+            if (hasMissingTypeOfMetal) {
+                continue;
+            }
 
             // Tính tổng giá của các đá quý
-             totalGemstonePrice = 0;
             if (product.getGemstones() != null) {
                 totalGemstonePrice = product.getGemstones().stream()
                         .mapToDouble(gemstone -> gemstone.getPrice() * gemstone.getQuantity())
                         .sum();
             }
 
-
             // Tính giá cuối cùng của sản phẩm
             double totalPrice = totalMetalPrice + totalGemstonePrice;
             double finalPrice = totalPrice + (totalPrice * product.getPriceRate() / 100);
-            product.setPrice(finalPrice ); // chia metal.Unit;
+            product.setPrice(finalPrice); // cập nhật giá sản phẩm
 
-            // Lưu sản phẩm nếu không có kim loại nào bị thiếu
-            if (!hasMissingTypeOfMetal) {
-                productsRepository.save(product);
+            // Lưu sản phẩm sau khi tính toán giá
+            productsRepository.save(product);
+        }
+    }
+     // Chạy phương thức này mỗi 10 giây
+    @Scheduled(fixedRate = 1000)
+    public void updateProductStatus() {
+        List<Product> productList = productsRepository.findAll();
+
+        for (Product product : productList) {
+            // Kiểm tra số lượng tồn kho của sản phẩm
+            if (product.getStock() == 0) {
+                product.setStatus(false); // Đặt trạng thái sản phẩm thành false nếu hết hàng
+                productsRepository.save(product); // Lưu sản phẩm đã cập nhật trạng thái
             }
         }
     }
-
-//  @Scheduled(fixedRate = 1000) // 1s
-//    public void updateProductStatusByTypeWhenBuyBack() {
-//        List<Product> productList = productsRepository.findAll();
-//
-//        for (Product product : productList) {
-//            if (product.getTypeWhenBuyBack() == null || TypeOfProductEnum.PROCESSINGDONE.equals(product.getTypeWhenBuyBack())) {
-//                product.setStatus(true);
-//            } else if (TypeOfProductEnum.PROCESSING.equals(product.getTypeWhenBuyBack())) {
-//                product.setStatus(false);
-//            }
-//            productsRepository.save(product);
-//        }
-//    }
-
 }

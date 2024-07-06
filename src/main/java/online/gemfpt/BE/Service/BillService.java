@@ -131,16 +131,15 @@ public class BillService {
         if (newQuantity < 0) {
             throw new BadRequestException("Not enough stock for product: " + product.getBarcode());
         }
-
+        // Set stock to 0 after checkout
         BillItem billItem = new BillItem();
         billItem.setBill(bill);
         billItem.setProduct_barcode(product.getBarcode());
         billItem.setQuantity(1); // Giả định số lượng là 1 để đơn giản hóa
-        product.setStock(0);
         billItem.setPrice(product.getPrice());
         billItem.setDiscount(discount);
         billItem.setNewPrice(totalPrice);
-        product.setStock(newQuantity);
+        product.setStock(0);
         totalAmount += totalPrice;
         bill.getItems().add(billItem);
 
