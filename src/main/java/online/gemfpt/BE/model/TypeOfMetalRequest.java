@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Data
 public class TypeOfMetalRequest {
 
-    @NotBlank(message = "Metal type cannot be blank")
+
     private String metalType;
 
 

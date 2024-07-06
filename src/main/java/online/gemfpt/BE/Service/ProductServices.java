@@ -158,12 +158,16 @@ public Product creates(ProductsRequest productsRequest) {
 
 
  public Product getProductByBarcode(String barcode) {
-    Optional<Product> optionalProduct = productsRepository.findByBarcodeAndStatus(barcode,true);
-    if (!optionalProduct.isPresent()) {
-        throw new ProductNotFoundException("Product not found with barcode: " + barcode);
+        // Extract the barcode part after the last '|'
+        String[] parts = barcode.split("\\|");
+        String lastPart = parts[parts.length - 1];
+
+        Optional<Product> optionalProduct = productsRepository.findByBarcodeAndStatus(lastPart, true);
+        if (!optionalProduct.isPresent()) {
+            throw new ProductNotFoundException("Product not found with barcode: " + lastPart);
+        }
+        return optionalProduct.get();
     }
-    return optionalProduct.get();
-}
 
 
     public Product toggleProductActive(String barcode) {
