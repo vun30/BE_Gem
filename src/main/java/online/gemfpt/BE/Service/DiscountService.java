@@ -49,6 +49,7 @@ public class DiscountService {
             discountRequest.setApproved(approved);
             discountRequest.setManagerResponse(managerResponse);
             discountRequest.setResponseTime(LocalDateTime.now());
+            discountRequest.setStatusUse(false);  // not  use
             return discountRepository.save(discountRequest);
         } else {
             throw new IllegalArgumentException("Discount request not found with id: " + discountRequestId);

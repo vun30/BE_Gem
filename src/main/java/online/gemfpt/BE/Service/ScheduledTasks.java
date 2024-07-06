@@ -46,12 +46,12 @@ public class ScheduledTasks {
             }
         }
     }
-      @Scheduled(fixedRate = 10000) // 10s
+      @Scheduled(fixedRate = 1000) // 10s
     public void updateProductPricesByTypeOfMetal() {
         List<Product> productList = productsRepository.findAll();
 
         for (Product product : productList) {
-             if (!product.isStatus() || product.getStock() < 1 || TypeOfProductEnum.PROCESSING.equals(product.getTypeWhenBuyBack())) {
+             if (!product.isStatus() || product.getStock() < 1 ) {
             continue; // Bỏ qua sản phẩm không thỏa mãn điều kiện
         }
             boolean hasMissingTypeOfMetal = false;
@@ -96,5 +96,18 @@ public class ScheduledTasks {
         }
     }
 
+  @Scheduled(fixedRate = 1000) // 1s
+    public void updateProductStatusByTypeWhenBuyBack() {
+        List<Product> productList = productsRepository.findAll();
+
+        for (Product product : productList) {
+            if (product.getTypeWhenBuyBack() == null || TypeOfProductEnum.PROCESSINGDONE.equals(product.getTypeWhenBuyBack())) {
+                product.setStatus(true);
+            } else if (TypeOfProductEnum.PROCESSING.equals(product.getTypeWhenBuyBack())) {
+                product.setStatus(false);
+            }
+            productsRepository.save(product);
+        }
+    }
 
 }

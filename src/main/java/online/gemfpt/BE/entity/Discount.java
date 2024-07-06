@@ -26,6 +26,7 @@ public class Discount {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
     private LocalDateTime responseTime;
+    private  boolean statusUse;
 
     @ManyToOne
     @JoinColumn(name = "customer_id")

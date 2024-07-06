@@ -37,6 +37,15 @@ public class MetalPriceService {
         metalPrice.setStatus(true);
 
         List<TypeOfMetal> typeOfMetals = new ArrayList<>();
+            // Tạo default TypeOfMetal nếu không có trong request
+    TypeOfMetal defaultTypeOfMetal = new TypeOfMetal();
+    defaultTypeOfMetal.setMetalType("");
+    defaultTypeOfMetal.setSellPrice(0.0);
+    defaultTypeOfMetal.setBuyPrice(0.0);
+    defaultTypeOfMetal.setUpdateDate(metalPrice.getUpdateDate());
+    defaultTypeOfMetal.setMetalPrice(metalPrice);
+
+    typeOfMetals.add(defaultTypeOfMetal);
         for (TypeOfMetalRequest typeOfMetalRequest : metalPriceRequest.getTypeOfMetals()) {
             TypeOfMetal typeOfMetal = new TypeOfMetal();
             typeOfMetal.setMetalType(typeOfMetalRequest.getMetalType());

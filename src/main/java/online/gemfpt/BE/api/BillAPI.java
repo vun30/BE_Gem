@@ -22,6 +22,7 @@ public class BillAPI {
     @Autowired
     BillService billService;
 
+
     @PostMapping("/api/bill")
     public ResponseEntity<?> addProductToCart(@Valid @RequestBody BillRequest billRequest) {
         try {
@@ -31,6 +32,7 @@ public class BillAPI {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
 
     @GetMapping("/api/bill/{billId}")
     public ResponseEntity<Bill> getBillDetails(@RequestParam long id) {

@@ -1,6 +1,7 @@
 package online.gemfpt.BE.exception.handler;
 
 import online.gemfpt.BE.exception.AccountNotFoundException;
+import online.gemfpt.BE.exception.CustomerDiscountNotFoundException;
 import online.gemfpt.BE.exception.InsufficientMoneyInStallException;
 import online.gemfpt.BE.exception.StallsSellNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -35,4 +36,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(bodyOfResponse);
     }
 
+
+    @ExceptionHandler(CustomerDiscountNotFoundException .class)
+    public ResponseEntity<String> handleCustomerDiscountNotFoundException(CustomerDiscountNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
 }

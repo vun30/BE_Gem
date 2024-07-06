@@ -6,6 +6,7 @@ import online.gemfpt.BE.entity.*;
 import online.gemfpt.BE.enums.TypeBillEnum;
 import online.gemfpt.BE.enums.TypeMoneyChange;
 import online.gemfpt.BE.exception.BadRequestException;
+import online.gemfpt.BE.exception.CustomerDiscountNotFoundException;
 import online.gemfpt.BE.exception.StallsSellNotFoundException;
 import online.gemfpt.BE.model.BillRequest;
 import online.gemfpt.BE.model.BillResponse;
@@ -50,6 +51,9 @@ public class BillService {
 
     @Autowired
     MoneyChangeHistoryRepository moneyChangeHistoryRepository ;
+
+    @Autowired
+    DiscountRepository discountRepository ;
 
     @Transactional
     public BillResponse addToCart(BillRequest billRequest) {
@@ -199,6 +203,7 @@ public class BillService {
 
         return billResponse;
     }
+
 
 
     public Bill getBillDetails(long id) {

@@ -15,9 +15,9 @@ public class CatelogyAPI {
     CatelogyService catelogyService;
 
 
-    @PostMapping("category")
-    public ResponseEntity createCatelogy (@RequestBody CatelogyRequest responseRequest) {
-        Catelogy catelogy = catelogyService.create(responseRequest);
-        return ResponseEntity.ok(catelogy);
-    }
+//    @PostMapping("category")
+//    public ResponseEntity createCatelogy (@RequestBody CatelogyRequest responseRequest) {
+//        Catelogy catelogy = catelogyService.create(responseRequest);
+//        return ResponseEntity.ok(catelogy);
+//    }
 }
