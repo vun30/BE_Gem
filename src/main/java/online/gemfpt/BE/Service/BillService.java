@@ -136,6 +136,7 @@ public class BillService {
         billItem.setBill(bill);
         billItem.setProduct_barcode(product.getBarcode());
         billItem.setQuantity(1); // Giả định số lượng là 1 để đơn giản hóa
+        product.setStock(0);
         billItem.setPrice(product.getPrice());
         billItem.setDiscount(discount);
         billItem.setNewPrice(totalPrice);
