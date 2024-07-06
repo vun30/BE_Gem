@@ -18,7 +18,7 @@ public class TypeOfMetal {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     long typeId;
 
-    @NotBlank(message = "Metal type cannot be blank")
+
     String metalType;
 
     @Min(value = 0, message = "Sell price must be non-negative")

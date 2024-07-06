@@ -21,15 +21,14 @@ public class BillAPI {
     @Autowired
     BillService billService;
 
-    @PostMapping("/api/bill")
-    public ResponseEntity<?> addProductToCart(@RequestParam String customerPhone, @RequestParam List<String> barcode,@Valid @RequestParam(required = false) Double discounts) {
-        try {
-            BillResponse bill = billService.addToCart(customerPhone, barcode, discounts);
-            return ResponseEntity.status(HttpStatus.CREATED).body(bill);
-        } catch (BadRequestException e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-    }
+@PostMapping("/api/bill")
+public ResponseEntity<?> addProductToCart(@RequestParam String customerPhone, @RequestParam List<String> barcode, @Valid @RequestParam(required = false) Long discountId) {
+    try {
+        BillResponse bill = billService.addToCart(customerPhone, barcode, discountId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(bill);
+    } catch (BadRequestException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }}
 
     @GetMapping("/api/bill/{billId}")
     public ResponseEntity<Bill> getBillDetails(@RequestParam long id) {
