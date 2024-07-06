@@ -70,7 +70,7 @@ public class ManagerAPI {
     }
 
 @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER')")
-@PatchMapping("/updateAccounts")
+@PatchMapping("/management-account-working")
 public ResponseEntity<List<Account>> updateAccountsOnStalls(
         @RequestParam List<Long> accountIds,
         @RequestBody AccountOnStallsRequest accountOnStallsRequest) {
