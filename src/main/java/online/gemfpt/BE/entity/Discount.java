@@ -21,6 +21,7 @@ public class Discount {
     private String managerResponse;
     private LocalDateTime requestTime;
     private LocalDateTime responseTime;
+    private  boolean statusUse;
 
     @ManyToOne
     @JoinColumn(name = "customer_id")
