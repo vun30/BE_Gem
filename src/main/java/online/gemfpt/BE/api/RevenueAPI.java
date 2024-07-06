@@ -3,6 +3,7 @@ package online.gemfpt.BE.api;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import online.gemfpt.BE.Service.StallsSellService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Year;
@@ -59,5 +60,17 @@ public class RevenueAPI {
     public Map<String, Object> getYearlyRevenueByStaff(@PathVariable String cashier, @RequestParam String year) {
         Year y = Year.parse(year);
         return stallsSellService.getYearlyRevenueByStaff(cashier, y);
+    }
+
+    @GetMapping("/monthly-revenue-data")
+    public ResponseEntity<Map<Long, List<Double>>> getMonthlyRevenueForEachStall() {
+        Map<Long, List<Double>> result = stallsSellService.getMonthlyRevenueForEachStall();
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/yearly-revenue-data")
+    public ResponseEntity<Map<Long, List<Double>>> getYearlyRevenueForEachStall() {
+        Map<Long, List<Double>> result = stallsSellService.getYearlyRevenueForEachStall();
+        return ResponseEntity.ok(result);
     }
 }
