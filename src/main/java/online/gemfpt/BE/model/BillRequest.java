@@ -10,8 +10,10 @@ public class BillRequest {
     @NotEmpty(message = "Phone number cannot be empty")
     private String customerPhone;
 
+    private long discountId;
+
     @NotEmpty(message = "Barcodes cannot be empty")
     private List<String> barcodes;
 
-    private long discountId;
+
 }
