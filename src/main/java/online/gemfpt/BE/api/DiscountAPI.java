@@ -37,4 +37,10 @@ public class DiscountAPI {
         Discount discountRequest = discountService.respondToDiscountRequest(discountRequestId, approved, managerResponse);
         return ResponseEntity.ok(discountRequest);
     }
+
+    @GetMapping("discount/{id}")
+    public ResponseEntity<Discount> getDiscountById(@PathVariable long id) {
+        Discount discount = discountService.getdiscountByID(id);
+        return ResponseEntity.ok(discount);
+    }
 }
