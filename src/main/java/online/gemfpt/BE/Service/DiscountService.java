@@ -59,4 +59,13 @@ public class DiscountService {
     public List<Discount> getAll() {
         return discountRepository.findAll();
     }
+
+    public Discount getdiscountByID(long id) {
+        Optional<Discount> discountExist = discountRepository.findById(id);
+        if(discountExist.isPresent()) {
+            return discountExist.get();
+        } else {
+            throw new IllegalArgumentException("Discount doesn't exist:" + id);
+        }
+    }
 }
