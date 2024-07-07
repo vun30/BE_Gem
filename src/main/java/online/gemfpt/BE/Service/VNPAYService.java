@@ -39,8 +39,8 @@ public class VNPAYService {
 //        transaction.setDescription("Recharge");
 //        Transaction transactionReturn = transactionRepository.save(transaction);
 
-        String tmnCode = "QLV5DZ7H";
-        String secretKey = "EP72N89HK28HRH71L69OR28VFPK7JF6M";
+        String tmnCode = "0ISNRMRM";
+        String secretKey = "756DRLZ7RW6F4GX7WN2Z8NJFTJIGRM3K";
         String vnpUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
         String returnUrl = "odersuccess.html";
 
