@@ -4,6 +4,7 @@ import online.gemfpt.BE.entity.Account;
 import online.gemfpt.BE.Service.AuthenticationService;
 import online.gemfpt.BE.Service.EmailService;
 import online.gemfpt.BE.enums.RoleEnum;
+import online.gemfpt.BE.exception.AccountNotFoundException;
 import online.gemfpt.BE.model.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -127,5 +128,25 @@ public ResponseEntity<AccountResponse> loginGoogle(@RequestBody LoginGoogleReque
     }
 
 
+     @GetMapping("/{id}")
+    public ResponseEntity<Account> getAccountById(@PathVariable Long id) {
+        try {
+            Account account = authenticationService.getAccountById(id);
+            return ResponseEntity.ok(account);
+        } catch (AccountNotFoundException  e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+
+     @GetMapping("/email/{email}")
+    public ResponseEntity<Account> getAccountByEmail(@PathVariable String email) {
+        try {
+            Account account = authenticationService.getAccountByEmail(email);
+            return ResponseEntity.ok(account);
+        } catch (AccountNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
 }
