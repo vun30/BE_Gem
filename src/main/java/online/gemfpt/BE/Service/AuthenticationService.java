@@ -305,4 +305,16 @@ public Account staffEditAccountByEmail(String email, StaffEditAccountRequest sta
         }
         return false;
     }
+
+      public Account getAccountById(Long id) {
+        return authenticationRepository.findById(id).orElseThrow(() -> new AccountNotFoundException("Account not found with ID: " + id));
+    }
+
+     public Account getAccountByEmail(String email) {
+        Account account = authenticationRepository.findAccountByEmail(email);
+        if (account == null) {
+            throw new AccountNotFoundException("Account not found with email: " + email);
+        }
+        return account;
+    }
 }
