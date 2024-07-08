@@ -210,6 +210,7 @@ public class BillService {
     moneyChangeHistory.setStallsSell(stallsSell);
     moneyChangeHistory.setChangeDateTime(LocalDateTime.now());
     moneyChangeHistory.setAmount(total);
+    moneyChangeHistory.setOldTotalInStall(stallsSell.getMoney() - bill.getTotalAmount() );
     moneyChangeHistory.setStatus("Sell ");
     moneyChangeHistory.setBillId(bill.getId());
     moneyChangeHistory.setTypeChange(TypeMoneyChange.ADD);
