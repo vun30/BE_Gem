@@ -140,6 +140,7 @@ public class BillService {
         billItem.setDiscount(discount);
         billItem.setNewPrice(totalPrice);
         product.setStock(0);
+        product.setStatus(false);
         totalAmount += totalPrice;
         bill.getItems().add(billItem);
 
