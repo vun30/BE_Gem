@@ -217,6 +217,7 @@ public List<Bill> getAllBillOfCustomerForBuy(String customerPhone) {
       MoneyChangeHistory moneyChangeHistory = new MoneyChangeHistory();
     moneyChangeHistory.setStallsSell(stallsSell);
     moneyChangeHistory.setChangeDateTime(LocalDateTime.now());
+    moneyChangeHistory.setOldTotalInStall(stallsSell.getMoney() + totalBillPrice );
     moneyChangeHistory.setAmount(totalBillPrice); // Số tiền thay đổi là âm do làm giảm số tiền trong quầy
         moneyChangeHistory.setBillId(billBuyBack.getId());
           moneyChangeHistory.setStatus("Buy Back");
