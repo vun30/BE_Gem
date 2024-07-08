@@ -130,4 +130,8 @@ public class MetalPriceService {
         metalPrice.setStatus(false);
         metalPriceRepository.save(metalPrice);
     }
+
+    public List<TypeOfMetal> getAllActiveTypeOfMetals() {
+        return typeOfMetalRepository.findByStatus(true);
+    }
 }

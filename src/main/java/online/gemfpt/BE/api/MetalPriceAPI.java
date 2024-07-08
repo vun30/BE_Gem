@@ -3,6 +3,7 @@ package online.gemfpt.BE.api;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import online.gemfpt.BE.Service.MetalPriceService;
 import online.gemfpt.BE.entity.MetalPrice;
+import online.gemfpt.BE.entity.TypeOfMetal;
 import online.gemfpt.BE.model.MetalPriceRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +43,11 @@ public class MetalPriceAPI {
     public ResponseEntity<MetalPrice> getMetalPriceById(@PathVariable Long id) {
         MetalPrice metalPrice = metalPriceService.getMetalPriceById(id);
         return ResponseEntity.ok(metalPrice);
+    }
+
+     @GetMapping("/active-types")
+    public List<TypeOfMetal > getAllActiveTypeOfMetals() {
+        return metalPriceService.getAllActiveTypeOfMetals();
     }
 
 //    @DeleteMapping("/{id}")
