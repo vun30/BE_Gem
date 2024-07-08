@@ -100,17 +100,17 @@ public class ScheduledTasks {
             productsRepository.save(product);
         }
     }
-     // Chạy phương thức này mỗi 10 giây
-    @Scheduled(fixedRate = 1000)
-    public void updateProductStatus() {
-        List<Product> productList = productsRepository.findAll();
-
-        for (Product product : productList) {
-            // Kiểm tra số lượng tồn kho của sản phẩm
-            if (product.getStock() == 0) {
-                product.setStatus(false); // Đặt trạng thái sản phẩm thành false nếu hết hàng
-                productsRepository.save(product); // Lưu sản phẩm đã cập nhật trạng thái
-            }
-        }
-    }
+//     // Chạy phương thức này mỗi 10 giây
+//    @Scheduled(fixedRate = 10000)
+//    public void updateProductStatus() {
+//        List<Product> productList = productsRepository.findAll();
+//
+//        for (Product product : productList) {
+//            // Kiểm tra số lượng tồn kho của sản phẩm
+//            if (product.getStock() == 0) {
+//                product.setStatus(false); // Đặt trạng thái sản phẩm thành false nếu hết hàng
+//                productsRepository.save(product); // Lưu sản phẩm đã cập nhật trạng thái
+//            }
+//        }
+//    }
 }
