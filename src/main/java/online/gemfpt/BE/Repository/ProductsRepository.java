@@ -36,5 +36,7 @@ Optional<Product> findByBarcodeAndStatus(@Param("barcode") String barcode, @Para
 
      List<Product> findByTypeWhenBuyBack(TypeOfProductEnum  typeWhenBuyBack);
 
+
+
 }
 
