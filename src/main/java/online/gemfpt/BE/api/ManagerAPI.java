@@ -141,6 +141,11 @@ public ResponseEntity<List<LocalDateTime>> getWorkingDatesByAccountId(@PathVaria
         String message = status ? "Quầy bán được mở thành công" : "Quầy bán được đóng thành công";
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
+
+    @GetMapping("/{stallsSellId}/accounts")
+    public List<Account> getAccountsByStallsSellId(@PathVariable Long stallsSellId) {
+        return stallsSellService.getAccountsByStallsSellId(stallsSellId);
+    }
 }
 
 // code phan role

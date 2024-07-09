@@ -397,5 +397,11 @@ public List<Account> addAccountsOnStalls(List<Long> accountIds, AccountOnStallsR
         return result;
     }
 
+    public List<Account> getAccountsByStallsSellId(Long stallsSellId) {
+    return authenticationRepository.findAll().stream()
+            .filter(account -> stallsSellId.equals(account.getStallsWorkingId()) && account.isStaffWorkingStatus())
+            .collect(Collectors.toList());
+}
+
 
 }

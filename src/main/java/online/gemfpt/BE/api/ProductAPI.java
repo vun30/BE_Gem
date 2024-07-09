@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import online.gemfpt.BE.Repository.ProductsRepository;
 import online.gemfpt.BE.entity.Product;
 import online.gemfpt.BE.Service.ProductServices;
+import online.gemfpt.BE.enums.TypeEnum;
 import online.gemfpt.BE.exception.ProductNotFoundException;
 import online.gemfpt.BE.model.ProductsRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,5 +138,10 @@ public class ProductAPI {
     public ResponseEntity<List<Product>> searchProductsByMetalType(@RequestParam String metalType) {
         List<Product> products = productServices.searchProductsByMetalType(metalType);
         return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/category")
+    public List<Product> getProductsByCategory(@RequestParam("category") TypeEnum category) {
+        return productServices.getProductsByCategory(category);
     }
 }

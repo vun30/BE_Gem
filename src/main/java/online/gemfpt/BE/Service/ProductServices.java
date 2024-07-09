@@ -3,6 +3,7 @@ package online.gemfpt.BE.Service;
 import jakarta.persistence.EntityNotFoundException;
 import online.gemfpt.BE.Repository.*;
 import online.gemfpt.BE.entity.*;
+import online.gemfpt.BE.enums.TypeEnum;
 import online.gemfpt.BE.enums.TypeOfProductEnum;
 import online.gemfpt.BE.exception.ProductNotFoundException;
 import online.gemfpt.BE.model.ProductUrlRequest;
@@ -506,5 +507,9 @@ private String generateUniqueBarcode(String existingBarcode) {
     return productsRepository.findById(productId)
             .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + productId));
 }
+
+ public List<Product> getProductsByCategory(TypeEnum  category) {
+        return productsRepository.findByCategory(category);
+    }
 
 }
