@@ -60,7 +60,16 @@ public class DiscountService {
         return discountRepository.findAll();
     }
 
-    public Discount getdiscountByID(long id) {
+    public Discount getdiscountByID(Long id) {
+        if (id == null) {
+            Discount defaultDiscount = new Discount();
+            defaultDiscount.setApproved(false);
+            defaultDiscount.setDiscountReason("No ID provided");
+            defaultDiscount.setRequestedDiscount(0.0);
+            defaultDiscount.setRequestTime(LocalDateTime.now());
+            defaultDiscount.setStatusUse(false);
+            return defaultDiscount;
+        }
         Optional<Discount> discountExist = discountRepository.findById(id);
         if(discountExist.isPresent()) {
             return discountExist.get();

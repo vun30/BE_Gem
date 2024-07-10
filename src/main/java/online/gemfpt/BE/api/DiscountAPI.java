@@ -39,7 +39,7 @@ public class DiscountAPI {
     }
 
     @GetMapping("discount/{id}")
-    public ResponseEntity<Discount> getDiscountById(@PathVariable long id) {
+    public ResponseEntity<Discount> getDiscountById(@RequestParam(required = false) Long id) {
         Discount discount = discountService.getdiscountByID(id);
         return ResponseEntity.ok(discount);
     }
