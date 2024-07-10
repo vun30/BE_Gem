@@ -21,10 +21,10 @@ public class MoneyChangeHistory {
     @JoinColumn(name = "stalls_sell_id")
     private StallsSell stallsSell;
 
-      @Min(value = 0, message = "Amount must be >= 0")
+     // @Min(value = 0, message = "Amount must be >= 0")
     private double oldTotalInStall;
 
-     @Min(value = 0, message = "Amount must be >= 0")
+     //@Min(value = 0, message = "Amount must be >= 0")
     private double amount; // positive for deposit, negative for withdrawal
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
