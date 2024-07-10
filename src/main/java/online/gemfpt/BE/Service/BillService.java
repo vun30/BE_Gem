@@ -246,6 +246,10 @@ public class BillService {
         }
     }
 
+    public List<Bill> getAllBill() {
+       return billRepository.findAll();
+    }
+
 
 
 }

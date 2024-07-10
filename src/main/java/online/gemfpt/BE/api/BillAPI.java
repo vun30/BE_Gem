@@ -58,5 +58,10 @@ public class BillAPI {
         }
     }
 
+    @GetMapping("api/bill/all")
+    public ResponseEntity<List<Bill>> getAllBill() {
+         List<Bill> bills = billService.getAllBill();
+         return ResponseEntity.ok(bills);
+    }
 
 }
