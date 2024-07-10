@@ -134,6 +134,7 @@ public class BillService {
         // Set stock to 0 after checkout
         BillItem billItem = new BillItem();
         billItem.setBill(bill);
+        billItem.setName(product.getName());
         billItem.setProduct_barcode(product.getBarcode());
         billItem.setQuantity(1); // Giả định số lượng là 1 để đơn giản hóa
         billItem.setPrice(product.getPrice());
