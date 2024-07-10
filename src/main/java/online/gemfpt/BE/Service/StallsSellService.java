@@ -11,6 +11,7 @@ import online.gemfpt.BE.entity.MoneyChangeHistory;
 import online.gemfpt.BE.entity.StallsSell;
 import online.gemfpt.BE.enums.TypeMoneyChange;
 import online.gemfpt.BE.exception.AccountNotFoundException;
+import online.gemfpt.BE.exception.BadRequestException;
 import online.gemfpt.BE.exception.ProductNotFoundException;
 import online.gemfpt.BE.exception.StallsSellNotFoundException;
 import online.gemfpt.BE.model.AccountOnStallsRequest;
@@ -315,35 +316,39 @@ public List<Account> addAccountsOnStalls(List<Long> accountIds, AccountOnStallsR
         return result;
     }
 
-     @Transactional
-    public MoneyChangeHistory  changeMoneyInStalls(MoneyChangeRequest  moneyChangeRequest, TypeMoneyChange typeChange) {
-        // Lấy thông tin quầy bán theo ID
-        StallsSell stallsSell = stallsSellRepository.findById(moneyChangeRequest.getStallsSellId())
-                .orElseThrow(() -> new StallsSellNotFoundException("Không tìm thấy quầy bán với ID: " + moneyChangeRequest.getStallsSellId()));
+   @Transactional
+public MoneyChangeHistory changeMoneyInStalls(MoneyChangeRequest moneyChangeRequest, TypeMoneyChange typeChange) {
+    // Lấy thông tin quầy bán theo ID
+    StallsSell stallsSell = stallsSellRepository.findById(moneyChangeRequest.getStallsSellId())
+            .orElseThrow(() -> new StallsSellNotFoundException("Không tìm thấy quầy bán với ID: " + moneyChangeRequest.getStallsSellId()));
 
-        double amount = moneyChangeRequest.getAmount();
+    double amount = moneyChangeRequest.getAmount();
 
-        // Kiểm tra loại giao dịch và điều chỉnh số tiền tương ứng
-        if (typeChange == TypeMoneyChange .WITHDRAW) {
-            amount = -amount;
+    // Kiểm tra loại giao dịch và điều chỉnh số tiền tương ứng
+    if (typeChange == TypeMoneyChange.WITHDRAW) {
+        // Kiểm tra nếu số tiền rút lớn hơn số tiền hiện tại
+        if (stallsSell.getMoney() < amount) {
+            throw new BadRequestException("Số tiền hiện tại không đủ để thực hiện giao dịch rút tiền.");
         }
-
-        // Cập nhật tổng số tiền trong quầy
-        stallsSell.setMoney(stallsSell.getMoney() + amount);
-        stallsSellRepository.save(stallsSell);
-
-        // Ghi lại lịch sử thay đổi tiền
-        MoneyChangeHistory moneyChangeHistory = new MoneyChangeHistory();
-        moneyChangeHistory.setStallsSell(stallsSell);
-        moneyChangeHistory.setAmount(amount);
-        moneyChangeHistory.setChangeDateTime(LocalDateTime.now());
-        moneyChangeHistory.setBillId(moneyChangeRequest.getBillId());
-        moneyChangeHistory.setStatus("Hoàn thành");
-        moneyChangeHistory.setTypeChange(typeChange);
-
-        // Lưu lại lịch sử thay đổi tiền và trả về bản ghi
-        return moneyChangeHistoryRepository.save(moneyChangeHistory);
+        amount = -amount;
     }
+
+    // Cập nhật tổng số tiền trong quầy
+    stallsSell.setMoney(stallsSell.getMoney() + amount);
+    stallsSellRepository.save(stallsSell);
+
+    // Ghi lại lịch sử thay đổi tiền
+    MoneyChangeHistory moneyChangeHistory = new MoneyChangeHistory();
+    moneyChangeHistory.setStallsSell(stallsSell);
+    moneyChangeHistory.setAmount(amount);
+    moneyChangeHistory.setChangeDateTime(LocalDateTime.now());
+    moneyChangeHistory.setBillId(moneyChangeRequest.getBillId());
+    moneyChangeHistory.setStatus("Hoàn thành");
+    moneyChangeHistory.setTypeChange(typeChange);
+
+    // Lưu lại lịch sử thay đổi tiền và trả về bản ghi
+    return moneyChangeHistoryRepository.save(moneyChangeHistory);
+}
 
      public void updateStallsStatus(Long stallsSellId, boolean status) {
         StallsSell stallsSell = stallsSellRepository.findById(stallsSellId)
