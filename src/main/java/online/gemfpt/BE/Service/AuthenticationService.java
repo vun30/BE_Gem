@@ -56,7 +56,7 @@ public class AuthenticationService implements UserDetailsService {
         account.setName(registerRequest.getName());
         account.setEmail(registerRequest.getEmail());
         account.setPhone(registerRequest.getPhone());
-        account.setCreateDateNow(account.getCreateDate());
+        account.setCreateDate(LocalDateTime.now());
         account.setRole(RoleEnum.STAFF);
         account.setStatus(false);
         account.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
