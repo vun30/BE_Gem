@@ -47,6 +47,8 @@ public class Account implements UserDetails {
 
     String name;
 
+    String url;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     LocalDateTime createDate;
 

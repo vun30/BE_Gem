@@ -41,7 +41,8 @@ public class Filter extends OncePerRequestFilter {
             "/register",
             "/send-mail",
             "/login-google",
-            "/forgot_password"
+            "/forgot_password",
+            "/api/metalprices/active-types"
 
     );
 
@@ -88,15 +89,15 @@ public class Filter extends OncePerRequestFilter {
         }
 
 
-        if(AUTH_PERMISSION.contains(uri)){
-            filterChain.doFilter(request,response);
-        }else{
-            String token = getToken(request);
-            if(token != null){
-                Account account = tokenService.extractAccount(token);
-                System.out.println(account.toString());
-            }
-        }
+//        if(AUTH_PERMISSION.contains(uri)){
+//            filterChain.doFilter(request,response);
+//        }else{
+//            String token = getToken(request);
+//            if(token != null){
+//                Account account = tokenService.extractAccount(token);
+//                System.out.println(account.toString());
+//            }
+//        }
 
 
 

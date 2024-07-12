@@ -76,6 +76,10 @@ public class BillService {
         throw new IllegalStateException("Staff is not in working status.");
     }
 
+     if (account.getStallsWorkingId() == null) {
+        throw new IllegalStateException("Account does not have a valid stall working ID.");
+    }
+
     if (discountId != null && discountId != 00 && !customerRepository.existsByPhoneAndDiscounts_Id(phone, discountId)) {
         throw new CustomerDiscountNotFoundException(phone, discountId);
     }

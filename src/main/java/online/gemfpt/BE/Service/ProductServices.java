@@ -202,31 +202,23 @@ public Product creates(ProductsRequest productsRequest) {
 
  public Product updateAndCreateNewProduct(String barcode, ProductsRequest productsRequest) {
     // Tìm kiếm sản phẩm theo barcode
-    Optional<Product> existingProductOptional = productsRepository.findByBarcodeAndStatus(barcode,true);
+    Optional<Product> existingProductOptional = productsRepository.findByBarcodeAndStatus(barcode, true);
     if (!existingProductOptional.isPresent()) {
         throw new EntityNotFoundException("Product not found with barcode: " + barcode);
     }
 
-     Product existingProduct = existingProductOptional.get();
+    Product existingProduct = existingProductOptional.get();
 
-    // Chuyển trạng thái sản phẩm hiện tại thành false
+    // Đổi barcode của sản phẩm hiện tại thành barcode cũ + mã Up
+    String updatedBarcode = generateUniqueBarcode(existingProduct.getBarcode());
+    existingProduct.setBarcode(updatedBarcode + "|" + existingProduct.getBarcode());
     existingProduct.setStatus(false);
     existingProduct.setUpdateTime(LocalDateTime.now());
     productsRepository.save(existingProduct);
 
-    // Lấy barcode hiện tại của existingProduct
-    String currentBarcode = existingProduct.getBarcode();
-
-    // Kiểm tra nếu có dấu '|' trong barcode thì chỉ lấy phần sau dấu '|'
-    int indexOfPipe = currentBarcode.indexOf("|");
-    if (indexOfPipe != -1) {
-        currentBarcode = currentBarcode.substring(indexOfPipe + 1);
-    }
-
     // Tạo sản phẩm mới với thông tin từ request
     Product newProduct = new Product();
-
-    newProduct.setName( productsRequest.getName());
+    newProduct.setName(productsRequest.getName());
     newProduct.setDescriptions(productsRequest.getDescriptions());
     newProduct.setCategory(productsRequest.getCategory());
     newProduct.setPriceRate(productsRequest.getPriceRate());
@@ -234,7 +226,7 @@ public Product creates(ProductsRequest productsRequest) {
     newProduct.setUpdateTime(LocalDateTime.now());
     newProduct.setStatus(true);
     newProduct.setOldID(String.valueOf(existingProduct.getProductId()));
-     newProduct.setBarcode(generateUniqueBarcode(currentBarcode) +"|"+ existingProduct.getBarcode()); // Set barcode cho sản phẩm mới
+    newProduct.setBarcode(barcode); // Set barcode cho sản phẩm mới bằng barcode của sản phẩm cũ
 
     // Set URLs
     if (productsRequest.getUrls() != null) {
@@ -314,32 +306,26 @@ public Product creates(ProductsRequest productsRequest) {
 
 public Product updateAndCreateNewProductBuyBack(String barcode, ProductsRequest productsRequest) {
     // Tìm kiếm sản phẩm theo barcode
-    Optional<Product> existingProductOptional = productsRepository.findByBarcodeAndStatus(barcode,false);
+    Optional<Product> existingProductOptional = productsRepository.findByBarcodeAndStatus(barcode, false);
     if (!existingProductOptional.isPresent()) {
         throw new EntityNotFoundException("Product not found with barcode: " + barcode);
     }
 
-     Product existingProduct = existingProductOptional.get();
+    Product existingProduct = existingProductOptional.get();
 
-    // Chuyển trạng thái sản phẩm hiện tại thành false
+    // Generate a new unique barcode for the existing product
+    String newUniqueBarcode = generateUniqueBarcode(existingProduct.getBarcode());
+
+    // Set the old product's barcode to the new unique barcode
+    existingProduct.setBarcode(newUniqueBarcode);
     existingProduct.setTypeWhenBuyBack(TypeOfProductEnum.PROCESSINGDONE);
     existingProduct.setStatus(false);
     existingProduct.setUpdateTime(LocalDateTime.now());
     productsRepository.save(existingProduct);
 
-    // Lấy barcode hiện tại của existingProduct
-    String currentBarcode = existingProduct.getBarcode();
-
-    // Kiểm tra nếu có dấu '|' trong barcode thì chỉ lấy phần sau dấu '|'
-    int indexOfPipe = currentBarcode.indexOf("|");
-    if (indexOfPipe != -1) {
-        currentBarcode = currentBarcode.substring(indexOfPipe + 1);
-    }
-
     // Tạo sản phẩm mới với thông tin từ request
     Product newProduct = new Product();
-
-    newProduct.setName( productsRequest.getName());
+    newProduct.setName(productsRequest.getName());
     newProduct.setDescriptions(productsRequest.getDescriptions());
     newProduct.setCategory(productsRequest.getCategory());
     newProduct.setPriceRate(productsRequest.getPriceRate());
@@ -348,7 +334,7 @@ public Product updateAndCreateNewProductBuyBack(String barcode, ProductsRequest 
     newProduct.setTypeWhenBuyBack(productsRequest.getTypeWhenBuyBack());
     newProduct.setStatus(true);
     newProduct.setOldID(String.valueOf(existingProduct.getProductId()));
-    newProduct.setBarcode(generateUniqueBarcode(currentBarcode) +"|"+ existingProduct.getBarcode()); // Set barcode cho sản phẩm mới
+    newProduct.setBarcode(barcode); // Set barcode cho sản phẩm mới bằng barcode của sản phẩm cũ
 
     // Set URLs
     if (productsRequest.getUrls() != null) {
