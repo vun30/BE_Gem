@@ -45,9 +45,9 @@ public class MetalPriceAPI {
         return ResponseEntity.ok(metalPrice);
     }
 
-     @GetMapping("/active-types")
-    public List<TypeOfMetal > getAllActiveTypeOfMetals() {
-        return metalPriceService.getAllActiveTypeOfMetals();
+    @GetMapping("/active-types")
+    public ResponseEntity getAllActiveTypeOfMetals() {
+        return ResponseEntity.ok(metalPriceService.getAllActiveTypeOfMetals());
     }
 
 //    @DeleteMapping("/{id}")

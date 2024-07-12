@@ -28,6 +28,7 @@ public class MetalPrice {
     LocalDateTime updateDate;
 
     boolean status;
+
     @OneToMany(mappedBy = "metalPrice", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TypeOfMetal> typeOfMetals;
 

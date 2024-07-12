@@ -160,13 +160,16 @@ public Account staffEditAccountByEmail(String email, StaffEditAccountRequest sta
         if (account == null) {
             account = new Account();
             account.setName(firebaseToken.getName());
+            account.setUrl(firebaseToken.getPicture());
             account.setEmail(email);
             account.setRole(RoleEnum.STAFF);
+            account.setStatus(false);
             account.setCreateDate(LocalDateTime.now());
             account = authenticationRepository.save(account);
         }
         accountResponse.setEmail(account.getEmail());
         accountResponse.setId(account.getId());
+        account.setUrl(firebaseToken.getPicture());
         accountResponse.setRole(RoleEnum.STAFF);
         accountResponse.setPhone(account.getPhone());
         accountResponse.setName(account.getName());
