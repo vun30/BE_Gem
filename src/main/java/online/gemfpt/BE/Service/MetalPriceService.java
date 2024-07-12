@@ -44,7 +44,7 @@ public class MetalPriceService {
             typeOfMetal.setBuyPrice(typeOfMetalRequest.getBuyPrice());
 
             // Thiết lập updateDate của TypeOfMetal từ MetalPrice
-            typeOfMetal.setUpdateDate(metalPrice.getUpdateDate());
+            typeOfMetal.setUpdateDate(LocalDateTime.now());
 
             typeOfMetal.setMetalPrice(metalPrice);
             typeOfMetals.add(typeOfMetal);
