@@ -35,27 +35,34 @@ public class PromotionService {
     @Autowired
     private PromotionProductRepository promotionProductRepository;
 
-    public List<Promotion> getAllDiscount(){
+    public List<Promotion> getAllDiscount() {
         List<Promotion> promotions = promotionRepository.findAll();
-        for(Promotion promotion : promotions){
+        for (Promotion promotion : promotions) {
             List<PromotionProduct> promotionProducts = promotionProductRepository.findByPromotion(promotion);
             promotion.setPromotionProducts(promotionProducts);
         }
         return promotions;
     }
 
-    public Promotion findDiscountByID(Long disID){
+    public Promotion findDiscountByID(Long disID) {
         Optional<Promotion> discount = promotionRepository.findById(disID);
         return discount.orElse(null);
     }
 
-    public Promotion createDiscount(PromotionRequestForBarcode discountRequest){
-        List <Product> productList = new ArrayList<>();
+    public Promotion createDiscount(PromotionRequestForBarcode discountRequest) {
+        List<Product> productList = new ArrayList<>();
         for (String barcode : discountRequest.getBarcode()) {
             Optional<Product> product = productRepository.findByBarcode(barcode);
             if (product.isEmpty()) {
                 throw new BadRequestException("Barcode don't exists!");
             }
+            List<PromotionProduct> existingPromotions = promotionProductRepository.findByProduct(product.get());
+            for (PromotionProduct promotionProduct : existingPromotions) {
+                if (promotionProduct.isActive() && promotionProduct.getPromotion().isStatus()) {
+                    throw new BadRequestException("Barcode already exists in another active promotion!");
+                }
+            }
+
             productList.add(product.get());
         }
 
@@ -83,7 +90,7 @@ public class PromotionService {
         return promotion;
     }
 
-    public Promotion createDiscountForCategory(PromotionCreateRequest discountRequest, TypeEnum category){
+    public Promotion createDiscountForCategory(PromotionCreateRequest discountRequest, TypeEnum category) {
         List<Product> productList = productRepository.findByCategory(category);
         if (productList.isEmpty()) {
             throw new BadRequestException("No products found in the specified category.");
@@ -114,7 +121,7 @@ public class PromotionService {
         return promotion;
     }
 
-    public Promotion createDiscountForAllProducts(PromotionCreateRequest discountRequest){
+    public Promotion createDiscountForAllProducts(PromotionCreateRequest discountRequest) {
         List<Product> productList = productRepository.findAll();
         if (productList.isEmpty()) {
             throw new BadRequestException("No products found in the inventory.");
@@ -144,9 +151,9 @@ public class PromotionService {
         return promotion;
     }
 
-    public Promotion updatePromotion(PromotionUpdateRequest discountRequest, Long promotionId){
+    public Promotion updatePromotion(PromotionUpdateRequest discountRequest, Long promotionId) {
         Optional<Promotion> discountExist = promotionRepository.findById(promotionId);
-        if(discountExist.isPresent()){
+        if (discountExist.isPresent()) {
             Promotion promotion = discountExist.get();
             promotion.setProgramName(discountRequest.getProgramName().isEmpty() ? promotion.getProgramName() : discountRequest.getProgramName());
             promotion.setDiscountRate(discountRequest.getDiscountRate() == 0 ? promotion.getDiscountRate() : discountRequest.getDiscountRate());
@@ -154,23 +161,22 @@ public class PromotionService {
             promotion.setEndTime(LocalDateTime.now());
 
             return promotionRepository.save(promotion);
-        }else{
+        } else {
             return null;
         }
     }
 
-    public Promotion discountStatus(Long disID){
+    public Promotion discountStatus(Long disID) {
         Promotion promotion = promotionRepository.findById(disID).orElseThrow(() -> new EntityNotFoundException("Discount not found"));
         promotion.setStatus(!promotion.isStatus());
 
         List<PromotionProduct> promotionProducts = promotionProductRepository.findByPromotion(promotion);
-        for(PromotionProduct promotionProduct : promotionProducts){
+        for (PromotionProduct promotionProduct : promotionProducts) {
             promotionProduct.setActive(promotion.isStatus());
             promotionProductRepository.save(promotionProduct);
         }
         return promotionRepository.save(promotion);
     }
-
 
 
 }

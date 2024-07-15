@@ -10,4 +10,5 @@ import java.util.List;
 public interface PromotionProductRepository extends JpaRepository<PromotionProduct, Long> {
     List<PromotionProduct> findByProductAndIsActive(Product product, boolean isActive);
     List<PromotionProduct> findByPromotion(Promotion promotion);
+    List<PromotionProduct> findByProduct(Product product);
 }

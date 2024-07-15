@@ -24,7 +24,7 @@ public class Product {
     @NotBlank
     private String name;
 
-    @JsonFormat (shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     private LocalDateTime createTime;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
@@ -45,8 +45,7 @@ public class Product {
     @Min(0)
     private double priceRate;
 
-       private double priceBuyRate;
-
+    private double priceBuyRate;
 
 
     private int stock;
@@ -60,13 +59,13 @@ public class Product {
 
     private boolean status;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<ProductUrl> urls;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Gemstone> gemstones;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Metal> metals;
 
     @JsonIgnore
@@ -74,7 +73,7 @@ public class Product {
     private List<PromotionProduct> promotionProducts;
 
 
-     @JsonIgnore
+    @JsonIgnore
     @ManyToOne // many to one buy back bill
     @JoinColumn(name = "billBuyBackProduct_id")
     private BillBuyBack billBuyBack;
