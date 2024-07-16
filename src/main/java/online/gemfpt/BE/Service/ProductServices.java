@@ -314,7 +314,7 @@ public Product updateAndCreateNewProductBuyBack(String barcode, ProductsRequest 
     Product existingProduct = existingProductOptional.get();
 
     // Generate a new unique barcode for the existing product
-    String newUniqueBarcode = generateUniqueBarcode(existingProduct.getBarcode());
+    String newUniqueBarcode = generateUniqueBarcode(existingProduct.getBarcode()  + "|" + barcode);
 
     // Set the old product's barcode to the new unique barcode
     existingProduct.setBarcode(newUniqueBarcode);

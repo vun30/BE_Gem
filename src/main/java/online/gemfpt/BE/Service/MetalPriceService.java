@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +46,7 @@ public class MetalPriceService {
             typeOfMetal.setBuyPrice(typeOfMetalRequest.getBuyPrice());
 
             // Thiết lập updateDate của TypeOfMetal từ MetalPrice
-            typeOfMetal.setUpdateDate(LocalDateTime.now());
+            typeOfMetal.setUpdateDate(ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDateTime());
 
             typeOfMetal.setMetalPrice(metalPrice);
             typeOfMetals.add(typeOfMetal);
