@@ -1,6 +1,7 @@
 package online.gemfpt.BE.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonRawValue;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,5 +22,8 @@ public class Policy {
 
     private Boolean status;
 
+//    @JsonRawValue
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String description;
 }
