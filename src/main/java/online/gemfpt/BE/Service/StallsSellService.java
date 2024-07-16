@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -50,7 +51,7 @@ public class StallsSellService {
     public StallsSell createStalls(StallsSellRequest stallsSellRequest) {
         StallsSell stallsSell = new StallsSell();
         stallsSell.setStallsSellName(stallsSellRequest.getStallsSellName());
-        stallsSell.setStallsSellCreateTime(LocalDateTime.now());
+        stallsSell.setStallsSellCreateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
         stallsSell.setStallsSellStatus(stallsSellRequest.isStallsSellStatus());
         return stallsSellRepository.save(stallsSell);
     }
@@ -341,7 +342,7 @@ public MoneyChangeHistory changeMoneyInStalls(MoneyChangeRequest moneyChangeRequ
     MoneyChangeHistory moneyChangeHistory = new MoneyChangeHistory();
     moneyChangeHistory.setStallsSell(stallsSell);
     moneyChangeHistory.setAmount(amount);
-    moneyChangeHistory.setChangeDateTime(LocalDateTime.now());
+    moneyChangeHistory.setChangeDateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
     moneyChangeHistory.setBillId(moneyChangeRequest.getBillId());
     moneyChangeHistory.setStatus("Hoàn thành");
     moneyChangeHistory.setTypeChange(typeChange);

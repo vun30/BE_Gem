@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -89,7 +90,7 @@ public class BillService {
     bill.setCustomerName(customer.get().getName());
     bill.setCustomerPhone(phone);
     bill.setCashier(account.getName());
-    bill.setCreateTime(LocalDateTime.now());
+    bill.setCreateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
     bill.setStalls(account.getStallsWorkingId());
     bill.setStatus(true);
 
@@ -153,9 +154,9 @@ public class BillService {
         warrantyCard.setCustomerName(customer.get().getName());
         warrantyCard.setCustomerPhone(customer.get().getPhone());
         warrantyCard.setProductBarcode(product.getBarcode());
-        warrantyCard.setPurchaseDate(LocalDateTime.now());
+        warrantyCard.setPurchaseDate(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
         warrantyCard.setBill(bill);
-        warrantyCard.setWarrantyExpiryDate(LocalDateTime.now().plus(1, ChronoUnit.YEARS)); // Thời hạn bảo hành 1 năm
+       warrantyCard.setWarrantyExpiryDate(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).plus(1, ChronoUnit.YEARS)); // Thời hạn bảo hành 1 năm
         warrantyCards.add(warrantyCard);
 
         warrantyCardRepository.save(warrantyCard);
@@ -213,7 +214,7 @@ public class BillService {
     // Tạo và lưu lịch sử thay đổi tiền
     MoneyChangeHistory moneyChangeHistory = new MoneyChangeHistory();
     moneyChangeHistory.setStallsSell(stallsSell);
-    moneyChangeHistory.setChangeDateTime(LocalDateTime.now());
+    moneyChangeHistory.setChangeDateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
     moneyChangeHistory.setAmount(total);
     moneyChangeHistory.setOldTotalInStall(stallsSell.getMoney() - bill.getTotalAmount() );
     moneyChangeHistory.setStatus("Sell ");

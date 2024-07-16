@@ -19,6 +19,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -102,7 +103,7 @@ public class PromotionService {
         promotion.setDiscountRate(discountRequest.getDiscountRate());
         promotion.setDescription(discountRequest.getDescription());
         promotion.setApplicableProducts(String.valueOf(category));
-        promotion.setStartTime(LocalDateTime.now());
+        promotion.setStartTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
         promotion.setEndTime(discountRequest.getEndTime());
         promotion.setStatus(true);
 
@@ -132,7 +133,7 @@ public class PromotionService {
         promotion.setDiscountRate(discountRequest.getDiscountRate());
         promotion.setDescription(discountRequest.getDescription());
         promotion.setApplicableProducts("All Products");
-        promotion.setStartTime(LocalDateTime.now());
+        promotion.setStartTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
         promotion.setEndTime(discountRequest.getEndTime());
         promotion.setStatus(true);
 
@@ -158,7 +159,7 @@ public class PromotionService {
             promotion.setProgramName(discountRequest.getProgramName().isEmpty() ? promotion.getProgramName() : discountRequest.getProgramName());
             promotion.setDiscountRate(discountRequest.getDiscountRate() == 0 ? promotion.getDiscountRate() : discountRequest.getDiscountRate());
             promotion.setDescription(discountRequest.getDescription().isEmpty() ? promotion.getDescription() : discountRequest.getDescription());
-            promotion.setEndTime(LocalDateTime.now());
+            promotion.setEndTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
 
             return promotionRepository.save(promotion);
         } else {

@@ -13,6 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -59,7 +60,7 @@ public Product creates(ProductsRequest productsRequest) {
     product.setCategory(productsRequest.getCategory());
     product.setPriceRate(productsRequest.getPriceRate());
     product.setStock(1);
-    product.setCreateTime(LocalDateTime.now());
+    product.setCreateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
     product.setStatus(true);
     product.setBarcode(productsRequest.getBarcode());
 
@@ -213,7 +214,7 @@ public Product creates(ProductsRequest productsRequest) {
     String updatedBarcode = generateUniqueBarcode(existingProduct.getBarcode());
     existingProduct.setBarcode(updatedBarcode + "|" + existingProduct.getBarcode());
     existingProduct.setStatus(false);
-    existingProduct.setUpdateTime(LocalDateTime.now());
+    existingProduct.setUpdateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
     productsRepository.save(existingProduct);
 
     // Tạo sản phẩm mới với thông tin từ request
@@ -223,7 +224,7 @@ public Product creates(ProductsRequest productsRequest) {
     newProduct.setCategory(productsRequest.getCategory());
     newProduct.setPriceRate(productsRequest.getPriceRate());
     newProduct.setStock(1);
-    newProduct.setUpdateTime(LocalDateTime.now());
+    newProduct.setUpdateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
     newProduct.setStatus(true);
     newProduct.setOldID(String.valueOf(existingProduct.getProductId()));
     newProduct.setBarcode(barcode); // Set barcode cho sản phẩm mới bằng barcode của sản phẩm cũ
@@ -320,7 +321,7 @@ public Product updateAndCreateNewProductBuyBack(String barcode, ProductsRequest 
     existingProduct.setBarcode(newUniqueBarcode);
     existingProduct.setTypeWhenBuyBack(TypeOfProductEnum.PROCESSINGDONE);
     existingProduct.setStatus(false);
-    existingProduct.setUpdateTime(LocalDateTime.now());
+    existingProduct.setUpdateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
     productsRepository.save(existingProduct);
 
     // Tạo sản phẩm mới với thông tin từ request
@@ -330,7 +331,7 @@ public Product updateAndCreateNewProductBuyBack(String barcode, ProductsRequest 
     newProduct.setCategory(productsRequest.getCategory());
     newProduct.setPriceRate(productsRequest.getPriceRate());
     newProduct.setStock(1);
-    newProduct.setUpdateTime(LocalDateTime.now());
+    newProduct.setUpdateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
     newProduct.setTypeWhenBuyBack(productsRequest.getTypeWhenBuyBack());
     newProduct.setStatus(true);
     newProduct.setOldID(String.valueOf(existingProduct.getProductId()));

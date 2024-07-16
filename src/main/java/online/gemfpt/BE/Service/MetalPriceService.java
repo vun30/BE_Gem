@@ -33,7 +33,7 @@ public class MetalPriceService {
         MetalPrice metalPrice = new MetalPrice();
 
         // Thiết lập updateDate thành ngày giờ hiện tại
-        metalPrice.setUpdateDate(LocalDateTime.now());
+        metalPrice.setUpdateDate(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
 
         // Thiết lập status thành true
         metalPrice.setStatus(true);

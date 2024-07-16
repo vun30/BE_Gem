@@ -20,6 +20,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 
@@ -56,7 +57,7 @@ public class AuthenticationService implements UserDetailsService {
         account.setName(registerRequest.getName());
         account.setEmail(registerRequest.getEmail());
         account.setPhone(registerRequest.getPhone());
-        account.setCreateDate(LocalDateTime.now());
+        account.setCreateDate(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
         account.setRole(RoleEnum.STAFF);
         account.setStatus(false);
         account.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
@@ -164,7 +165,7 @@ public Account staffEditAccountByEmail(String email, StaffEditAccountRequest sta
             account.setEmail(email);
             account.setRole(RoleEnum.STAFF);
             account.setStatus(false);
-            account.setCreateDate(LocalDateTime.now());
+            account.setCreateDate(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
             account = authenticationRepository.save(account);
         }
         accountResponse.setEmail(account.getEmail());

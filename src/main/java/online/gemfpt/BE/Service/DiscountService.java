@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,7 +34,7 @@ public class DiscountService {
             discountRequest.setRequestedDiscount(requestedDiscount);
             discountRequest.setDiscountReason(discountReason);
             discountRequest.setApproved(false);
-            discountRequest.setRequestTime(LocalDateTime.now());
+            discountRequest.setRequestTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
             discountRequest.setCustomer(customer);
             return discountRepository.save(discountRequest);
         } else {
@@ -48,7 +49,7 @@ public class DiscountService {
             Discount discountRequest = optionalRequest.get();
             discountRequest.setApproved(approved);
             discountRequest.setManagerResponse(managerResponse);
-            discountRequest.setResponseTime(LocalDateTime.now());
+            discountRequest.setResponseTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
             discountRequest.setStatusUse(false);  // not  use
             return discountRepository.save(discountRequest);
         } else {
@@ -66,7 +67,7 @@ public class DiscountService {
             defaultDiscount.setApproved(false);
             defaultDiscount.setDiscountReason("No ID provided");
             defaultDiscount.setRequestedDiscount(0.0);
-            defaultDiscount.setRequestTime(LocalDateTime.now());
+            defaultDiscount.setRequestTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
             defaultDiscount.setStatusUse(false);
             return defaultDiscount;
         }

@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -85,7 +86,7 @@ public List<Bill> getAllBillOfCustomerForBuy(String customerPhone) {
         customer = new Customer();
         customer.setName(customerName);
         customer.setPhone(customerPhone);
-        customer.setCreateTime(LocalDateTime.now());
+        customer.setCreateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
         // Thiết lập các giá trị mặc định khác nếu cần
         customer.setPoints(0);
         customer.setRankCus("Normal");
@@ -97,7 +98,7 @@ public List<Bill> getAllBillOfCustomerForBuy(String customerPhone) {
     billBuyBack.setTypeBill(TypeBillEnum.BUY);
     billBuyBack.setCustomerName(customerName);
     billBuyBack.setCustomerPhone(customerPhone);
-    billBuyBack.setCreateTime(LocalDateTime.now());
+    billBuyBack.setCreateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
     billBuyBack.setStatus(true); // Assuming the status is true initially
     Account account = authenticationService.getCurrentAccount();
     billBuyBack.setCashier(String.valueOf(account.getId()));
@@ -116,7 +117,7 @@ public List<Bill> getAllBillOfCustomerForBuy(String customerPhone) {
         product.setTypeWhenBuyBack(TypeOfProductEnum.PROCESSING);
      //   product.setPriceBuyRate(buyBackProductRequest.getPriceBuyRate());
         product.setStock(1);
-        product.setCreateTime(LocalDateTime.now());
+        product.setCreateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
         product.setStatus(false); // Assuming the status is false initially
         product.setBarcode(generateBarcode()); // Auto-generate barcode
         product.setBillBuyBack(savedBillBuyBack); // Set the saved BillBuyBack
@@ -216,7 +217,7 @@ public List<Bill> getAllBillOfCustomerForBuy(String customerPhone) {
 
       MoneyChangeHistory moneyChangeHistory = new MoneyChangeHistory();
     moneyChangeHistory.setStallsSell(stallsSell);
-    moneyChangeHistory.setChangeDateTime(LocalDateTime.now());
+    moneyChangeHistory.setChangeDateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
     moneyChangeHistory.setOldTotalInStall(stallsSell.getMoney() + totalBillPrice );
     moneyChangeHistory.setAmount(totalBillPrice); // Số tiền thay đổi là âm do làm giảm số tiền trong quầy
         moneyChangeHistory.setBillId(billBuyBack.getId());
