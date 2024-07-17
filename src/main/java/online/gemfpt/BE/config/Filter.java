@@ -40,7 +40,7 @@ public class Filter extends OncePerRequestFilter {
             "/Register",
             "/register",
             "/send-mail",
-            "/login-google",
+            "/login_google",
             "/forgot_password",
             "/api/metalprices/active-types"
 

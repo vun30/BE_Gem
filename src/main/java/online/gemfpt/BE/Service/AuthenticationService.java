@@ -1,6 +1,7 @@
 package online.gemfpt.BE.Service;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import online.gemfpt.BE.entity.Account;
 import online.gemfpt.BE.Repository.AuthenticationRepository;
@@ -175,10 +176,9 @@ public Account staffEditAccountByEmail(String email, StaffEditAccountRequest sta
         accountResponse.setPhone(account.getPhone());
         accountResponse.setName(account.getName());
         accountResponse.setCreateDateNow(account.getCreateDate());
-
         String token = tokenService.generateToken(account);
         accountResponse.setToken(token);
-    } catch (Exception e) {
+    } catch (FirebaseAuthException e) {
         // Handle specific exceptions and log or throw appropriate errors
         System.out.println("Exception occurred during Google login: " + e.getMessage());
         throw new RuntimeException("Error during Google login", e);
