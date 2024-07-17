@@ -16,8 +16,8 @@ public class BuyBackProductRequest {
     private TypeEnum category;
 
 
-    @Min(0)
-    private double priceBuyRate;
+//    @Min(0)
+//    private double priceBuyRate;
 
     @NotBlank(message = "Barcode cannot be left blank")
     private String barcode;

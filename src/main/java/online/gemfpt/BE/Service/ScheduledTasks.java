@@ -91,9 +91,10 @@ public class ScheduledTasks {
                         .sum();
             }
 
+             double wege = product.getWage();
             // Tính giá cuối cùng của sản phẩm
             double totalPrice = totalMetalPrice + totalGemstonePrice;
-            double finalPrice = totalPrice + (totalPrice * product.getPriceRate() / 100);
+            double finalPrice = wege + totalPrice + (totalPrice * product.getPriceRate() / 100);
             product.setPrice(finalPrice); // cập nhật giá sản phẩm
 
             // Lưu sản phẩm sau khi tính toán giá

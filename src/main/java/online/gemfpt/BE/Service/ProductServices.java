@@ -63,6 +63,7 @@ public Product creates(ProductsRequest productsRequest) {
     product.setCreateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
     product.setStatus(true);
     product.setBarcode(productsRequest.getBarcode());
+    product.setWage(productsRequest.getWage());
 
      // Set URLs
     if (productsRequest.getUrls() != null) {
@@ -127,10 +128,11 @@ public Product creates(ProductsRequest productsRequest) {
                 .sum();
     }
 
+    double wege = productsRequest.getWage();
 
     // Tính giá cuối cùng của sản phẩm
-    double totalPrice = totalMetalPrice + totalGemstonePrice;
-    double totalPrice2 = totalPrice + (totalPrice * product.getPriceRate() / 100);
+    double totalPrice = wege + totalMetalPrice + totalGemstonePrice;
+    double totalPrice2 = totalPrice  + (totalPrice * product.getPriceRate() / 100);
     product.setPrice(totalPrice2);
 
     // Lưu sản phẩm và các thành phần của nó
@@ -227,7 +229,7 @@ public Product creates(ProductsRequest productsRequest) {
     newProduct.setUpdateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
     newProduct.setStatus(true);
     newProduct.setOldID(String.valueOf(existingProduct.getProductId()));
-    newProduct.setBarcode(barcode); // Set barcode cho sản phẩm mới bằng barcode của sản phẩm cũ
+    newProduct.setBarcode(barcode); // Set barcode cho sản phẩm mới bằng barcode của sản phẩm cũnewProduct.setWage(productsRequest.getWage());
 
     // Set URLs
     if (productsRequest.getUrls() != null) {
@@ -288,9 +290,11 @@ public Product creates(ProductsRequest productsRequest) {
                 .sum();
     }
 
+     double wege = productsRequest.getWage();
+
     // Tính giá cuối cùng của sản phẩm
     double totalPrice = totalMetalPrice + totalGemstonePrice;
-    double totalPriceWithRate = totalPrice + (totalPrice * newProduct.getPriceRate() / 100);
+    double totalPriceWithRate = wege + totalPrice + (totalPrice * newProduct.getPriceRate() / 100);
     newProduct.setPrice(totalPriceWithRate);
 
     // Lưu sản phẩm và các thành phần của nó
@@ -315,7 +319,7 @@ public Product updateAndCreateNewProductBuyBack(String barcode, ProductsRequest 
     Product existingProduct = existingProductOptional.get();
 
     // Generate a new unique barcode for the existing product
-    String newUniqueBarcode = generateUniqueBarcode(existingProduct.getBarcode()  + "|" + barcode);
+    String newUniqueBarcode = generateUniqueBarcode( barcode);
 
     // Set the old product's barcode to the new unique barcode
     existingProduct.setBarcode(newUniqueBarcode);
@@ -336,6 +340,7 @@ public Product updateAndCreateNewProductBuyBack(String barcode, ProductsRequest 
     newProduct.setStatus(true);
     newProduct.setOldID(String.valueOf(existingProduct.getProductId()));
     newProduct.setBarcode(barcode); // Set barcode cho sản phẩm mới bằng barcode của sản phẩm cũ
+    newProduct.setWage(productsRequest.getWage());
 
     // Set URLs
     if (productsRequest.getUrls() != null) {
@@ -395,10 +400,10 @@ public Product updateAndCreateNewProductBuyBack(String barcode, ProductsRequest 
                 .mapToDouble(gemstone -> gemstone.getPrice() * gemstone.getQuantity())
                 .sum();
     }
-
+    double wege = productsRequest.getWage();
     // Tính giá cuối cùng của sản phẩm
     double totalPrice = totalMetalPrice + totalGemstonePrice;
-    double totalPriceWithRate = totalPrice + (totalPrice * newProduct.getPriceRate() / 100);
+    double totalPriceWithRate = wege + totalPrice + (totalPrice * newProduct.getPriceRate() / 100);
     newProduct.setPrice(totalPriceWithRate);
 
     // Lưu sản phẩm và các thành phần của nó

@@ -119,7 +119,7 @@ public List<Bill> getAllBillOfCustomerForBuy(String customerPhone) {
         product.setStock(1);
         product.setCreateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
         product.setStatus(false); // Assuming the status is false initially
-        product.setBarcode(generateBarcode()); // Auto-generate barcode
+        product.setBarcode(buyBackProductRequest.getBarcode()); // Auto-generate barcode
         product.setBillBuyBack(savedBillBuyBack); // Set the saved BillBuyBack
 
         // Set URLs
@@ -235,30 +235,30 @@ public List<Bill> getAllBillOfCustomerForBuy(String customerPhone) {
     return billBuyBackRepository.save(savedBillBuyBack);
 }
 // Generate a random barcode not present in the database
-private String generateBarcode() {
-    String barcode;
-    Optional<Product> existingProduct;
-
-    do {
-        barcode = generateRandomBarcode();
-        existingProduct = productsRepository.findByBarcode(barcode);
-    } while (existingProduct.isPresent());
-
-    return barcode;
-}
-
-// Generate a random 8-digit numeric barcode
-private String generateRandomBarcode() {
-    int length = 8;
-    Random random = new Random();
-    StringBuilder sb = new StringBuilder();
-
-    for (int i = 0; i < length; i++) {
-        sb.append(random.nextInt(10));
-    }
-
-    return sb.toString();
-}
+//private String generateBarcode() {
+//    String barcode;
+//    Optional<Product> existingProduct;
+//
+//    do {
+//        barcode = generateRandomBarcode();
+//        existingProduct = productsRepository.findByBarcode(barcode);
+//    } while (existingProduct.isPresent());
+//
+//    return barcode;
+//}
+//
+//// Generate a random 8-digit numeric barcode
+//private String generateRandomBarcode() {
+//    int length = 8;
+//    Random random = new Random();
+//    StringBuilder sb = new StringBuilder();
+//
+//    for (int i = 0; i < length; i++) {
+//        sb.append(random.nextInt(10));
+//    }
+//
+//    return sb.toString();
+//}
 
 public List<BillBuyBack> getAllBillBuyBacks() {
         return billBuyBackRepository.findAll();
