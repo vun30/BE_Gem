@@ -25,6 +25,11 @@ public class MetalPriceService {
     @Autowired
     private TypeOfMetalRepository typeOfMetalRepository;
 
+     @Autowired
+    private ScheduledTasks scheduledTasks;
+
+
+
     public MetalPrice createMetalPrice(MetalPriceRequest metalPriceRequest) {
         // Đặt trạng thái của tất cả các MetalPrice cũ thành false trước khi tạo mới
         deactivateAllMetalPrices();
@@ -54,7 +59,12 @@ public class MetalPriceService {
 
         metalPrice.setTypeOfMetals(typeOfMetals);
 
-        return metalPriceRepository.save(metalPrice);
+        MetalPrice savedMetalPrice = metalPriceRepository.save(metalPrice);
+
+        // Gọi hàm updateProductPricesByTypeOfMetal sau khi lưu
+        scheduledTasks.updateProductPricesByTypeOfMetal();
+
+        return savedMetalPrice;
     }
 
 

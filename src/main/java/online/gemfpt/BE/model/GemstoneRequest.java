@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import online.gemfpt.BE.enums.GemStatus;
 
 @Getter
 @Setter
@@ -21,6 +22,13 @@ public class GemstoneRequest {
 
     @NotBlank(message = "Certificate Code cannot be left blank")
     private String certificateCode;
+
+
+      GemStatus userStatus;
+
+       String gemBarcode;
+
+       String url ;
 
     private double carat;
 

@@ -5,40 +5,24 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import online.gemfpt.BE.enums.GemStatus;
+import online.gemfpt.BE.enums.TypeEnum;
+import online.gemfpt.BE.enums.TypeOfProductEnum;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
 @Setter
-public class Gemstone {
+public class UpdateProductHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    long gemId;
+    private long productId;
 
-    String description;
-
-    String color;
-
-    String clarity;
-
-    String cut;
-
-    double carat;
-
-    String oldGemID;
-
-    String url ;
-
-
-    String gemBarcode;
-
-    @NotNull
-    double price;
+    @NotBlank
+    private String barcode;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     private LocalDateTime createTime;
@@ -46,21 +30,10 @@ public class Gemstone {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     private LocalDateTime updateTime;
 
+    private String descriptions;  // save history
 
-    GemStatus userStatus;
 
-    @Min(0)
-    double buyRate ; //  when buy back => price = price - ( price x priceRate )
 
-    String certificateCode;
-
-    @Min(0)
-    int quantity  ;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JsonIgnore
-    @JoinColumn(name = "productId")
-    private Product product;
 
 
 

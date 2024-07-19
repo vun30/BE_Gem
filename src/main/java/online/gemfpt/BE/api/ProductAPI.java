@@ -4,10 +4,17 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import online.gemfpt.BE.Repository.ProductsRepository;
+import online.gemfpt.BE.Repository.PromotionProductRepository;
+import online.gemfpt.BE.Service.GemService;
+import online.gemfpt.BE.Service.PromotionService;
+import online.gemfpt.BE.Service.UpdateProductHistoryService;
+import online.gemfpt.BE.entity.Gemstone;
 import online.gemfpt.BE.entity.Product;
 import online.gemfpt.BE.Service.ProductServices;
+import online.gemfpt.BE.entity.UpdateProductHistory;
 import online.gemfpt.BE.enums.TypeEnum;
 import online.gemfpt.BE.exception.ProductNotFoundException;
+import online.gemfpt.BE.model.GemstoneRequest;
 import online.gemfpt.BE.model.ProductsRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,6 +36,29 @@ public class ProductAPI {
 
     @Autowired
     ProductServices productServices;
+
+    @Autowired
+    private UpdateProductHistoryService  updateProductHistoryService;
+
+    @Autowired
+    private GemService gemService;
+
+    @Autowired
+    private PromotionProductRepository  promotionProductRepository;
+
+    @Autowired
+    PromotionService promotionService ;
+
+//    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER')")
+//     @PostMapping("/detach-gemstones")
+//    public ResponseEntity<String> detachGemstonesFromProduct(@RequestBody Long id) {
+//        try {
+//            productServices.detachGemstonesByProductBarcode(id);
+//            return ResponseEntity.ok("Gemstones detached successfully from product.");
+//        } catch (EntityNotFoundException e) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+//        }
+//    }
 
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER')")
     @PostMapping("products")
@@ -144,4 +174,40 @@ public class ProductAPI {
     public List<Product> getProductsByCategory(@RequestParam("category") TypeEnum category) {
         return productServices.getProductsByCategory(category);
     }
+    //------------------------------UPDATE HISTORY -------------------------------------//
+
+     @GetMapping("/history-all")
+    public ResponseEntity<List<UpdateProductHistory>> getAllHistory() {
+        List<UpdateProductHistory> historyList = updateProductHistoryService.getAllHistory();
+        return ResponseEntity.ok(historyList);
+    }
+
+    @GetMapping("/history-{barcode}")
+    public ResponseEntity<UpdateProductHistory> getHistoryByBarcode(@PathVariable String barcode) {
+        Optional<UpdateProductHistory> history = updateProductHistoryService.getHistoryByBarcode(barcode);
+        return history.map(ResponseEntity::ok)
+                      .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+     @DeleteMapping("/detach-by-barcode")
+    public ResponseEntity<String> deletePromotionProductsByBarcode(@RequestParam("barcode") String barcode) {
+        if (barcode == null || barcode.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Barcode cannot be null or empty");
+        }
+
+        productServices.deletePromotionProductsByBarcode(barcode);
+        return ResponseEntity.ok("Promotion products deleted successfully");
+    }
+
+      @PostMapping("/{barcode}/unlink-gems-promotion")
+    public String unlinkGemsByProductBarcode(
+            @PathVariable String barcode) {
+        try {
+            productServices.unlinkGemsByProductBarcode(barcode);
+            return "Successfully unlinked gems for product with barcode: " + barcode;
+        } catch (Exception e) {
+            return "Error un-linking gems for product with barcode: " + barcode + ". Error: " + e.getMessage();
+        }
+    }
+
 }

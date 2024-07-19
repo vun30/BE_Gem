@@ -1,6 +1,7 @@
 package online.gemfpt.BE.Service;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import online.gemfpt.BE.entity.Account;
 import online.gemfpt.BE.Repository.AuthenticationRepository;
@@ -167,18 +168,24 @@ public Account staffEditAccountByEmail(String email, StaffEditAccountRequest sta
             account.setStatus(false);
             account.setCreateDate(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
             account = authenticationRepository.save(account);
+            throw new BadRequestException("Account created but not active. Please contact admin for approval: 0335101045.");
+        }else if (!account.isStatus()) {
+            // If account status is false, do not allow login
+            throw new BadRequestException("Account is un active pls contact with admin for accept account : 0335101045 .");
         }
         accountResponse.setEmail(account.getEmail());
         accountResponse.setId(account.getId());
         account.setUrl(firebaseToken.getPicture());
-        accountResponse.setRole(RoleEnum.STAFF);
+        accountResponse.setRole(account.getRole());
         accountResponse.setPhone(account.getPhone());
         accountResponse.setName(account.getName());
         accountResponse.setCreateDateNow(account.getCreateDate());
-
+        accountResponse.setEndWorkingDateTime(account.getEndWorkingDateTime());
+        accountResponse.setCreateDate(account.getCreateDate());
+        accountResponse.setDescription(account.getDescription());
         String token = tokenService.generateToken(account);
         accountResponse.setToken(token);
-    } catch (Exception e) {
+    } catch (FirebaseAuthException e) {
         // Handle specific exceptions and log or throw appropriate errors
         System.out.println("Exception occurred during Google login: " + e.getMessage());
         throw new RuntimeException("Error during Google login", e);

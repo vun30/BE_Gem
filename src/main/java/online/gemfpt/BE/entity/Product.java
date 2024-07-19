@@ -47,6 +47,9 @@ public class Product {
 
     private double priceBuyRate;
 
+    @Min(0)
+    private double wage;
+
 
     private int stock;
 
@@ -56,6 +59,7 @@ public class Product {
 
     @Transient
     private Double newPrice;
+
 
     private boolean status;
 

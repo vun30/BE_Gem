@@ -23,6 +23,8 @@ public class ProductsRequest {
     @Min(0)
     private double priceRate;
 
+    private double wage;
+
     @NotBlank(message = "Barcode cannot be left blank")
     private String barcode;
 

@@ -23,16 +23,14 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-@Data
 public class Account implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     long id;
 
-    @Column (unique = true)
-    private String phone ;
+    @Column(unique = true)
+    private String phone;
 
-    @NotBlank
     private String password;
 
     private String description;
