@@ -71,7 +71,7 @@ public class PromotionService {
         promotion.setProgramName(discountRequest.getProgramName());
         promotion.setDiscountRate(discountRequest.getDiscountRate());
         promotion.setDescription(discountRequest.getDescription());
-        promotion.setApplicableProducts(discountRequest.getApplicableProducts());
+        promotion.setApplicableProducts("Barcode");
         promotion.setStartTime(LocalDateTime.now());
         promotion.setEndTime(discountRequest.getEndTime());
         promotion.setStatus(true);
@@ -173,7 +173,14 @@ public class PromotionService {
 
         List<PromotionProduct> promotionProducts = promotionProductRepository.findByPromotion(promotion);
         for (PromotionProduct promotionProduct : promotionProducts) {
+            Product product = promotionProduct.getProduct();
+            if(!promotion.isStatus()){
+                product.setNewPrice(null);
+            } else {
+                product.setNewPrice(product.getPrice() * (1 - promotion.getDiscountRate() / 100));
+            }
             promotionProduct.setActive(promotion.isStatus());
+            productRepository.save(product);
             promotionProductRepository.save(promotionProduct);
         }
         return promotionRepository.save(promotion);
