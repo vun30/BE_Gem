@@ -60,6 +60,7 @@ public class Product {
     @Transient
     private Double newPrice;
 
+
     private boolean status;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)

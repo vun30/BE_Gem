@@ -3,6 +3,7 @@ package online.gemfpt.BE.Service;
 import jakarta.transaction.Transactional;
 import online.gemfpt.BE.Repository.*;
 import online.gemfpt.BE.entity.*;
+import online.gemfpt.BE.enums.GemStatus;
 import online.gemfpt.BE.enums.TypeBillEnum;
 import online.gemfpt.BE.enums.TypeMoneyChange;
 import online.gemfpt.BE.enums.TypeOfProductEnum;
@@ -119,7 +120,7 @@ public List<Bill> getAllBillOfCustomerForBuy(String customerPhone) {
         product.setStock(1);
         product.setCreateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
         product.setStatus(false); // Assuming the status is false initially
-        product.setBarcode(buyBackProductRequest.getBarcode()); // Auto-generate barcode
+        product.setBarcode(generateRandomBarcode()); // Auto-generate barcode
         product.setBillBuyBack(savedBillBuyBack); // Set the saved BillBuyBack
 
         // Set URLs
@@ -137,14 +138,17 @@ public List<Bill> getAllBillOfCustomerForBuy(String customerPhone) {
         if (buyBackProductRequest.getGemstones() != null) {
             List<Gemstone> gemstones = buyBackProductRequest.getGemstones().stream().map(gemstoneRequest -> {
                 Gemstone gemstone = new Gemstone();
-                gemstone.setDescription(gemstoneRequest.getDescription());
+                gemstone.setDescription( gemstoneRequest.getDescription() + " | " + "Gem buy back in product barcode: " + " " + product.getBarcode());
                 gemstone.setColor(gemstoneRequest.getColor());
                 gemstone.setClarity(gemstoneRequest.getClarity());
                 gemstone.setCut(gemstoneRequest.getCut());
                 gemstone.setCarat(gemstoneRequest.getCarat());
                 gemstone.setPrice(gemstoneRequest.getPrice() - (gemstoneRequest.getPrice() * gemstoneRequest.getBuyRate() / 100));
                 gemstone.setBuyRate(gemstoneRequest.getBuyRate());
-                gemstone.setQuantity(gemstoneRequest.getQuantity());
+                gemstone.setQuantity(1);
+                gemstone.setUserStatus(GemStatus.PROCESSING);
+                gemstone.setGemBarcode(gemstoneRequest.getGemBarcode());
+                gemstone.setCreateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
                 gemstone.setProduct(product);
                 return gemstone;
             }).collect(Collectors.toList());
@@ -158,6 +162,7 @@ public List<Bill> getAllBillOfCustomerForBuy(String customerPhone) {
                 metal.setName(metalRequest.getName());
                 metal.setDescription(metalRequest.getDescription());
                 metal.setWeight(metalRequest.getWeight());
+                metal.setDescription("Metal when buy back in product barcode :" + " " + product.getBarcode() );
                 metalService.setPricePerWeightUnitForBuyBack(metal);
                 metal.setProduct(product);
                 return metal;
@@ -235,30 +240,30 @@ public List<Bill> getAllBillOfCustomerForBuy(String customerPhone) {
     return billBuyBackRepository.save(savedBillBuyBack);
 }
 // Generate a random barcode not present in the database
-//private String generateBarcode() {
-//    String barcode;
-//    Optional<Product> existingProduct;
-//
-//    do {
-//        barcode = generateRandomBarcode();
-//        existingProduct = productsRepository.findByBarcode(barcode);
-//    } while (existingProduct.isPresent());
-//
-//    return barcode;
-//}
-//
-//// Generate a random 8-digit numeric barcode
-//private String generateRandomBarcode() {
-//    int length = 8;
-//    Random random = new Random();
-//    StringBuilder sb = new StringBuilder();
-//
-//    for (int i = 0; i < length; i++) {
-//        sb.append(random.nextInt(10));
-//    }
-//
-//    return sb.toString();
-//}
+private String generateBarcode() {
+    String barcode;
+    Optional<Product> existingProduct;
+
+    do {
+        barcode = generateRandomBarcode();
+        existingProduct = productsRepository.findByBarcode(barcode);
+    } while (existingProduct.isPresent());
+
+    return barcode;
+}
+
+// Generate a random 8-digit numeric barcode
+private String generateRandomBarcode() {
+    int length = 8;
+    Random random = new Random();
+    StringBuilder sb = new StringBuilder();
+
+    for (int i = 0; i < length; i++) {
+        sb.append(random.nextInt(10));
+    }
+
+    return sb.toString();
+}
 
 public List<BillBuyBack> getAllBillBuyBacks() {
         return billBuyBackRepository.findAll();
