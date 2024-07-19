@@ -235,7 +235,7 @@ public Product updateAndCreateNewProduct(String barcode, ProductsRequest product
     historyProduct.setPriceRate(existingProduct.getPriceRate());
     historyProduct.setStock(existingProduct.getStock());
     historyProduct.setTypeWhenBuyBack(existingProduct.getTypeWhenBuyBack());
-    historyProduct.setUpdateTime(existingProduct.getUpdateTime());
+    historyProduct.setUpdateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
     historyProduct.setStatus(false);
     historyProduct.setBarcode(existingProduct.getBarcode());
     historyProduct.setWage(existingProduct.getWage());
@@ -301,6 +301,7 @@ public Product updateAndCreateNewProduct(String barcode, ProductsRequest product
     newProduct.setPriceRate(productsRequest.getPriceRate());
     newProduct.setStock(1);
     newProduct.setTypeWhenBuyBack(null);
+    newProduct.setCreateTime(existingProduct.getCreateTime());
     newProduct.setUpdateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
     newProduct.setStatus(true);
     newProduct.setBarcode(barcode);
@@ -400,7 +401,7 @@ public Product updateAndCreateNewProduct(String barcode, ProductsRequest product
             ", Category: " + historyProduct.getCategory() + ", PriceRate: " + historyProduct.getPriceRate() +
             ", Stock: " + historyProduct.getStock() + ", Wage: " + historyProduct.getWage() +
             ", Metals: " + historyProduct.getMetals().stream().map(Metal::getName).collect(Collectors.joining(", ")) +
-            ", TypeWhenBuyBack: " + historyProduct.getTypeWhenBuyBack());
+            ", Type When Buy Back: " + historyProduct.getTypeWhenBuyBack() + ", Create Time" + historyProduct.getCreateTime() + ", Update Time" + LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
 
     // Lưu lịch sử sản phẩm vào cơ sở dữ liệu
     updateProductHistoryRepository.save(updateProductHistory);
@@ -802,7 +803,9 @@ public void unlinkGemsByProductBarcode(String barcode) {
             ", Stock: " + historyProduct.getStock() +
             ", Wage: " + historyProduct.getWage() +
             ", Metals: " + historyProduct.getMetals().stream().map(Metal::getName).collect(Collectors.joining(", ")) +
-            ", TypeWhenBuyBack: " + historyProduct.getTypeWhenBuyBack());
+            ", TypeWhenBuyBack: " + historyProduct.getTypeWhenBuyBack()
+            + historyProduct.getTypeWhenBuyBack() + ", Create Time" + historyProduct.getCreateTime() + ", Update Time" + LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"))
+    );
 
     // Lưu lịch sử sản phẩm vào cơ sở dữ liệu
     updateProductHistoryRepository.save(updateProductHistory);
