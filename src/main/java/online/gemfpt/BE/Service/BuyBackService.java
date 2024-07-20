@@ -10,15 +10,14 @@ import online.gemfpt.BE.enums.TypeOfProductEnum;
 import online.gemfpt.BE.exception.InsufficientMoneyInStallException;
 import online.gemfpt.BE.exception.StallsSellNotFoundException;
 import online.gemfpt.BE.model.BuyBackProductRequest;
+import online.gemfpt.BE.model.GemstoneRequest;
 import online.gemfpt.BE.model.ProductUrlRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -76,8 +75,8 @@ public List<Bill> getAllBillOfCustomerForBuy(String customerPhone) {
 
 
     @Transactional
-    public BillBuyBack createBillAndProducts(String customerName, String customerPhone, List<BuyBackProductRequest> buyBackProductRequests) {
-     // Kiểm tra xem khách hàng đã tồn tại hay chưa
+public BillBuyBack createBillAndProducts(String customerName, String customerPhone, List<BuyBackProductRequest> buyBackProductRequests) {
+    // Kiểm tra xem khách hàng đã tồn tại hay chưa
     Optional<Customer> optionalCustomer = customerRepository.findByPhone(customerPhone);
     Customer customer;
     if (optionalCustomer.isPresent()) {
@@ -88,13 +87,13 @@ public List<Bill> getAllBillOfCustomerForBuy(String customerPhone) {
         customer.setName(customerName);
         customer.setPhone(customerPhone);
         customer.setCreateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
-        // Thiết lập các giá trị mặc định khác nếu cần
         customer.setPoints(0);
         customer.setRankCus("Normal");
         customer.setStatus(true);
         customer = customerRepository.save(customer);
     }
-    // Create a new BillBuyBack
+
+    // Tạo hóa đơn mới
     BillBuyBack billBuyBack = new BillBuyBack();
     billBuyBack.setTypeBill(TypeBillEnum.BUY);
     billBuyBack.setCustomerName(customerName);
@@ -108,6 +107,17 @@ public List<Bill> getAllBillOfCustomerForBuy(String customerPhone) {
     // Save the BillBuyBack first
     BillBuyBack savedBillBuyBack = billBuyBackRepository.save(billBuyBack);
 
+    // Prepare a map to store GemstoneRequest buyRates by gemBarcode
+    Map<String, Double> buyRateMap = buyBackProductRequests.stream()
+            .flatMap(request -> request.getGemstones().stream())
+            .collect(Collectors.toMap(GemstoneRequest::getGemBarcode, GemstoneRequest::getBuyRate));
+
+    // Get gem barcodes for lookup
+    List<String> gemstoneBarcodes = new ArrayList<>(buyRateMap.keySet());
+
+    // Get existing gemstones from the database
+    List<Gemstone> existingGemstones = getGemstonesIfUse(gemstoneBarcodes);
+
     // Create Products for the BillBuyBack and calculate prices
     for (BuyBackProductRequest buyBackProductRequest : buyBackProductRequests) {
         // Create a new Product
@@ -116,7 +126,6 @@ public List<Bill> getAllBillOfCustomerForBuy(String customerPhone) {
         product.setDescriptions(buyBackProductRequest.getDescriptions());
         product.setCategory(buyBackProductRequest.getCategory());
         product.setTypeWhenBuyBack(TypeOfProductEnum.PROCESSING);
-     //   product.setPriceBuyRate(buyBackProductRequest.getPriceBuyRate());
         product.setStock(1);
         product.setCreateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
         product.setStatus(false); // Assuming the status is false initially
@@ -136,22 +145,31 @@ public List<Bill> getAllBillOfCustomerForBuy(String customerPhone) {
 
         // Create Gemstones
         if (buyBackProductRequest.getGemstones() != null) {
-            List<Gemstone> gemstones = buyBackProductRequest.getGemstones().stream().map(gemstoneRequest -> {
+            List<Gemstone> gemstones = new ArrayList<>();
+            for (GemstoneRequest  gemstoneRequest : buyBackProductRequest.getGemstones()) {
+                // Find existing gemstone by barcode
+                Gemstone existingGemstone = existingGemstones.stream()
+                        .filter(gem -> gem.getGemBarcode().equals(gemstoneRequest.getGemBarcode()))
+                        .findFirst()
+                        .orElse(new Gemstone());
+
+                // Create a new Gemstone
                 Gemstone gemstone = new Gemstone();
-                gemstone.setDescription( gemstoneRequest.getDescription() + " | " + "Gem buy back in product barcode: " + " " + product.getBarcode());
-                gemstone.setColor(gemstoneRequest.getColor());
-                gemstone.setClarity(gemstoneRequest.getClarity());
-                gemstone.setCut(gemstoneRequest.getCut());
-                gemstone.setCarat(gemstoneRequest.getCarat());
-                gemstone.setPrice(gemstoneRequest.getPrice() - (gemstoneRequest.getPrice() * gemstoneRequest.getBuyRate() / 100));
-                gemstone.setBuyRate(gemstoneRequest.getBuyRate());
+                gemstone.setDescription(existingGemstone.getDescription() + " | " + "Gem buy back in product barcode: " + " " + product.getBarcode());
+                gemstone.setColor(existingGemstone.getColor());
+                gemstone.setClarity(existingGemstone.getClarity());
+                gemstone.setCut(existingGemstone.getCut());
+                gemstone.setCarat(existingGemstone.getCarat());
+                gemstone.setPrice(existingGemstone.getPrice() - (existingGemstone.getPrice() * buyRateMap.get(gemstoneRequest.getGemBarcode()) / 100));
+                gemstone.setBuyRate(buyRateMap.get(gemstoneRequest.getGemBarcode())); // Use buyRate from request
                 gemstone.setQuantity(1);
                 gemstone.setUserStatus(GemStatus.PROCESSING);
-                gemstone.setGemBarcode(gemstoneRequest.getGemBarcode());
+                gemstone.setGemBarcode(generateRandomBarcode());
                 gemstone.setCreateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
                 gemstone.setProduct(product);
-                return gemstone;
-            }).collect(Collectors.toList());
+
+                gemstones.add(gemstone);
+            }
             product.setGemstones(gemstones);
         }
 
@@ -162,7 +180,7 @@ public List<Bill> getAllBillOfCustomerForBuy(String customerPhone) {
                 metal.setName(metalRequest.getName());
                 metal.setDescription(metalRequest.getDescription());
                 metal.setWeight(metalRequest.getWeight());
-                metal.setDescription("Metal when buy back in product barcode :" + " " + product.getBarcode() );
+                metal.setDescription("Metal when buy back in product barcode :" + " " + product.getBarcode());
                 metalService.setPricePerWeightUnitForBuyBack(metal);
                 metal.setProduct(product);
                 return metal;
@@ -188,7 +206,6 @@ public List<Bill> getAllBillOfCustomerForBuy(String customerPhone) {
 
         // Calculate final price of the Product
         double totalPrice1 = totalMetalPrice + totalGemstonePrice;
-       // double totalPrice2 = totalPrice1 - (totalPrice1 * product.getPriceBuyRate() / 100);
         product.setPrice(totalPrice1); //totalPrice2
 
         // Add the product to the list of products in the bill
@@ -204,40 +221,39 @@ public List<Bill> getAllBillOfCustomerForBuy(String customerPhone) {
         }
     }
 
-       // Trừ số tiền từ total vào quầy của account đang login
+    // Trừ số tiền từ total vào quầy của account đang login
     StallsSell stallsSell = stallsSellRepository.findById(account.getStallsWorkingId())
             .orElseThrow(() -> new StallsSellNotFoundException("Không tìm thấy quầy bán với ID: " + account.getStallsWorkingId()));
     double totalBillPrice = savedBillBuyBack.getProducts().stream()
             .mapToDouble(Product::getPrice)
             .sum();
 
-     // Kiểm tra nếu số tiền trong quầy không đủ để trừ
+    // Kiểm tra nếu số tiền trong quầy không đủ để trừ
     if (stallsSell.getMoney() < totalBillPrice) {
-        throw new InsufficientMoneyInStallException("Số tiền trong quầy không đủ để thực hiện giao dịch này") ;
+        throw new InsufficientMoneyInStallException("Số tiền trong quầy không đủ để thực hiện giao dịch này");
     }
 
     // Trừ số tiền và lưu lại vào quầy
     stallsSell.setMoney(stallsSell.getMoney() - totalBillPrice);
     stallsSellRepository.save(stallsSell);
 
-      MoneyChangeHistory moneyChangeHistory = new MoneyChangeHistory();
+    MoneyChangeHistory moneyChangeHistory = new MoneyChangeHistory();
     moneyChangeHistory.setStallsSell(stallsSell);
     moneyChangeHistory.setChangeDateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
-    moneyChangeHistory.setOldTotalInStall(stallsSell.getMoney() + totalBillPrice );
+    moneyChangeHistory.setOldTotalInStall(stallsSell.getMoney() + totalBillPrice);
     moneyChangeHistory.setAmount(totalBillPrice); // Số tiền thay đổi là âm do làm giảm số tiền trong quầy
-        moneyChangeHistory.setBillId(billBuyBack.getId());
-          moneyChangeHistory.setStatus("Buy Back");
-        moneyChangeHistory.setTypeChange(TypeMoneyChange.WITHDRAW);
+    moneyChangeHistory.setBillId(billBuyBack.getId());
+    moneyChangeHistory.setStatus("Buy Back");
+    moneyChangeHistory.setTypeChange(TypeMoneyChange.WITHDRAW);
     moneyChangeHistoryRepository.save(moneyChangeHistory);
 
     // Calculate total amount of the bill
     double totalAmount = savedBillBuyBack.getProducts().stream()
             .mapToDouble(Product::getPrice)
             .sum();
-    savedBillBuyBack.setTotalAmount(totalAmount);
+    // Set total amount on the bill if needed
 
-    // Save the updated BillBuyBack with products
-    return billBuyBackRepository.save(savedBillBuyBack);
+    return savedBillBuyBack;
 }
 // Generate a random barcode not present in the database
 private String generateBarcode() {
@@ -263,6 +279,29 @@ private String generateRandomBarcode() {
     }
 
     return sb.toString();
+}
+
+public Gemstone getGemstoneIfUse(String gemBarcode) {
+    Optional<Gemstone> optionalGemstone = gemstoneRepository.findByGemBarcode(gemBarcode);
+    if (optionalGemstone.isPresent()) {
+        Gemstone gemstone = optionalGemstone.get();
+        if (gemstone.getUserStatus() == GemStatus.USE) {
+            return gemstone;
+        } else {
+            throw new IllegalArgumentException("Gemstone with barcode " + gemBarcode + " does not have status USE.");
+        }
+    } else {
+        throw new NoSuchElementException("Gemstone with barcode " + gemBarcode + " not found.") ;
+    }
+}
+
+public List<Gemstone> getGemstonesIfUse(List<String> gemBarcodes) {
+    List<Gemstone> gemstones = new ArrayList<>() ;
+    for (String gemBarcode : gemBarcodes) {
+        Gemstone gemstone = getGemstoneIfUse(gemBarcode);
+        gemstones.add(gemstone);
+    }
+    return gemstones;
 }
 
 public List<BillBuyBack> getAllBillBuyBacks() {

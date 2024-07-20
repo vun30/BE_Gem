@@ -50,6 +50,7 @@ void detachGemsByProductId(
   @Query("SELECT g FROM Gemstone g WHERE g.gemBarcode IN :barcodes AND g.userStatus <> :status")
     List<Gemstone> findInvalidOrUsedGemstones(@Param("barcodes") List<String> barcodes, @Param("status") GemStatus status);
 
+
 }
 
 
