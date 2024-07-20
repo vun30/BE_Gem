@@ -45,6 +45,8 @@ public class ScheduledTasks {
                 authenticationRepository.save(account);
             }
         }
+
+         System.out.println("1");
     }
 
   @Scheduled(fixedRate = 10000) // 10s

@@ -53,7 +53,7 @@ public class ProductServices {
      PromotionProductRepository promotionProductRepository ;
 
 
-
+@Transactional
 public Product creates(ProductsRequest productsRequest) {
     // Kiểm tra xem sản phẩm có tồn tại không
     Optional<Product> existProduct = productsRepository.findByBarcodeAndStatus(productsRequest.getBarcode(),true);
@@ -217,6 +217,7 @@ public Product creates(ProductsRequest productsRequest) {
         return productList;
     }
 
+    @Transactional
 public Product updateAndCreateNewProduct(String barcode, ProductsRequest productsRequest) {
 
     // Tìm kiếm sản phẩm theo barcode
@@ -659,15 +660,6 @@ public void deleteListGem(List<String> barcodes) {
     gemstoneRepository.deleteAll(gemstonesToDelete);
 }
 
-public void detachGemstonesByProductBarcode(Long id) {
-    Product product = productsRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Product not found with ID: " + id));
-
-    Long productId = product.getProductId();
-    detachGemstonesByProductId(productId);
-    updateGemstoneStatus();
-    updateProductPrice(product); // Tính lại giá sau khi tháo đá quý
-}
 
     private void detachGemstonesByProductId(Long productId) {
         gemstoneRepository.detachFromProductById(productId, GemStatus.NOTUSE);
@@ -842,6 +834,17 @@ public void unlinkGemsByProductBarcode(String barcode) {
             throw new IllegalArgumentException("Invalid or used gemstones with barcodes: " + invalidBarcodes);
         }
     }
+
+
+public void detachGemstonesByProductBarcode(Long id) {
+    Product product = productsRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Product not found with ID: " + id));
+
+    Long productId = product.getProductId();
+    detachGemstonesByProductId(productId);
+    updateGemstoneStatus();
+    updateProductPrice(product); // Tính lại giá sau khi tháo đá quý
+}
 
 
     public void deletePromotionProductsByBarcode(String barcode) {
