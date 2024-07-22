@@ -28,6 +28,7 @@ public class Promotion {
     private double discountRate;
 
     @NotBlank
+    @Column(length = 65535)
     private String description;
 
     private boolean status;

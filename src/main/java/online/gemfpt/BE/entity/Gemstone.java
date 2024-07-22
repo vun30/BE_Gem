@@ -34,7 +34,8 @@ public class Gemstone {
 
     String url ;
 
-
+    @Column(unique = true)
+    @NotNull(message = "gem Barcode cannot be null")
     String gemBarcode;
 
     @NotNull

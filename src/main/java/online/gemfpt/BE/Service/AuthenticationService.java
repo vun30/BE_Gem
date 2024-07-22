@@ -245,7 +245,7 @@ public Account staffEditAccountByEmail(String email, StaffEditAccountRequest sta
     }
 
     String token = tokenService.generateToken(account);
-    String resetLink = "http://143.198.92.27/reset-password?token="+ token;
+    String resetLink = "http://gemfpt.online/reset-password?token="+ token;
 
     // Prepare email details
     EmailDetail emailDetail = new EmailDetail();
