@@ -7,6 +7,7 @@ import online.gemfpt.BE.enums.GemStatus;
 import online.gemfpt.BE.enums.TypeBillEnum;
 import online.gemfpt.BE.enums.TypeMoneyChange;
 import online.gemfpt.BE.enums.TypeOfProductEnum;
+import online.gemfpt.BE.exception.BadRequestException;
 import online.gemfpt.BE.exception.InsufficientMoneyInStallException;
 import online.gemfpt.BE.exception.StallsSellNotFoundException;
 import online.gemfpt.BE.model.BuyBackProductRequest;
@@ -64,6 +65,9 @@ public class BuyBackService {
 
      @Autowired
      CustomerRepository customerRepository ;
+
+     @Autowired
+     GemListRepository gemListRepository ;
 
      @Autowired
      MoneyChangeHistoryRepository    moneyChangeHistoryRepository ;
@@ -143,25 +147,28 @@ public BillBuyBack createBillAndProducts(String customerName, String customerPho
             product.setUrls(urls);
         }
 
-        // Create Gemstones
+        // Tạo viên đá quý
         if (buyBackProductRequest.getGemstones() != null) {
             List<Gemstone> gemstones = new ArrayList<>();
-            for (GemstoneRequest  gemstoneRequest : buyBackProductRequest.getGemstones()) {
-                // Find existing gemstone by barcode
-                Gemstone existingGemstone = existingGemstones.stream()
-                        .filter(gem -> gem.getGemBarcode().equals(gemstoneRequest.getGemBarcode()))
-                        .findFirst()
-                        .orElse(new Gemstone());
+            for (GemstoneRequest gemstoneRequest : buyBackProductRequest.getGemstones()) {
+                // Tìm viên đá quý trong GemList với trạng thái USE
+                GemList gemList = gemListRepository.findByGemBarcode(gemstoneRequest.getGemBarcode())
+                        .orElseThrow(() -> new BadRequestException("Gemstone with barcode " + gemstoneRequest.getGemBarcode() + " not found in GemList"));
 
-                // Create a new Gemstone
+                // Kiểm tra trạng thái của viên đá quý
+                if (!GemStatus.USE.equals(gemList.getUserStatus())) {
+                    throw new BadRequestException("Gemstone with barcode " + gemstoneRequest.getGemBarcode() + " is not in USE status");
+                }
+
+                // Tạo một viên đá quý mới với thông tin từ GemList
                 Gemstone gemstone = new Gemstone();
-                gemstone.setDescription(existingGemstone.getDescription() + " | " + "Gem buy back in product barcode: " + " " + product.getBarcode());
-                gemstone.setColor(existingGemstone.getColor());
-                gemstone.setClarity(existingGemstone.getClarity());
-                gemstone.setCut(existingGemstone.getCut());
-                gemstone.setCarat(existingGemstone.getCarat());
-                gemstone.setPrice(existingGemstone.getPrice() - (existingGemstone.getPrice() * buyRateMap.get(gemstoneRequest.getGemBarcode()) / 100));
-                gemstone.setBuyRate(buyRateMap.get(gemstoneRequest.getGemBarcode())); // Use buyRate from request
+                gemstone.setDescription(gemList.getDescription() + " | " + "Gem buy back in product barcode: " + product.getBarcode());
+                gemstone.setColor(gemList.getColor());
+                gemstone.setClarity(gemList.getClarity());
+                gemstone.setCut(gemList.getCut());
+                gemstone.setCarat(gemList.getCarat());
+                gemstone.setPrice(gemList.getPrice() - (gemList.getPrice() * buyRateMap.get(gemstoneRequest.getGemBarcode()) / 100));
+                gemstone.setBuyRate(buyRateMap.get(gemstoneRequest.getGemBarcode())); // Sử dụng tỷ lệ mua từ yêu cầu
                 gemstone.setQuantity(1);
                 gemstone.setUserStatus(GemStatus.PROCESSING);
                 gemstone.setGemBarcode(generateRandomBarcode());
@@ -251,21 +258,14 @@ public BillBuyBack createBillAndProducts(String customerName, String customerPho
     double totalAmount = savedBillBuyBack.getProducts().stream()
             .mapToDouble(Product::getPrice)
             .sum();
-    // Set total amount on the bill if needed
+
+    // Set total amount on the bill
+    savedBillBuyBack.setTotalAmount(totalAmount);
+
+    // Save the bill again with updated total amount
+    billBuyBackRepository.save(savedBillBuyBack);
 
     return savedBillBuyBack;
-}
-// Generate a random barcode not present in the database
-private String generateBarcode() {
-    String barcode;
-    Optional<Product> existingProduct;
-
-    do {
-        barcode = generateRandomBarcode();
-        existingProduct = productsRepository.findByBarcode(barcode);
-    } while (existingProduct.isPresent());
-
-    return barcode;
 }
 
 // Generate a random 8-digit numeric barcode
