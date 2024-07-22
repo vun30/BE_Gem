@@ -7,6 +7,7 @@ import online.gemfpt.BE.entity.*;
 import online.gemfpt.BE.enums.GemStatus;
 import online.gemfpt.BE.enums.TypeEnum;
 import online.gemfpt.BE.enums.TypeOfProductEnum;
+import online.gemfpt.BE.exception.BadRequestException;
 import online.gemfpt.BE.exception.ProductNotFoundException;
 import online.gemfpt.BE.model.GemstoneRequest;
 import online.gemfpt.BE.model.ProductUrlRequest;
@@ -17,10 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 @SpringBootApplication
 @Service
@@ -51,6 +49,9 @@ public class ProductServices {
 
      @Autowired
      PromotionProductRepository promotionProductRepository ;
+
+     @Autowired
+     GemListRepository gemListRepository ;
 
 
 @Transactional
@@ -99,8 +100,8 @@ public Product creates(ProductsRequest productsRequest) {
                 }
             }
 
-    List<Gemstone> foundGemstones = findGemByBarCodes(gemstoneBarcodes);
-    deleteListGem(gemstoneBarcodes);
+    List<GemList> foundGemstones = findGemByBarCodes(gemstoneBarcodes);
+ //   deleteListGem(gemstoneBarcodes);
 
     List<Gemstone> gemstones = foundGemstones.stream().map(gemstone -> {
         Gemstone newGemstone = new Gemstone();
@@ -119,7 +120,10 @@ public Product creates(ProductsRequest productsRequest) {
         return newGemstone;
     }).collect(Collectors.toList());
 
-    product.setGemstones(gemstones);
+     foundGemstones.forEach(gemList -> gemList.setUserStatus(GemStatus.USE));
+        gemListRepository.saveAll(foundGemstones); // Lưu các GemList đã cập nhật
+
+        product.setGemstones(gemstones); // Gán danh sách Gemstone cho sản phẩm
 }
 
     // Tạo danh sách kim loại từ request
@@ -217,327 +221,51 @@ public Product creates(ProductsRequest productsRequest) {
         return productList;
     }
 
-    @Transactional
-public Product updateAndCreateNewProduct(String barcode, ProductsRequest productsRequest) {
-
-    // Tìm kiếm sản phẩm theo barcode
-    Optional<Product> existingProductOptional = productsRepository.findByBarcodeAndStatus(barcode, true);
-    if (!existingProductOptional.isPresent()) {
-        throw new EntityNotFoundException("Product not found with barcode: " + barcode);
-    }
-
-    Product existingProduct = existingProductOptional.get();
-
-    // Tạo bản sao của sản phẩm hiện tại như lịch sử sản phẩm
-    Product historyProduct = new Product();
-    historyProduct.setName(existingProduct.getName());
-    historyProduct.setDescriptions(existingProduct.getDescriptions());
-    historyProduct.setCategory(existingProduct.getCategory());
-    historyProduct.setPriceRate(existingProduct.getPriceRate());
-    historyProduct.setStock(existingProduct.getStock());
-    historyProduct.setTypeWhenBuyBack(existingProduct.getTypeWhenBuyBack());
-    historyProduct.setUpdateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
-    historyProduct.setStatus(false);
-    historyProduct.setBarcode(existingProduct.getBarcode());
-    historyProduct.setWage(existingProduct.getWage());
-    historyProduct.setOldID(String.valueOf(existingProduct.getProductId()));
-
-    // Tạo bản sao của URLs
-    if (existingProduct.getUrls() != null) {
-        List<ProductUrl> oldUrls = existingProduct.getUrls().stream().map(url -> {
-            ProductUrl oldUrl = new ProductUrl();
-            oldUrl.setUrls(url.getUrls());
-            oldUrl.setProduct(historyProduct);
-            return oldUrl;
-        }).collect(Collectors.toList());
-        historyProduct.setUrls(oldUrls);
-    }
-
-    // Tạo bản sao của Gemstones cũ và gán vào historyProduct
-    if (existingProduct.getGemstones() != null) {
-        List<Gemstone> oldGemstones = existingProduct.getGemstones().stream().map(gemstone -> {
-            Gemstone oldGemstone = new Gemstone();
-            oldGemstone.setGemBarcode(gemstone.getGemBarcode() );
-            oldGemstone.setDescription(gemstone.getDescription());
-            oldGemstone.setColor(gemstone.getColor());
-            oldGemstone.setClarity(gemstone.getClarity());
-            oldGemstone.setCut(gemstone.getCut());
-            oldGemstone.setCarat(gemstone.getCarat());
-            oldGemstone.setPrice(gemstone.getPrice());
-            oldGemstone.setQuantity(gemstone.getQuantity());
-            oldGemstone.setUserStatus(GemStatus.FALSE); // Set trạng thái là FALSE
-            oldGemstone.setUrl(gemstone.getUrl());
-            oldGemstone.setUpdateTime(gemstone.getUpdateTime());
-            oldGemstone.setProduct(historyProduct); // Set product cho gemstone cũ
-            return oldGemstone;
-        }).collect(Collectors.toList());
-        historyProduct.setGemstones(oldGemstones);
-    }
-
-    // Set Metals cho sản phẩm cũ
-    if (existingProduct.getMetals() != null) {
-        List<Metal> oldMetals = existingProduct.getMetals().stream().map(metal -> {
-            Metal oldMetal = new Metal();
-            oldMetal.setName(metal.getName());
-            oldMetal.setDescription(metal.getDescription());
-            oldMetal.setWeight(metal.getWeight());
-            oldMetal.setPricePerWeightUnit(metal.getPricePerWeightUnit());
-            oldMetal.setProduct(historyProduct); // Set product cho metal cũ
-            return oldMetal;
-        }).collect(Collectors.toList());
-        historyProduct.setMetals(oldMetals);
-    }
-
-    // Lưu lịch sử sản phẩm vào cơ sở dữ liệu
-  //  productsRepository.save(historyProduct);
-
-    // Xóa sản phẩm hiện tại
-    productsRepository.delete(existingProduct);
-
-    // Tạo sản phẩm mới với mã vạch và thông tin từ request
-    Product newProduct = new Product();
-    newProduct.setName(productsRequest.getName());
-    newProduct.setDescriptions(productsRequest.getDescriptions());
-    newProduct.setCategory(productsRequest.getCategory());
-    newProduct.setPriceRate(productsRequest.getPriceRate());
-    newProduct.setStock(1);
-    newProduct.setTypeWhenBuyBack(null);
-    newProduct.setCreateTime(existingProduct.getCreateTime());
-    newProduct.setUpdateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
-    newProduct.setStatus(true);
-    newProduct.setBarcode(barcode);
-    newProduct.setWage(productsRequest.getWage());
-
-     // Xử lý danh sách URLs mới
-    if (productsRequest.getUrls() != null) {
-        List<ProductUrl> urls = productsRequest.getUrls().stream().map(urlRequest -> {
-            ProductUrl url = new ProductUrl();
-            url.setUrls(urlRequest.getUrls());
-            url.setProduct(newProduct);
-            return url;
-        }).collect(Collectors.toList());
-        newProduct.setUrls(urls);
-    }
-
-    // Xử lý danh sách gemstones mới
-    List<String> gemstoneBarcodes = productsRequest.getGemstones().stream()
-            .map(GemstoneRequest::getGemBarcode)
+@Transactional
+public Product updateProduct(String productBarcode, ProductsRequest productsRequest) {
+    // Lấy thông tin sản phẩm hiện tại từ barcode
+    Product existingProduct = productsRepository.findByBarcode(productBarcode)
+            .orElseThrow(() -> new EntityNotFoundException("Product not found with barcode: " + productBarcode));
+//
+//    // Lưu thông tin sản phẩm hiện tại vào history (lưu tạm)
+//    Product historyProduct = new Product();
+//    historyProduct.setName(existingProduct.getName());
+//    historyProduct.setDescriptions(existingProduct.getDescriptions());
+//    historyProduct.setCategory(existingProduct.getCategory());
+//    historyProduct.setPriceRate(existingProduct.getPriceRate());
+//    historyProduct.setStock(existingProduct.getStock());
+//    historyProduct.setCreateTime(existingProduct.getCreateTime());
+//    historyProduct.setStatus(existingProduct.isStatus());
+//    historyProduct.setBarcode(existingProduct.getBarcode());
+//    historyProduct.setWage(existingProduct.getWage());
+//    historyProduct.setGemstones(existingProduct.getGemstones());
+    // Lưu các thuộc tính khác của sản phẩm cần thiết cho history
+  // Tạo thông tin lịch sử sản phẩm và lưu vào cơ sở dữ liệu
+    UpdateProductHistory updateProductHistory = createUpdateProductHistory(existingProduct);
+    updateProductHistoryRepository.save(updateProductHistory);
+    // Xóa quan hệ với promotion
+    List<String> gemBarcodes = existingProduct.getGemstones().stream()
+            .map(Gemstone::getGemBarcode)
             .collect(Collectors.toList());
 
-    List<Gemstone> foundGemstones = findGemByBarCodes(gemstoneBarcodes);
-    deleteListGem(gemstoneBarcodes);
+    // Xóa quan hệ với promotion
+    deletePromotionProductsByBarcodes(existingProduct.getBarcode());
 
-    List<Gemstone> gemstones = foundGemstones.stream().map(gemstone -> {
-        Gemstone newGemstone = new Gemstone();
-        newGemstone.setGemBarcode(gemstone.getGemBarcode());
-        newGemstone.setDescription(gemstone.getDescription());
-        newGemstone.setColor(gemstone.getColor());
-        newGemstone.setClarity(gemstone.getClarity());
-        newGemstone.setCut(gemstone.getCut());
-        newGemstone.setCarat(gemstone.getCarat());
-        newGemstone.setPrice(gemstone.getPrice());
-        newGemstone.setQuantity(gemstone.getQuantity());
-        newGemstone.setUserStatus(GemStatus.USE); // Set trạng thái là USE
-        newGemstone.setCreateTime(gemstone.getCreateTime());
-        newGemstone.setUrl(gemstone.getUrl());
-        newGemstone.setProduct(newProduct); // Set product cho gemstone mới
-        return newGemstone;
-    }).collect(Collectors.toList());
+    // Xóa sản phẩm
+    deleteProduct(existingProduct.getProductId());
 
-    newProduct.setGemstones(gemstones);
+    // Cập nhật trạng thái của tất cả gem trong sản phẩm bị xóa thành NOTUSE
+    updateGemstonesStatusToNotUse(gemBarcodes);
 
-    // Set lại Metals cho sản phẩm mới
-    if (productsRequest.getMetals() != null) {
-        List<Metal> metals = productsRequest.getMetals().stream().map(metalRequest -> {
-            Metal metal = new Metal();
-            metal.setName(metalRequest.getName());
-            metal.setDescription(metalRequest.getDescription());
-            metal.setWeight(metalRequest.getWeight());
-            metalService.setPricePerWeightUnit(metal);
-            metal.setProduct(newProduct);
-            return metal;
-        }).collect(Collectors.toList());
-        newProduct.setMetals(metals);
-    }
+    // Xóa promotion
+    // (Giả sử có hàm xóa promotion cần thiết, nếu không có hãy thêm vào đây)
 
-    // Tính tổng giá của các kim loại
-    double totalMetalPrice = 0;
-    if (newProduct.getMetals() != null) {
-        for (Metal metal : newProduct.getMetals()) {
-            double metalPrice = metal.getPricePerWeightUnit();
-            totalMetalPrice += metalPrice;
-        }
-    }
-
-    // Tính tổng giá của các đá quý
-    double totalGemstonePrice = 0;
-    if (newProduct.getGemstones() != null) {
-        totalGemstonePrice = newProduct.getGemstones().stream()
-                .mapToDouble(gemstone -> gemstone.getPrice() * gemstone.getQuantity())
-                .sum();
-    }
-
-    double wage = productsRequest.getWage();
-
-    // Tính giá cuối cùng của sản phẩm
-    double totalPrice = totalMetalPrice + totalGemstonePrice;
-    double totalPriceWithRate = wage + totalPrice + (totalPrice * newProduct.getPriceRate() / 100);
-    newProduct.setPrice(totalPriceWithRate);
-
-    // Lưu sản phẩm mới và các thành phần của nó vào cơ sở dữ liệu
-    Product savedProduct = productsRepository.save(newProduct);
-    if (productsRequest.getGemstones() != null) {
-        gemstoneRepository.saveAll(newProduct.getGemstones());
-    }
-    if (productsRequest.getMetals() != null) {
-        metalRepository.saveAll(newProduct.getMetals());
-    }
-
-    // Tạo lịch sử sản phẩm
-    UpdateProductHistory updateProductHistory = new UpdateProductHistory();
-    updateProductHistory.setBarcode(historyProduct.getBarcode());
-    updateProductHistory.setCreateTime(historyProduct.getCreateTime());
-    updateProductHistory.setUpdateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
-    updateProductHistory.setDescriptions("Update product: " + "- Barcode:" + " " + historyProduct.getBarcode() + ", Name: " + historyProduct.getName() +
-            ", Category: " + historyProduct.getCategory() + ", PriceRate: " + historyProduct.getPriceRate() +
-            ", Stock: " + historyProduct.getStock() + ", Wage: " + historyProduct.getWage() +
-            ", Metals: " + historyProduct.getMetals().stream().map(Metal::getName).collect(Collectors.joining(", ")) +
-            ", Type When Buy Back: " + historyProduct.getTypeWhenBuyBack() + ", Create Time" + historyProduct.getCreateTime() + ", Update Time" + LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
-
-    // Lưu lịch sử sản phẩm vào cơ sở dữ liệu
-    updateProductHistoryRepository.save(updateProductHistory);
-
-    return savedProduct;
+    // Tạo sản phẩm mới từ request
+    return creates(productsRequest);
 }
-
-
-public Product updateAndCreateNewProductBuyBack(String barcode, ProductsRequest productsRequest) {
-    // Tìm kiếm sản phẩm theo barcode
-    Optional<Product> existingProductOptional = productsRepository.findByBarcodeAndStatus(barcode, false);
-    if (!existingProductOptional.isPresent()) {
-        throw new EntityNotFoundException("Product not found with barcode: " + barcode);
-    }
-
-    Product existingProduct = existingProductOptional.get();
-
-    // Generate a new unique barcode for the existing product
-    String newUniqueBarcode = generateUniqueBarcode( barcode);
-
-    // Set the old product's barcode to the new unique barcode
-    existingProduct.setBarcode(newUniqueBarcode);
-    existingProduct.setTypeWhenBuyBack(TypeOfProductEnum.PROCESSINGDONE);
-    existingProduct.setStatus(false);
-    existingProduct.setUpdateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
-    productsRepository.save(existingProduct);
-
-    // Tạo sản phẩm mới với thông tin từ request
-    Product newProduct = new Product();
-    newProduct.setName(productsRequest.getName());
-    newProduct.setDescriptions(productsRequest.getDescriptions());
-    newProduct.setCategory(productsRequest.getCategory());
-    newProduct.setPriceRate(productsRequest.getPriceRate());
-    newProduct.setStock(1);
-    newProduct.setUpdateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
-    newProduct.setTypeWhenBuyBack(productsRequest.getTypeWhenBuyBack());
-    newProduct.setStatus(true);
-    newProduct.setOldID(String.valueOf(existingProduct.getProductId()));
-    newProduct.setBarcode(barcode); // Set barcode cho sản phẩm mới bằng barcode của sản phẩm cũ
-    newProduct.setWage(productsRequest.getWage());
-
-    // Set URLs
-    if (productsRequest.getUrls() != null) {
-        List<ProductUrl> urls = productsRequest.getUrls().stream().map(productUrlRequest -> {
-            ProductUrl url = new ProductUrl();
-            url.setUrls(productUrlRequest.getUrls());
-            url.setProduct(newProduct);
-            return url;
-        }).collect(Collectors.toList());
-        newProduct.setUrls(urls);
-    }
-
-
-
-    // Tạo danh sách đá quý từ request
-    if (productsRequest.getGemstones() != null) {
-        List<Gemstone> gemstones = productsRequest.getGemstones().stream().map(gemstoneRequest -> {
-            Gemstone gemstone = new Gemstone();
-            gemstone.setDescription(gemstoneRequest.getDescription());
-            gemstone.setColor(gemstoneRequest.getColor());
-            gemstone.setClarity(gemstoneRequest.getClarity());
-            gemstone.setCut(gemstoneRequest.getCut());
-            gemstone.setCarat(gemstoneRequest.getCarat());
-            gemstone.setPrice(gemstoneRequest.getPrice());
-            gemstone.setQuantity(gemstoneRequest.getQuantity());
-            gemstone.setGemBarcode(gemstoneRequest.getGemBarcode());
-            gemstone.setProduct(newProduct);
-            return gemstone;
-        }).collect(Collectors.toList());
-        newProduct.setGemstones(gemstones);
-    }
-    // Tạo danh sách kim loại từ request
-    if (productsRequest.getMetals() != null) {
-        List<Metal> metals = productsRequest.getMetals().stream().map(metalRequest -> {
-            Metal metal = new Metal();
-            metal.setName(metalRequest.getName());
-            metal.setDescription(metalRequest.getDescription());
-            metal.setWeight(metalRequest.getWeight());
-            metalService.setPricePerWeightUnit(metal);
-            metal.setProduct(newProduct);
-            return metal;
-        }).collect(Collectors.toList());
-        newProduct.setMetals(metals);
-    }
-
-    // Tính tổng giá của các kim loại
-    double totalMetalPrice = 0;
-    if (newProduct.getMetals() != null) {
-        for (Metal metal : newProduct.getMetals()) {
-            double metalPrice = metal.getPricePerWeightUnit();
-            totalMetalPrice += metalPrice;
-        }
-    }
-
-    // Tính tổng giá của các đá quý
-    double totalGemstonePrice = 0;
-    if (newProduct.getGemstones() != null) {
-        totalGemstonePrice = newProduct.getGemstones().stream()
-                .mapToDouble(gemstone -> gemstone.getPrice() * gemstone.getQuantity())
-                .sum();
-    }
-    double wege = productsRequest.getWage();
-    // Tính giá cuối cùng của sản phẩm
-    double totalPrice = totalMetalPrice + totalGemstonePrice;
-    double totalPriceWithRate = wege + totalPrice + (totalPrice * newProduct.getPriceRate() / 100);
-    newProduct.setPrice(totalPriceWithRate);
-
-    // Lưu sản phẩm và các thành phần của nó
-    Product savedProduct = productsRepository.save(newProduct);
-    if (productsRequest.getGemstones() != null) {
-        gemstoneRepository.saveAll(newProduct.getGemstones());
-    }
-    if (productsRequest.getMetals() != null) {
-        metalRepository.saveAll(newProduct.getMetals());
-    }
-
-    return savedProduct;
-} // not use cause this function same function update product
-
-
-// hàm tà đạo
-private String generateUniqueBarcode(String existingBarcode) {
-        // Example: Add a prefix "UP:" followed by a unique string to mark an update
-        String prefix = "UP:";
-        String uniqueString = UUID .randomUUID().toString().replace("-", "");
-        return prefix + uniqueString;
-    }
-
-
 ////////////------------------------------------------------------------------------/////////////////////
     // bộ lọc tìm kiếm cho fe
 
-  public List<Product> findProductsInPriceRangeAndStatus(double minPrice, double maxPrice) {
-        return productsRepository.findByPriceBetweenAndStatus(minPrice, maxPrice,true);
-    }
 
  public List<Product> getAllProductsTrue() {
         List<Product> productList = productsRepository.findByStatus(true);
@@ -590,6 +318,7 @@ private String generateUniqueBarcode(String existingBarcode) {
                 .distinct()
                 .collect(Collectors.toList());
     }
+
     public List<Product> searchProductsByName(String name) {
         return productsRepository.findByNameContaining(name);
     }
@@ -620,20 +349,26 @@ public List<Product> getProductsByCategory(TypeEnum category) {
     return products;
 }
 
-public List<Gemstone> findGemByBarCodes(List<String> barcodes) {
-    List<Gemstone> gemstones = gemstoneRepository.findByBarcodes(barcodes);
+public List<GemList> findGemByBarCodes(List<String> barcodes) {
+        List<GemList> gemLists = gemListRepository.findByBarcodes(barcodes);
+ // Lấy danh sách các mã vạch từ kết quả tìm kiếm
+    List<String> foundBarcodes = gemLists.stream()
+                                         .map(GemList::getGemBarcode)
+                                         .collect(Collectors.toList());
 
-    // Assume gemstones have a relation to products and you want to update the new price for each product
-    for (Gemstone gemstone : gemstones) {
-        Product product = gemstone.getProduct();
-        if (product != null) {
-            double newPrice = calculateNewPrice(product);
-            product.setNewPrice(newPrice);
-        }
+    // Xác định các mã vạch không tồn tại
+    List<String> missingBarcodes = barcodes.stream()
+                                           .filter(barcode -> !foundBarcodes.contains(barcode))
+                                           .collect(Collectors.toList());
+
+    // Ném lỗi nếu có mã vạch không tồn tại
+    if (!missingBarcodes.isEmpty()) {
+        throw new IllegalArgumentException("The GemStone barcodes do not exist: " + String.join(", ", missingBarcodes));
     }
 
-    return gemstones;
-}
+
+        return gemLists;
+    }
 
 // Helper method to calculate the new price
 private double calculateNewPrice(Product product) {
@@ -651,206 +386,432 @@ private double calculateNewPrice(Product product) {
 
     return newPrice;
 }
-@Transactional
-public void deleteListGem(List<String> barcodes) {
-    // Tìm kiếm các Gemstone bằng barcode
-    List<Gemstone> gemstonesToDelete = gemstoneRepository.findByBarcodes(barcodes);
 
-    // Xóa các Gemstone đã tìm thấy
-    gemstoneRepository.deleteAll(gemstonesToDelete);
-}
-
-
-    private void detachGemstonesByProductId(Long productId) {
-        gemstoneRepository.detachFromProductById(productId, GemStatus.NOTUSE);
-    }
-
-     public boolean checkGemstoneStatus(String gemBarcode) {
-        return gemstoneRepository.existsByGemBarcodeAndUserStatusNot(gemBarcode, GemStatus.NOTUSE);
-    }
-
-    private void updateProductPrice(Product product) {
-    // Tính tổng giá của các kim loại
-    double totalMetalPrice = 0;
-    if (product.getMetals() != null) {
-        for (Metal metal : product.getMetals()) {
-            double metalPrice = metal.getPricePerWeightUnit();
-            totalMetalPrice += metalPrice;
-        }
-    }
-
-    // Tính tổng giá của các đá quý
-    double totalGemstonePrice = 0;
-    if (product.getGemstones() != null) {
-        totalGemstonePrice = product.getGemstones().stream()
-                .filter(gemstone -> gemstone.getUserStatus() == GemStatus.USE) // Chỉ tính những đá quý đang được sử dụng
-                .mapToDouble(gemstone -> gemstone.getPrice() * gemstone.getQuantity())
-                .sum();
-    }
-
-    double wage = product.getWage();
-
-    // Tính giá cuối cùng của sản phẩm
-    double totalPrice = totalMetalPrice + totalGemstonePrice;
-    double totalPriceWithRate = wage + totalPrice + (totalPrice * product.getPriceRate() / 100);
-    product.setPrice(totalPriceWithRate);
-    product.setStatus(false);
-
-    // Cập nhật sản phẩm trong cơ sở dữ liệu
-    productsRepository.save(product);
-}
-
-private void updateGemstoneStatus() {
-        List<Gemstone> gemstones = gemstoneRepository.findGemstonesWithNullProductAndUserStatusUse(GemStatus.USE);
-        for (Gemstone gemstone : gemstones) {
-            gemstone.setUserStatus(GemStatus.NOTUSE);
-        }
-        gemstoneRepository.saveAll(gemstones);
+     public boolean checkGemstoneStatus(String gemBarcode) {  // UES IN GEM LIST
+        return gemListRepository.existsByGemBarcodeAndUserStatusNot(gemBarcode, GemStatus.NOTUSE);
     }
 
     @Transactional
-public void unlinkGemsByProductBarcode(String barcode) {
-    // Tìm sản phẩm theo barcode
-    Optional<Product> productOptional = productsRepository.findByBarcodeAndStatus(barcode, true);
-    if (!productOptional.isPresent()) {
-        throw new EntityNotFoundException("Product not found with barcode: " + barcode);
+public void deleteProduct(Long productId) {
+    Optional<Product> productOpt = productsRepository.findById(productId);
+    if (productOpt.isPresent()) {
+        Product product = productOpt.get();
+        productsRepository.delete(product);
+    } else {
+        throw new EntityNotFoundException("Product not found with id: " + productId);
+    }
+}
+
+public void deletePromotionProductsByBarcodes(String barcodes) {
+        promotionProductRepository.deleteByProductBarcode(barcodes);
     }
 
-    Product product = productOptional.get();
-    Long productId = product.getProductId();
-
-    deletePromotionProductsByBarcode(barcode);
-
-
-    // Tạo bản sao của sản phẩm
-    Product historyProduct = new Product();
-    historyProduct.setName(product.getName());
-    historyProduct.setDescriptions(product.getDescriptions());
-    historyProduct.setCategory(product.getCategory());
-    historyProduct.setPriceRate(product.getPriceRate());
-    historyProduct.setStock(product.getStock());
-    historyProduct.setTypeWhenBuyBack(product.getTypeWhenBuyBack());
-    historyProduct.setUpdateTime(product.getUpdateTime());
-    historyProduct.setStatus(false);
-    historyProduct.setBarcode(product.getBarcode());
-    historyProduct.setWage(product.getWage());
-    historyProduct.setOldID(String.valueOf(product.getProductId()));
-
-    // Tạo bản sao của URLs
-    if (product.getUrls() != null) {
-        List<ProductUrl> oldUrls = product.getUrls().stream().map(url -> {
-            ProductUrl oldUrl = new ProductUrl();
-            oldUrl.setUrls(url.getUrls());
-            oldUrl.setProduct(historyProduct);
-            return oldUrl;
-        }).collect(Collectors.toList());
-        historyProduct.setUrls(oldUrls);
+    public void updateGemstonesStatusToNotUse(List<String> gemBarcodes) {
+        gemListRepository.updateGemStatusToNotUse(gemBarcodes, GemStatus.NOTUSE);
     }
 
-    // Tạo bản sao của Gemstones cũ và gán vào historyProduct
-    if (product.getGemstones() != null) {
-        List<Gemstone> oldGemstones = product.getGemstones().stream().map(gemstone -> {
-            Gemstone oldGemstone = new Gemstone();
-            oldGemstone.setGemBarcode(gemstone.getGemBarcode());
-            oldGemstone.setDescription(gemstone.getDescription());
-            oldGemstone.setColor(gemstone.getColor());
-            oldGemstone.setClarity(gemstone.getClarity());
-            oldGemstone.setCut(gemstone.getCut());
-            oldGemstone.setCarat(gemstone.getCarat());
-            oldGemstone.setPrice(gemstone.getPrice());
-            oldGemstone.setQuantity(gemstone.getQuantity());
-            oldGemstone.setUserStatus(GemStatus.FALSE); // Set trạng thái là FALSE
-            oldGemstone.setUrl(gemstone.getUrl());
-            oldGemstone.setUpdateTime(gemstone.getUpdateTime());
-            oldGemstone.setProduct(historyProduct); // Set product cho gemstone cũ
-            return oldGemstone;
-        }).collect(Collectors.toList());
-        historyProduct.setGemstones(oldGemstones);
-    }
-
-    // Set Metals cho sản phẩm cũ
-    if (product.getMetals() != null) {
-        List<Metal> oldMetals = product.getMetals().stream().map(metal -> {
-            Metal oldMetal = new Metal();
-            oldMetal.setName(metal.getName());
-            oldMetal.setDescription(metal.getDescription());
-            oldMetal.setWeight(metal.getWeight());
-            oldMetal.setPricePerWeightUnit(metal.getPricePerWeightUnit());
-            oldMetal.setProduct(historyProduct); // Set product cho metal cũ
-            return oldMetal;
-        }).collect(Collectors.toList());
-        historyProduct.setMetals(oldMetals);
-    }
-
-    // Tạo bản ghi lịch sử cho sản phẩm
+public UpdateProductHistory createUpdateProductHistory(Product product) {
     UpdateProductHistory updateProductHistory = new UpdateProductHistory();
-    updateProductHistory.setBarcode(historyProduct.getBarcode());
-    updateProductHistory.setCreateTime(historyProduct.getCreateTime());
+
+    // Tạo barcode cho lịch sử
+    String historyBarcode = generateUniqueBarcode(product.getBarcode()) + " - || Old barcode:" + " " + product.getBarcode();
+    updateProductHistory.setBarcode(historyBarcode);
+
+    // Thiết lập thời gian tạo và cập nhật
+    updateProductHistory.setCreateTime(product.getCreateTime());
     updateProductHistory.setUpdateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
-    updateProductHistory.setDescriptions("Unlink gems and delete promotion from product: " +
-            "- Barcode: " + historyProduct.getBarcode() +
-            ", Name: " + historyProduct.getName() +
-            ", Category: " + historyProduct.getCategory() +
-            ", PriceRate: " + historyProduct.getPriceRate() +
-            ", Stock: " + historyProduct.getStock() +
-            ", Wage: " + historyProduct.getWage() +
-            ", Metals: " + historyProduct.getMetals().stream().map(Metal::getName).collect(Collectors.joining(", ")) +
-            ", TypeWhenBuyBack: " + historyProduct.getTypeWhenBuyBack()
-            + historyProduct.getTypeWhenBuyBack() + ", Create Time" + historyProduct.getCreateTime() + ", Update Time" + LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"))
-    );
 
-    // Lưu lịch sử sản phẩm vào cơ sở dữ liệu
-    updateProductHistoryRepository.save(updateProductHistory);
+    // Thiết lập mô tả lịch sử
+    String metals = product.getMetals().stream()
+            .map(metal -> String.format("Name: %s, Weight: %.2f, Price: %.2f, Description: %s",
+                metal.getName(),
+                metal.getWeight(),
+                metal.getPriceMetal(),
+                metal.getDescription()))
+            .collect(Collectors.joining("; "));
 
-    // Gỡ liên kết cho các gemstone có trạng thái là USE
-    gemstoneRepository.detachGemsByProductId(productId, GemStatus.USE, GemStatus.NOTUSE);
+    String gemstones = product.getGemstones().stream()
+            .map(gemstone -> String.format("Barcode: %s, Description: %s, Price: %.2f, Quantity: %d, Color: %s, Clarity: %s, Cut: %s, Carat: %.2f",
+                gemstone.getGemBarcode(),
+                gemstone.getDescription(),
+                gemstone.getPrice(),
+                gemstone.getQuantity(),
+                gemstone.getColor(),
+                gemstone.getClarity(),
+                gemstone.getCut(),
+                gemstone.getCarat()))
+            .collect(Collectors.joining("; "));
+
+    String description = String.format("Update product: - Barcode: %s, Product Price : %2f, Name: %s, Category: %s, PriceRate: %.2f, Stock: %d, Wage: %.2f, Metals: %s, Gemstones: %s, Type When Buy Back: %s, Create Time: %s, Update Time: %s",
+            product.getBarcode(),
+            product.getPrice(),
+            product.getName(),
+            product.getCategory(),
+            product.getPriceRate(),
+            product.getStock(),
+            product.getWage(),
+            metals,
+            gemstones,
+            product.getTypeWhenBuyBack(),
+            product.getCreateTime(),
+            LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
+
+    updateProductHistory.setDescriptions(description);
+    return updateProductHistory;
 }
 
+    //public Product updateAndCreateNewProductBuyBack(String barcode, ProductsRequest productsRequest) {
+//    // Tìm kiếm sản phẩm theo barcode
+//    Optional<Product> existingProductOptional = productsRepository.findByBarcodeAndStatus(barcode, false);
+//    if (!existingProductOptional.isPresent()) {
+//        throw new EntityNotFoundException("Product not found with barcode: " + barcode);
+//    }
+//
+//    Product existingProduct = existingProductOptional.get();
+//
+//    // Generate a new unique barcode for the existing product
+//    String newUniqueBarcode = generateUniqueBarcode( barcode);
+//
+//    // Set the old product's barcode to the new unique barcode
+//    existingProduct.setBarcode(newUniqueBarcode);
+//    existingProduct.setTypeWhenBuyBack(TypeOfProductEnum.PROCESSINGDONE);
+//    existingProduct.setStatus(false);
+//    existingProduct.setUpdateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
+//    productsRepository.save(existingProduct);
+//
+//    // Tạo sản phẩm mới với thông tin từ request
+//    Product newProduct = new Product();
+//    newProduct.setName(productsRequest.getName());
+//    newProduct.setDescriptions(productsRequest.getDescriptions());
+//    newProduct.setCategory(productsRequest.getCategory());
+//    newProduct.setPriceRate(productsRequest.getPriceRate());
+//    newProduct.setStock(1);
+//    newProduct.setUpdateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
+//    newProduct.setTypeWhenBuyBack(productsRequest.getTypeWhenBuyBack());
+//    newProduct.setStatus(true);
+//    newProduct.setOldID(String.valueOf(existingProduct.getProductId()));
+//    newProduct.setBarcode(barcode); // Set barcode cho sản phẩm mới bằng barcode của sản phẩm cũ
+//    newProduct.setWage(productsRequest.getWage());
+//
+//    // Set URLs
+//    if (productsRequest.getUrls() != null) {
+//        List<ProductUrl> urls = productsRequest.getUrls().stream().map(productUrlRequest -> {
+//            ProductUrl url = new ProductUrl();
+//            url.setUrls(productUrlRequest.getUrls());
+//            url.setProduct(newProduct);
+//            return url;
+//        }).collect(Collectors.toList());
+//        newProduct.setUrls(urls);
+//    }
+//
+//
+//
+//    // Tạo danh sách đá quý từ request
+//    if (productsRequest.getGemstones() != null) {
+//        List<Gemstone> gemstones = productsRequest.getGemstones().stream().map(gemstoneRequest -> {
+//            Gemstone gemstone = new Gemstone();
+//            gemstone.setDescription(gemstoneRequest.getDescription());
+//            gemstone.setColor(gemstoneRequest.getColor());
+//            gemstone.setClarity(gemstoneRequest.getClarity());
+//            gemstone.setCut(gemstoneRequest.getCut());
+//            gemstone.setCarat(gemstoneRequest.getCarat());
+//            gemstone.setPrice(gemstoneRequest.getPrice());
+//            gemstone.setQuantity(gemstoneRequest.getQuantity());
+//            gemstone.setGemBarcode(gemstoneRequest.getGemBarcode());
+//            gemstone.setProduct(newProduct);
+//            return gemstone;
+//        }).collect(Collectors.toList());
+//        newProduct.setGemstones(gemstones);
+//    }
+//    // Tạo danh sách kim loại từ request
+//    if (productsRequest.getMetals() != null) {
+//        List<Metal> metals = productsRequest.getMetals().stream().map(metalRequest -> {
+//            Metal metal = new Metal();
+//            metal.setName(metalRequest.getName());
+//            metal.setDescription(metalRequest.getDescription());
+//            metal.setWeight(metalRequest.getWeight());
+//            metalService.setPricePerWeightUnit(metal);
+//            metal.setProduct(newProduct);
+//            return metal;
+//        }).collect(Collectors.toList());
+//        newProduct.setMetals(metals);
+//    }
+//
+//    // Tính tổng giá của các kim loại
+//    double totalMetalPrice = 0;
+//    if (newProduct.getMetals() != null) {
+//        for (Metal metal : newProduct.getMetals()) {
+//            double metalPrice = metal.getPricePerWeightUnit();
+//            totalMetalPrice += metalPrice;
+//        }
+//    }
+//
+//    // Tính tổng giá của các đá quý
+//    double totalGemstonePrice = 0;
+//    if (newProduct.getGemstones() != null) {
+//        totalGemstonePrice = newProduct.getGemstones().stream()
+//                .mapToDouble(gemstone -> gemstone.getPrice() * gemstone.getQuantity())
+//                .sum();
+//    }
+//    double wege = productsRequest.getWage();
+//    // Tính giá cuối cùng của sản phẩm
+//    double totalPrice = totalMetalPrice + totalGemstonePrice;
+//    double totalPriceWithRate = wege + totalPrice + (totalPrice * newProduct.getPriceRate() / 100);
+//    newProduct.setPrice(totalPriceWithRate);
+//
+//    // Lưu sản phẩm và các thành phần của nó
+//    Product savedProduct = productsRepository.save(newProduct);
+//    if (productsRequest.getGemstones() != null) {
+//        gemstoneRepository.saveAll(newProduct.getGemstones());
+//    }
+//    if (productsRequest.getMetals() != null) {
+//        metalRepository.saveAll(newProduct.getMetals());
+//    }
+//
+//    return savedProduct;
+//} // not use cause this function same function update product
+
+    //    public List<Gemstone> findGemByBarCodesAndStatus(List<String> barcodes) {
+//    List<Gemstone> gemstones = gemstoneRepository.findByBarcodes(barcodes);
+//
+//    // Kiểm tra xem danh sách gemstones có rỗng không
+//    if (gemstones.isEmpty()) {
+//        throw new EntityNotFoundException("No gemstones found with the provided barcodes.");
+//    }
+//
+//    // Kiểm tra trạng thái của từng viên đá quý
+//    for (Gemstone gemstone : gemstones) {
+//        if (gemstone.getUserStatus() == GemStatus.USE) {
+//            throw new BadRequestException("Gemstone with barcode " + gemstone.getGemBarcode() + " is already in use.");
+//        }
+//    }
+//
+//    // Cập nhật giá mới cho mỗi sản phẩm liên quan
+//    for (Gemstone gemstone : gemstones) {
+//        Product product = gemstone.getProduct();
+//        if (product != null) {
+//            double newPrice = calculateNewPrice(product);
+//            product.setNewPrice(newPrice);
+//        }
+//    }
+//
+//    return gemstones;
+//}
+
+// @Transactional
+//    public void updateGemstonesProductAndStatus(Long productId, List<String> gemBarcodes) {
+//        gemstoneRepository.updateGemstones(productId, gemBarcodes, GemStatus.USE);
+//    }
+    //    private void updateProductPrice(Product product) {
+//    // Tính tổng giá của các kim loại
+//    double totalMetalPrice = 0;
+//    if (product.getMetals() != null) {
+//        for (Metal metal : product.getMetals()) {
+//            double metalPrice = metal.getPricePerWeightUnit();
+//            totalMetalPrice += metalPrice;
+//        }
+//    }
+//
+//    // Tính tổng giá của các đá quý
+//    double totalGemstonePrice = 0;
+//    if (product.getGemstones() != null) {
+//        totalGemstonePrice = product.getGemstones().stream()
+//                .filter(gemstone -> gemstone.getUserStatus() == GemStatus.USE) // Chỉ tính những đá quý đang được sử dụng
+//                .mapToDouble(gemstone -> gemstone.getPrice() * gemstone.getQuantity())
+//                .sum();
+//    }
+//
+//    double wage = product.getWage();
+//
+//    // Tính giá cuối cùng của sản phẩm
+//    double totalPrice = totalMetalPrice + totalGemstonePrice;
+//    double totalPriceWithRate = wage + totalPrice + (totalPrice * product.getPriceRate() / 100);
+//    product.setPrice(totalPriceWithRate);
+//    product.setStatus(false);
+//
+//    // Cập nhật sản phẩm trong cơ sở dữ liệu
+//    productsRepository.save(product);
+//}
+
+//private void updateGemstoneStatus() {
+//        List<Gemstone> gemstones = gemstoneRepository.findGemstonesWithNullProductAndUserStatusUse(GemStatus.USE);
+//        for (Gemstone gemstone : gemstones) {
+//            gemstone.setUserStatus(GemStatus.NOTUSE);
+//        }
+//        gemstoneRepository.saveAll(gemstones);
+//    }
+
+//    @Transactional
+//public void unlinkGemsByProductBarcode(String barcode) {
+//    // Tìm sản phẩm theo barcode
+//    Optional<Product> productOptional = productsRepository.findByBarcodeAndStatus(barcode, true);
+//    if (!productOptional.isPresent()) {
+//        throw new EntityNotFoundException("Product not found with barcode: " + barcode);
+//    }
+//
+//    Product product = productOptional.get();
+//    Long productId = product.getProductId();
+//
+//    deletePromotionProductsByBarcode(barcode);
+//
+//
+//    // Tạo bản sao của sản phẩm
+//    Product historyProduct = new Product();
+//    historyProduct.setName(product.getName());
+//    historyProduct.setDescriptions(product.getDescriptions());
+//    historyProduct.setCategory(product.getCategory());
+//    historyProduct.setPriceRate(product.getPriceRate());
+//    historyProduct.setStock(product.getStock());
+//    historyProduct.setTypeWhenBuyBack(product.getTypeWhenBuyBack());
+//    historyProduct.setUpdateTime(product.getUpdateTime());
+//    historyProduct.setStatus(false);
+//    historyProduct.setBarcode(product.getBarcode());
+//    historyProduct.setWage(product.getWage());
+//    historyProduct.setOldID(String.valueOf(product.getProductId()));
+//
+//    // Tạo bản sao của URLs
+//    if (product.getUrls() != null) {
+//        List<ProductUrl> oldUrls = product.getUrls().stream().map(url -> {
+//            ProductUrl oldUrl = new ProductUrl();
+//            oldUrl.setUrls(url.getUrls());
+//            oldUrl.setProduct(historyProduct);
+//            return oldUrl;
+//        }).collect(Collectors.toList());
+//        historyProduct.setUrls(oldUrls);
+//    }
+//
+//    // Tạo bản sao của Gemstones cũ và gán vào historyProduct
+//    if (product.getGemstones() != null) {
+//        List<Gemstone> oldGemstones = product.getGemstones().stream().map(gemstone -> {
+//            Gemstone oldGemstone = new Gemstone();
+//            oldGemstone.setGemBarcode(gemstone.getGemBarcode());
+//            oldGemstone.setDescription(gemstone.getDescription());
+//            oldGemstone.setColor(gemstone.getColor());
+//            oldGemstone.setClarity(gemstone.getClarity());
+//            oldGemstone.setCut(gemstone.getCut());
+//            oldGemstone.setCarat(gemstone.getCarat());
+//            oldGemstone.setPrice(gemstone.getPrice());
+//            oldGemstone.setQuantity(gemstone.getQuantity());
+//            oldGemstone.setUserStatus(GemStatus.FALSE); // Set trạng thái là FALSE
+//            oldGemstone.setUrl(gemstone.getUrl());
+//            oldGemstone.setUpdateTime(gemstone.getUpdateTime());
+//            oldGemstone.setProduct(historyProduct); // Set product cho gemstone cũ
+//            return oldGemstone;
+//        }).collect(Collectors.toList());
+//        historyProduct.setGemstones(oldGemstones);
+//    }
+//
+//    // Set Metals cho sản phẩm cũ
+//    if (product.getMetals() != null) {
+//        List<Metal> oldMetals = product.getMetals().stream().map(metal -> {
+//            Metal oldMetal = new Metal();
+//            oldMetal.setName(metal.getName());
+//            oldMetal.setDescription(metal.getDescription());
+//            oldMetal.setWeight(metal.getWeight());
+//            oldMetal.setPricePerWeightUnit(metal.getPricePerWeightUnit());
+//            oldMetal.setProduct(historyProduct); // Set product cho metal cũ
+//            return oldMetal;
+//        }).collect(Collectors.toList());
+//        historyProduct.setMetals(oldMetals);
+//    }
+//
+//    // Tạo bản ghi lịch sử cho sản phẩm
+//    UpdateProductHistory updateProductHistory = new UpdateProductHistory();
+//    updateProductHistory.setBarcode(historyProduct.getBarcode());
+//    updateProductHistory.setCreateTime(historyProduct.getCreateTime());
+//    updateProductHistory.setUpdateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
+//    updateProductHistory.setDescriptions("Unlink gems and delete promotion from product: " +
+//            "- Barcode: " + historyProduct.getBarcode() +
+//            ", Name: " + historyProduct.getName() +
+//            ", Category: " + historyProduct.getCategory() +
+//            ", PriceRate: " + historyProduct.getPriceRate() +
+//            ", Stock: " + historyProduct.getStock() +
+//            ", Wage: " + historyProduct.getWage() +
+//            ", Metals: " + historyProduct.getMetals().stream().map(Metal::getName).collect(Collectors.joining(", ")) +
+//            ", TypeWhenBuyBack: " + historyProduct.getTypeWhenBuyBack()
+//            + historyProduct.getTypeWhenBuyBack() + ", Create Time" + historyProduct.getCreateTime() + ", Update Time" + LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"))
+//    );
+//
+//    // Lưu lịch sử sản phẩm vào cơ sở dữ liệu
+//    updateProductHistoryRepository.save(updateProductHistory);
+//
+//    // Gỡ liên kết cho các gemstone có trạng thái là USE
+//    gemstoneRepository.detachGemsByProductId(productId, GemStatus.USE, GemStatus.NOTUSE);
+//}
 
 
-     public void validateGemBarcodes(List<String> gemBarcodes) {
-        if (gemBarcodes == null) {
-            // Nếu danh sách barcode là null, không thực hiện bất kỳ kiểm tra nào và kết thúc hàm
-            return;
-        }
+//
+//     public void validateGemBarcodes(List<String> gemBarcodes) {
+//        if (gemBarcodes == null) {
+//            // Nếu danh sách barcode là null, không thực hiện bất kỳ kiểm tra nào và kết thúc hàm
+//            return;
+//        }
+//
+//        // Loại bỏ các giá trị null và trống trong danh sách barcode
+//        List<String> validBarcodes = gemBarcodes.stream()
+//                .filter(barcode -> barcode != null && !barcode.trim().isEmpty())
+//                .collect(Collectors.toList());
+//
+//        if (validBarcodes.isEmpty()) {
+//            // Nếu sau khi lọc danh sách barcode không còn giá trị hợp lệ, không thực hiện kiểm tra và kết thúc hàm
+//            return;
+//        }
+//
+//        // Kiểm tra các barcode gem không hợp lệ hoặc đã sử dụng
+//        List<Gemstone> invalidOrUsedGemstones = gemstoneRepository.findInvalidOrUsedGemstones(validBarcodes, GemStatus.NOTUSE);
+//
+//        if (!invalidOrUsedGemstones.isEmpty()) {
+//            String invalidBarcodes = invalidOrUsedGemstones.stream()
+//                    .map(Gemstone::getGemBarcode)
+//                    .collect(Collectors.joining(", "));
+//            throw new IllegalArgumentException("Invalid or used gemstones with barcodes: " + invalidBarcodes);
+//        }
+//    }
 
-        // Loại bỏ các giá trị null và trống trong danh sách barcode
-        List<String> validBarcodes = gemBarcodes.stream()
-                .filter(barcode -> barcode != null && !barcode.trim().isEmpty())
-                .collect(Collectors.toList());
+//
+//public void detachGemstonesByProductBarcode(Long id) {
+//    Product product = productsRepository.findById(id)
+//            .orElseThrow(() -> new EntityNotFoundException("Product not found with ID: " + id));
+//
+//    Long productId = product.getProductId();
+//    detachGemstonesByProductId(productId);
+//    updateGemstoneStatus();
+//    updateProductPrice(product); // Tính lại giá sau khi tháo đá quý
+//}
 
-        if (validBarcodes.isEmpty()) {
-            // Nếu sau khi lọc danh sách barcode không còn giá trị hợp lệ, không thực hiện kiểm tra và kết thúc hàm
-            return;
-        }
+//  public List<Product> findProductsInPriceRangeAndStatus(double minPrice, double maxPrice) {
+//        return productsRepository.findByPriceBetweenAndStatus(minPrice, maxPrice,true);
+//    }
 
-        // Kiểm tra các barcode gem không hợp lệ hoặc đã sử dụng
-        List<Gemstone> invalidOrUsedGemstones = gemstoneRepository.findInvalidOrUsedGemstones(validBarcodes, GemStatus.NOTUSE);
+    //@Transactional
+//public void deleteListGem(List<String> barcodes) {
+//    // Tìm kiếm các Gemstone bằng barcode
+//    List<Gemstone> gemstonesToDelete = gemstoneRepository.findByBarcodes(barcodes);
+//
+//    // Xóa các Gemstone đã tìm thấy
+//    gemstoneRepository.deleteAll(gemstonesToDelete);
+//}
 
-        if (!invalidOrUsedGemstones.isEmpty()) {
-            String invalidBarcodes = invalidOrUsedGemstones.stream()
-                    .map(Gemstone::getGemBarcode)
-                    .collect(Collectors.joining(", "));
-            throw new IllegalArgumentException("Invalid or used gemstones with barcodes: " + invalidBarcodes);
-        }
+
+//    private void detachGemstonesByProductId(Long productId) {
+//        gemstoneRepository.detachFromProductById(productId, GemStatus.NOTUSE);
+//    }
+
+    // hàm tà đạo
+private String generateUniqueBarcode(String existingBarcode) {
+        // Example: Add a prefix "UP:" followed by a unique string to mark an update
+        String prefix = "Don't care this code :";
+        String uniqueString = UUID .randomUUID().toString().replace("-", "");
+        return prefix + uniqueString;
     }
-
-
-public void detachGemstonesByProductBarcode(Long id) {
-    Product product = productsRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Product not found with ID: " + id));
-
-    Long productId = product.getProductId();
-    detachGemstonesByProductId(productId);
-    updateGemstoneStatus();
-    updateProductPrice(product); // Tính lại giá sau khi tháo đá quý
-}
-
-
-    public void deletePromotionProductsByBarcode(String barcode) {
+        public void deletePromotionProductsByBarcode(String barcode) {
         if (barcode != null && !barcode.trim().isEmpty()) {
             promotionProductRepository.deleteByProductBarcode(barcode);
         }
     }
+
+
+
+
 
 }

@@ -102,7 +102,6 @@ public void updateProductPricesByTypeOfMetal() {
         // Lưu sản phẩm sau khi tính toán giá
         productsRepository.save(product);
 
-        System.out.println("1");
     }
 }
 //     // Chạy phương thức này mỗi 10 giây

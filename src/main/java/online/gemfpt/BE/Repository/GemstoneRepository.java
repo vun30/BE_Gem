@@ -50,6 +50,10 @@ void detachGemsByProductId(
   @Query("SELECT g FROM Gemstone g WHERE g.gemBarcode IN :barcodes AND g.userStatus <> :status")
     List<Gemstone> findInvalidOrUsedGemstones(@Param("barcodes") List<String> barcodes, @Param("status") GemStatus status);
 
+    @Modifying
+    @Query("UPDATE Gemstone g SET g.product.id = :productId, g.userStatus = :status WHERE g.gemBarcode IN :gemBarcodes")
+    void updateGemstones(@Param("productId") Long productId, @Param("gemBarcodes") List<String> gemBarcodes, @Param("status") GemStatus status);
+
 
 }
 

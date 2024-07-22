@@ -21,4 +21,9 @@ public interface PromotionProductRepository extends JpaRepository<PromotionProdu
     @Transactional
     @Query("DELETE FROM PromotionProduct pp WHERE pp.product.barcode = :barcode")
     void deleteByProductBarcode(@Param("barcode") String barcode);
+
+//    @Modifying
+//    @Transactional
+//    @Query("DELETE FROM PromotionProduct pp WHERE pp.product.barcode IN :barcodes")
+//    void deleteByProductBarcodes(@Param("barcodes") List<String> barcodes);
 }

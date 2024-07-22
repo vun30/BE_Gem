@@ -5,24 +5,43 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import online.gemfpt.BE.enums.TypeEnum;
-import online.gemfpt.BE.enums.TypeOfProductEnum;
+import online.gemfpt.BE.enums.GemStatus;
+import org.checkerframework.common.aliasing.qual.Unique;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Getter
 @Setter
-public class UpdateProductHistory {
+public class GemList {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long productId;
+    long gemId;
 
-    @NotBlank
-    private String barcode;
+    String description;
+
+    String color;
+
+    String clarity;
+
+    String cut;
+
+    double carat;
+
+    String oldGemID;
+
+    String url ;
+
+
+    @Column(unique = true)
+    @NotNull(message = "gem Barcode cannot be null")
+    String gemBarcode;
+
+    @NotNull
+    double price;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     private LocalDateTime createTime;
@@ -30,9 +49,16 @@ public class UpdateProductHistory {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     private LocalDateTime updateTime;
 
-    @Column(length = 65535)
-    private String descriptions;  // save history
 
+    GemStatus userStatus;
+
+    @Min(0)
+    double buyRate ; //  when buy back => price = price - ( price x priceRate )
+
+    String certificateCode;
+
+    @Min(0)
+    int quantity  ;
 
 
 

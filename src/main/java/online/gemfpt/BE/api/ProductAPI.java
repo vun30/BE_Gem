@@ -90,7 +90,7 @@ public class ProductAPI {
     @PutMapping("/{barcode}")
     public ResponseEntity<?> updateOrCreateProduct(@PathVariable String barcode, @RequestBody @Valid ProductsRequest productsRequest) {
         try {
-            Product updatedProduct = productServices.updateAndCreateNewProduct(barcode, productsRequest);
+            Product updatedProduct = productServices.updateProduct(barcode, productsRequest);
             return ResponseEntity.ok(updatedProduct);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found with barcode: " + barcode);
@@ -189,25 +189,37 @@ public class ProductAPI {
                       .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-     @DeleteMapping("/detach-by-barcode")
-    public ResponseEntity<String> deletePromotionProductsByBarcode(@RequestParam("barcode") String barcode) {
-        if (barcode == null || barcode.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("Barcode cannot be null or empty");
-        }
+//     @DeleteMapping("/detach-by-barcode")
+//    public ResponseEntity<String> deletePromotionProductsByBarcode(@RequestParam("barcode") String barcode) {
+//        if (barcode == null || barcode.trim().isEmpty()) {
+//            return ResponseEntity.badRequest().body("Barcode cannot be null or empty");
+//        }
+//
+//        productServices.deletePromotionProductsByBarcode(barcode);
+//        return ResponseEntity.ok("Promotion products deleted successfully");
+//    }
 
-        productServices.deletePromotionProductsByBarcode(barcode);
-        return ResponseEntity.ok("Promotion products deleted successfully");
-    }
+//      @PostMapping("/{barcode}/unlink-gems-promotion")
+//    public String unlinkGemsByProductBarcode(
+//            @PathVariable String barcode) {
+//        try {
+//            productServices.unlinkGemsByProductBarcode(barcode);
+//            return "Successfully unlinked gems for product with barcode: " + barcode;
+//        } catch (Exception e) {
+//            return "Error un-linking gems for product with barcode: " + barcode + ". Error: " + e.getMessage();
+//        }
+//    }
 
-      @PostMapping("/{barcode}/unlink-gems-promotion")
-    public String unlinkGemsByProductBarcode(
-            @PathVariable String barcode) {
-        try {
-            productServices.unlinkGemsByProductBarcode(barcode);
-            return "Successfully unlinked gems for product with barcode: " + barcode;
-        } catch (Exception e) {
-            return "Error un-linking gems for product with barcode: " + barcode + ". Error: " + e.getMessage();
-        }
-    }
+//    @DeleteMapping("/delete-product/{id}")
+//    public ResponseEntity<String> deleteProductId(@PathVariable Long id) {
+//        try {
+//            productServices.deleteProduct(id);
+//            return new ResponseEntity<>("Product deleted successfully", HttpStatus.OK);
+//        } catch (EntityNotFoundException e) {
+//            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+//        } catch (Exception e) {
+//            return new ResponseEntity<>("An error occurred while deleting the product", HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
 
 }
