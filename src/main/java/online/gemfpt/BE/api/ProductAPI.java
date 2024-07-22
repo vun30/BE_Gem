@@ -189,6 +189,12 @@ public class ProductAPI {
                       .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+     @GetMapping("product-all/{barcode}")
+    public ResponseEntity<Product> getProductByBarcodeAll(@PathVariable String barcode) {
+        Product product = productServices .findProductByBarcode(barcode);
+        return new ResponseEntity<>(product, HttpStatus.OK);
+    }
+
 //     @DeleteMapping("/detach-by-barcode")
 //    public ResponseEntity<String> deletePromotionProductsByBarcode(@RequestParam("barcode") String barcode) {
 //        if (barcode == null || barcode.trim().isEmpty()) {

@@ -852,5 +852,10 @@ public class ProductServices {
         }
     }
 
+     public Product findProductByBarcode(String barcode) {
+        return productsRepository.findByBarcode(barcode)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found with barcode: " + barcode));
+    }
+
 
 }

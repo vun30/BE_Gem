@@ -27,7 +27,7 @@ public class MoneymanagementAPI {
     StallsSellService stallsSellService ;
 
 
-   @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER')")
     @PostMapping("/change-money")
     public ResponseEntity<MoneyChangeHistory> changeMoneyInStalls(
             @RequestBody MoneyChangeRequest  moneyChangeRequest,

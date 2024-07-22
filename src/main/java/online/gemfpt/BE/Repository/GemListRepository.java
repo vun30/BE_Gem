@@ -22,6 +22,7 @@ public interface GemListRepository extends JpaRepository <GemList, Long> {
     List<GemList> findByUserStatus(GemStatus status);
 
 
+
     boolean existsByGemBarcode(String gemBarcode);
 
      @Query("SELECT COUNT(g) > 0 FROM GemList g WHERE g.gemBarcode = :gemBarcode AND g.userStatus <> :status")
