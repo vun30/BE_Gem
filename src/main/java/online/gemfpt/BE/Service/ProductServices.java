@@ -353,11 +353,31 @@ public class ProductServices {
         Product product = productsRepository.findById(productId)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + productId));
 
-        double newPrice = calculateNewPrice(product);
-        product.setNewPrice(newPrice);
+        boolean hasActivePromotion = false;
+        double newPrice = product.getPrice();
+        List<Promotion> promotionList = new ArrayList<>();
+
+        for (PromotionProduct promotionProduct : product.getPromotionProducts()) {
+            Promotion promotion = promotionProduct.getPromotion();
+            if (promotion.isStatus()) {
+                promotionList.add(promotion);
+                hasActivePromotion = true;
+            }
+        }
+
+        if (hasActivePromotion) {
+            for (Promotion promotion : promotionList) {
+                double discountRate = promotion.getDiscountRate() / 100;
+                newPrice = newPrice - (product.getPrice() * discountRate);
+            }
+            product.setNewPrice(newPrice);
+        } else {
+            product.setNewPrice(null);
+        }
 
         return product;
     }
+
 
     public List<Product> getProductsByCategory(TypeEnum category) {
         List<Product> products = productsRepository.findByCategory(category);
