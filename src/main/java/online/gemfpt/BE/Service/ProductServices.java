@@ -203,21 +203,29 @@ public Product creates(ProductsRequest productsRequest) {
         List<Product> productList = productsRepository.findAll();
 
         if (productList.isEmpty()) {
-        throw new ProductNotFoundException("No products found!");
-    }
-        for (Product product : productList){
+            throw new ProductNotFoundException("No products found!");
+        }
+
+        for (Product product : productList) {
             double newPrice = product.getPrice();
-            List<Promotion> promotionList = new ArrayList<>();
-            for (PromotionProduct promotionProduct : product.getPromotionProducts()){
-                promotionList.add(promotionProduct.getPromotion());
+            boolean hasActivePromotion = false;
+
+            for (PromotionProduct promotionProduct : product.getPromotionProducts()) {
+                Promotion promotion = promotionProduct.getPromotion();
+                if (promotion.isStatus()) {
+                    double discountRate = promotion.getDiscountRate() / 100;
+                    newPrice -= (product.getPrice() * discountRate);
+                    hasActivePromotion = true;
+                }
             }
 
-            for (Promotion promotion : promotionList) {
-                double discountRate = promotion.getDiscountRate() / 100;
-                newPrice = newPrice - (product.getPrice() * discountRate);
+            if (!hasActivePromotion) {
+                product.setNewPrice(null);
+            } else {
+                product.setNewPrice(newPrice);
             }
-            product.setNewPrice(newPrice);
         }
+
         return productList;
     }
 

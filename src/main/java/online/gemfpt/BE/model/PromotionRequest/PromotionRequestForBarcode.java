@@ -22,9 +22,6 @@ public class PromotionRequestForBarcode {
     @NotBlank
     private String description;
 
-    @NotBlank
-    private String applicableProducts;
-
     private LocalDateTime endTime;
 
     @NotEmpty
