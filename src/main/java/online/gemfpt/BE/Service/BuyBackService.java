@@ -288,6 +288,10 @@ private String generateRandomBarcode() {
 }
 
 public Gemstone getGemstoneIfUse(String gemBarcode) {
+    if (gemBarcode == null) {
+        return null; // Nếu barcode null, trả về null
+    }
+
     Optional<Gemstone> optionalGemstone = gemstoneRepository.findByGemBarcode(gemBarcode);
     if (optionalGemstone.isPresent()) {
         Gemstone gemstone = optionalGemstone.get();
@@ -297,7 +301,7 @@ public Gemstone getGemstoneIfUse(String gemBarcode) {
             throw new BadRequestException("Gemstone with barcode " + gemBarcode + " does not have status USE.");
         }
     } else {
-        throw new BadRequestException("Gemstone with barcode " + gemBarcode + " not found.") ;
+        throw new BadRequestException("Gemstone with barcode " + gemBarcode + " not found.");
     }
 }
 
