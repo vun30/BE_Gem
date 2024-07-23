@@ -78,7 +78,7 @@ public List<Bill> getAllBillOfCustomerForBuy(String customerPhone) {
     }
 
 
-    @Transactional
+@Transactional
 public BillBuyBack createBillAndProducts(String customerName, String customerPhone, List<BuyBackProductRequest> buyBackProductRequests) {
     // Kiểm tra xem khách hàng đã tồn tại hay chưa
     Optional<Customer> optionalCustomer = customerRepository.findByPhone(customerPhone);
@@ -151,6 +151,11 @@ public BillBuyBack createBillAndProducts(String customerName, String customerPho
         if (buyBackProductRequest.getGemstones() != null) {
             List<Gemstone> gemstones = new ArrayList<>();
             for (GemstoneRequest gemstoneRequest : buyBackProductRequest.getGemstones()) {
+                // Bỏ qua nếu gemstone barcode là null
+                if (gemstoneRequest.getGemBarcode() == null) {
+                    continue;
+                }
+
                 // Tìm viên đá quý trong GemList với trạng thái USE
                 GemList gemList = gemListRepository.findByGemBarcode(gemstoneRequest.getGemBarcode())
                         .orElseThrow(() -> new BadRequestException("Gemstone with barcode " + gemstoneRequest.getGemBarcode() + " not found in GemList"));
@@ -268,6 +273,7 @@ public BillBuyBack createBillAndProducts(String customerName, String customerPho
     return savedBillBuyBack;
 }
 
+
 // Generate a random 8-digit numeric barcode
 private String generateRandomBarcode() {
     int length = 8;
@@ -288,10 +294,10 @@ public Gemstone getGemstoneIfUse(String gemBarcode) {
         if (gemstone.getUserStatus() == GemStatus.USE) {
             return gemstone;
         } else {
-            throw new IllegalArgumentException("Gemstone with barcode " + gemBarcode + " does not have status USE.");
+            throw new BadRequestException("Gemstone with barcode " + gemBarcode + " does not have status USE.");
         }
     } else {
-        throw new NoSuchElementException("Gemstone with barcode " + gemBarcode + " not found.") ;
+        throw new BadRequestException("Gemstone with barcode " + gemBarcode + " not found.") ;
     }
 }
 
