@@ -9,5 +9,7 @@ public enum TypeEnum {
     NECKLACE,
     EARRINGS,
     ANKLETS,
+    METAL,
+    GEMSTONE
 
 }
