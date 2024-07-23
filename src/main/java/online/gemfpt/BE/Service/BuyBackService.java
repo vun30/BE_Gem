@@ -114,13 +114,8 @@ public BillBuyBack createBillAndProducts(String customerName, String customerPho
     // Prepare a map to store GemstoneRequest buyRates by gemBarcode
     Map<String, Double> buyRateMap = buyBackProductRequests.stream()
             .flatMap(request -> request.getGemstones().stream())
+            .filter(gemstoneRequest -> gemstoneRequest.getGemBarcode() != null && !gemstoneRequest.getGemBarcode().trim().isEmpty())
             .collect(Collectors.toMap(GemstoneRequest::getGemBarcode, GemstoneRequest::getBuyRate));
-
-    // Get gem barcodes for lookup
-    List<String> gemstoneBarcodes = new ArrayList<>(buyRateMap.keySet());
-
-    // Get existing gemstones from the database
-    List<Gemstone> existingGemstones = getGemstonesIfUse(gemstoneBarcodes);
 
     // Create Products for the BillBuyBack and calculate prices
     for (BuyBackProductRequest buyBackProductRequest : buyBackProductRequests) {
@@ -151,12 +146,12 @@ public BillBuyBack createBillAndProducts(String customerName, String customerPho
         if (buyBackProductRequest.getGemstones() != null) {
             List<Gemstone> gemstones = new ArrayList<>();
             for (GemstoneRequest gemstoneRequest : buyBackProductRequest.getGemstones()) {
-                // Bỏ qua nếu gemstone barcode là null
-                if (gemstoneRequest.getGemBarcode() == null) {
-                    continue;
+                // Bỏ qua nếu gemstone barcode là null hoặc chuỗi rỗng
+                if (gemstoneRequest.getGemBarcode() == null || gemstoneRequest.getGemBarcode().trim().isEmpty()) {
+                    continue; // Bỏ qua vòng lặp nếu gemBarcode là null hoặc chuỗi rỗng
                 }
 
-                // Tìm viên đá quý trong GemList với trạng thái USE
+                // Tìm viên đá quý trong GemList với trạng thái USE nếu gemBarcode khác null
                 GemList gemList = gemListRepository.findByGemBarcode(gemstoneRequest.getGemBarcode())
                         .orElseThrow(() -> new BadRequestException("Gemstone with barcode " + gemstoneRequest.getGemBarcode() + " not found in GemList"));
 
@@ -235,14 +230,14 @@ public BillBuyBack createBillAndProducts(String customerName, String customerPho
 
     // Trừ số tiền từ total vào quầy của account đang login
     StallsSell stallsSell = stallsSellRepository.findById(account.getStallsWorkingId())
-            .orElseThrow(() -> new StallsSellNotFoundException("Không tìm thấy quầy bán với ID: " + account.getStallsWorkingId()));
+            .orElseThrow(() -> new StallsSellNotFoundException("Stall sell not found with ID: " + account.getStallsWorkingId()));
     double totalBillPrice = savedBillBuyBack.getProducts().stream()
             .mapToDouble(Product::getPrice)
             .sum();
 
     // Kiểm tra nếu số tiền trong quầy không đủ để trừ
     if (stallsSell.getMoney() < totalBillPrice) {
-        throw new InsufficientMoneyInStallException("Số tiền trong quầy không đủ để thực hiện giao dịch này");
+        throw new InsufficientMoneyInStallException("Stall sell not enough money for buy back this product");
     }
 
     // Trừ số tiền và lưu lại vào quầy
@@ -274,6 +269,11 @@ public BillBuyBack createBillAndProducts(String customerName, String customerPho
 }
 
 
+
+
+
+
+
 // Generate a random 8-digit numeric barcode
 private String generateRandomBarcode() {
     int length = 8;
@@ -301,15 +301,17 @@ public Gemstone getGemstoneIfUse(String gemBarcode) {
             throw new BadRequestException("Gemstone with barcode " + gemBarcode + " does not have status USE.");
         }
     } else {
-        throw new BadRequestException("Gemstone with barcode " + gemBarcode + " not found.");
+        throw new BadRequestException("Gemstone with barcode " + gemBarcode + " not found....");
     }
 }
 
 public List<Gemstone> getGemstonesIfUse(List<String> gemBarcodes) {
-    List<Gemstone> gemstones = new ArrayList<>() ;
+    List<Gemstone> gemstones = new ArrayList<>();
     for (String gemBarcode : gemBarcodes) {
-        Gemstone gemstone = getGemstoneIfUse(gemBarcode);
-        gemstones.add(gemstone);
+        if (gemBarcode != null) {
+            Gemstone gemstone = getGemstoneIfUse(gemBarcode);
+            gemstones.add(gemstone);
+        }
     }
     return gemstones;
 }
