@@ -44,7 +44,7 @@ public class VNPAYService {
         String secretKey = "756DRLZ7RW6F4GX7WN2Z8NJFTJIGRM3K";
         String vnpUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
 
-        String returnUrl = "http://gemfpt.online/staff-order";
+        String returnUrl = "http://143.198.92.27/staff-order";
 
         String currCode = "VND";
         Map<String, String> vnpParams = new TreeMap<>();

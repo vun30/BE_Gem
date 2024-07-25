@@ -73,6 +73,7 @@ public class ProductServices {
         product.setStock(1);
         product.setCreateTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
         product.setStatus(true);
+        product.setTypeWhenBuyBack(null);
         product.setBarcode(productsRequest.getBarcode());
         product.setWage(productsRequest.getWage());
 

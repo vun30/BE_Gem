@@ -80,7 +80,7 @@ public class AuthenticationService implements UserDetailsService {
         account.setPhone(editAccountRequest.getPhone());
     }
     if (editAccountRequest.getDescription() != null) {
-        account.setDescription("Name: " + editAccountRequest.getName() + " " + "Details:  " + editAccountRequest.getDescription() + " " + "Phone: " + editAccountRequest.getPhone() + " " + "Role"  + " " + editAccountRequest.getRole());
+        account.setDescription("Name: " + editAccountRequest.getName() + "  " + "Details:  " + editAccountRequest.getDescription() + " " + "Phone: " + editAccountRequest.getPhone() + "  " + "Role"  + "  " + editAccountRequest.getRole() + "  " +"Stall Working : " + "  " + account.getStallsWorkingId() + "  " +  "Stall Working End Time : " + "  " + account.getEndWorkingDateTime());
     }
     if (editAccountRequest.isStatus() != account.isStatus()) {
         account.setStatus(editAccountRequest.isStatus());
@@ -245,7 +245,7 @@ public Account staffEditAccountByEmail(String email, StaffEditAccountRequest sta
     }
 
     String token = tokenService.generateToken(account);
-    String resetLink = "http://gemfpt.online/reset-password?token="+ token;
+    String resetLink = "http://143.198.92.27/reset-password?token="+ token;
 
     // Prepare email details
     EmailDetail emailDetail = new EmailDetail();
