@@ -1,8 +1,10 @@
 package online.gemfpt.BE.config;
 
 import jakarta.transaction.Transactional;
+import online.gemfpt.BE.Repository.DiscountRepository;
 import online.gemfpt.BE.Repository.PromotionProductRepository;
 import online.gemfpt.BE.Repository.PromotionRepository;
+import online.gemfpt.BE.entity.Discount;
 import online.gemfpt.BE.entity.Promotion;
 import online.gemfpt.BE.entity.PromotionProduct;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,9 @@ public class CronJobConfig {
 
     @Autowired
     PromotionRepository promotionRepository;
+
+    @Autowired
+    DiscountRepository discountRepository;
 
     @Scheduled(cron = "0 0 0 * * ?") // Chạy hàng ngày vào lúc nửa đêm
     @Transactional
@@ -38,6 +43,20 @@ public class CronJobConfig {
             }
         }
     }
+
+    @Scheduled(fixedRate = 1000)
+    public void checkDiscountExpiration() {
+        List<Discount> discounts = discountRepository.findAll();
+        LocalDateTime now = LocalDateTime.now();
+
+        for (Discount discount : discounts) {
+            if (discount.getExpirationTime() != null && discount.getExpirationTime().isBefore(now)) {
+                discount.setStatusUse(false);
+                discountRepository.save(discount);
+            }
+        }
+    }
+
 
 
 }
