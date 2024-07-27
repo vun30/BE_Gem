@@ -54,13 +54,16 @@ public class ProductServices {
     @Autowired
     GemListRepository gemListRepository;
 
+    @Autowired
+    AuthenticationService authenticationService ;
+
 
     @Transactional
     public Product creates(ProductsRequest productsRequest) {
         // Kiểm tra xem sản phẩm có tồn tại không
         Optional<Product> existProduct = productsRepository.findByBarcodeAndStatus(productsRequest.getBarcode(), true);
         if (existProduct.isPresent()) {
-            throw new IllegalArgumentException("Barcode already exists!");
+            throw new BadRequestException("Barcode already exists!");
         }
 
 
@@ -76,6 +79,7 @@ public class ProductServices {
         product.setTypeWhenBuyBack(null);
         product.setBarcode(productsRequest.getBarcode());
         product.setWage(productsRequest.getWage());
+        product.setStallId(productsRequest.getStallId());
 
         // Set URLs
         if (productsRequest.getUrls() != null) {
@@ -98,7 +102,7 @@ public class ProductServices {
 
             for (String gemBarcode : gemstoneBarcodes) {
                 if (checkGemstoneStatus(gemBarcode)) {
-                    throw new IllegalArgumentException("Gemstone with barcode " + gemBarcode + " has status different from NOTUSE");
+                    throw new BadRequestException("Gemstone with barcode " + gemBarcode + " has status different from NOTUSE");
                 }
             }
 
@@ -181,13 +185,35 @@ public class ProductServices {
     }
 
     public Product getProductByBarcode(String barcode) {
+    // Lấy tài khoản đang đăng nhập
+    Account account = authenticationService.getCurrentAccount();
+
+    // Kiểm tra trạng thái làm việc của nhân viên
+    if (!account.isStaffWorkingStatus()) {
+        throw new BadRequestException("Staff is not currently working or status is invalid!");
+    }
+
+    // Extract the barcode part after the last '|'
+    String[] parts = barcode.split("\\|");
+    String lastPart = parts[parts.length - 1];
+
+    // Tìm sản phẩm theo barcode, status và stallId
+    Optional<Product> optionalProduct = productsRepository.findByBarcodeAndStatusAndStallId(lastPart, true, account.getStallsWorkingId());
+    if (!optionalProduct.isPresent()) {
+        throw new BadRequestException("Product not found with barcode: " + lastPart + " for the current stall.");
+    }
+
+    return optionalProduct.get();
+}
+
+ public Product getProductByBarcodeMG(String barcode) {
         // Extract the barcode part after the last '|'
         String[] parts = barcode.split("\\|");
         String lastPart = parts[parts.length - 1];
 
         Optional<Product> optionalProduct = productsRepository.findByBarcodeAndStatus(lastPart, true);
         if (!optionalProduct.isPresent()) {
-            throw new ProductNotFoundException("Product not found with barcode: " + lastPart);
+            throw new BadRequestException("Product not found with barcode: " + lastPart);
         }
         return optionalProduct.get();
     }
@@ -277,6 +303,61 @@ public class ProductServices {
 
 
     public List<Product> getAllProductsTrue() {
+    // Lấy tài khoản đang đăng nhập
+    Account account = authenticationService.getCurrentAccount();
+
+    // Kiểm tra trạng thái làm việc của nhân viên
+    if (!account.isStaffWorkingStatus()) {
+        throw new BadRequestException("Staff is not currently working or status is invalid!");
+    }
+
+    Long stallsWorkingId = account.getStallsWorkingId();
+
+    // Lấy danh sách sản phẩm có status là true
+    List<Product> productList = productsRepository.findByStatus(true);
+
+    if (productList.isEmpty()) {
+        throw new BadRequestException("No products found!");
+    }
+
+    // Lọc danh sách sản phẩm dựa trên stallId và stallsWorkingId
+    List<Product> filteredProductList = productList.stream()
+            .filter(product -> product.getStallId() == stallsWorkingId)
+            .collect(Collectors.toList());
+
+    if (filteredProductList.isEmpty()) {
+        throw new BadRequestException("No products found for the current stall!");
+    }
+
+    // Kiểm tra và áp dụng khuyến mãi cho các sản phẩm
+    for (Product product : filteredProductList) {
+        boolean hasActivePromotion = false;
+        double newPrice = product.getPrice();
+        List<Promotion> promotionList = new ArrayList<>();
+
+        for (PromotionProduct promotionProduct : product.getPromotionProducts()) {
+            Promotion promotion = promotionProduct.getPromotion();
+            if (promotion.isStatus()) {
+                promotionList.add(promotion);
+                hasActivePromotion = true;
+            }
+        }
+
+        if (hasActivePromotion) {
+            for (Promotion promotion : promotionList) {
+                double discountRate = promotion.getDiscountRate() / 100;
+                newPrice = newPrice - (product.getPrice() * discountRate);
+            }
+            product.setNewPrice(newPrice);
+        } else {
+            product.setNewPrice(null);
+        }
+    }
+
+    return filteredProductList;
+}
+
+public List<Product> getAllProductsTrueForMana() {
         List<Product> productList = productsRepository.findByStatus(true);
 
         if (productList.isEmpty()) {
@@ -342,8 +423,36 @@ public class ProductServices {
     }
 
     public List<Product> searchProductsByName(String name) {
-        return productsRepository.findByNameContaining(name);
+    // Lấy tài khoản đang đăng nhập
+    Account account = authenticationService.getCurrentAccount();
+
+    // Kiểm tra trạng thái làm việc của nhân viên
+    if (!account.isStaffWorkingStatus()) {
+        throw new IllegalStateException("Staff is not currently working or status is invalid!");
     }
+
+    // Tìm sản phẩm theo tên và lọc theo quầy làm việc của tài khoản
+    List<Product> products = productsRepository.findByNameContaining(name);
+    return products.stream()
+            .filter(product -> product.getStallId() == account.getStallsWorkingId())
+            .collect(Collectors.toList());
+}
+
+public List<Product> searchProductsByNameStaff(String name) {
+    // Lấy tài khoản đang đăng nhập
+    Account account = authenticationService.getCurrentAccount();
+
+    // Kiểm tra trạng thái làm việc của nhân viên
+    if (!account.isStaffWorkingStatus()) {
+        throw new IllegalStateException("Staff is not currently working or status is invalid!");
+    }
+
+    // Tìm sản phẩm theo tên và lọc theo quầy làm việc của tài khoản
+    List<Product> products = productsRepository.findByNameContaining(name);
+    return products.stream()
+            .filter(product -> product.getStallId() == account.getStallsWorkingId())
+            .collect(Collectors.toList());
+}
 
 
     public List<Product> getProductsByTypeWhenBuyBack(TypeOfProductEnum typeWhenBuyBack) {
@@ -484,7 +593,7 @@ public class ProductServices {
                         gemstone.getCarat()))
                 .collect(Collectors.joining("; "));
 
-        String description = String.format("Update product: - Barcode: %s, Product Price : %2f, Name: %s, Category: %s, PriceRate: %.2f, Stock: %d, Wage: %.2f, Metals: %s, Gemstones: %s, Type When Buy Back: %s, Create Time: %s, Update Time: %s",
+        String description = String.format("Update product: - Barcode: %s, Product Price : %2f, Name: %s, Category: %s, PriceRate: %.2f, Stock: %d, Wage: %.2f, Stall: %d, Metals: %s, Gemstones: %s, Type When Buy Back: %s, Create Time: %s, Update Time: %s",
                 product.getBarcode(),
                 product.getPrice(),
                 product.getName(),
@@ -492,6 +601,7 @@ public class ProductServices {
                 product.getPriceRate(),
                 product.getStock(),
                 product.getWage(),
+                product.getStallId(),
                 metals,
                 gemstones,
                 product.getTypeWhenBuyBack(),

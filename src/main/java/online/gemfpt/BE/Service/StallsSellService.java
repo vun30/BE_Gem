@@ -91,7 +91,7 @@ public List<Account> addAccountsOnStalls(List<Long> accountIds, AccountOnStallsR
 
             // Lưu thông tin cập nhật vào cơ sở dữ liệu
             updatedAccounts.add(authenticationRepository.save(account));
-        } catch (AccountNotFoundException | StallsSellNotFoundException ex) {
+        } catch (BadRequestException | StallsSellNotFoundException ex) {
             // Xử lý ngoại lệ cụ thể
             throw ex;
         } catch (Exception ex) {
