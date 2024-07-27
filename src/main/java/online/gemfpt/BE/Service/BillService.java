@@ -68,17 +68,17 @@ public class BillService {
 
     Optional<Customer> customer = customerRepository.findByPhone(phone);
     if (customer.isEmpty()) {
-        throw new IllegalStateException("This phone number isn't signed up");
+        throw new BadRequestException("This phone number isn't signed up");
     }
 
     Account account = authenticationService.getCurrentAccount();
 
     if (!account.isStaffWorkingStatus()) {
-        throw new IllegalStateException("Staff is not in working status.");
+        throw new BadRequestException("Staff is not in working status.");
     }
 
      if (account.getStallsWorkingId() == null) {
-        throw new IllegalStateException("Account does not have a valid stall working ID.");
+        throw new BadRequestException("Account does not have a valid stall working ID.");
     }
 
     if (discountId != null && discountId != 00 && !customerRepository.existsByPhoneAndDiscounts_Id(phone, discountId)) {
@@ -211,7 +211,7 @@ public class BillService {
 
     // Cộng tiền vào quầy và lưu lại
     StallsSell stallsSell = stallsSellRepository.findById(account.getStallsWorkingId())
-            .orElseThrow(() -> new StallsSellNotFoundException("Không tìm thấy quầy bán với ID: " + account.getStallsWorkingId()));
+            .orElseThrow(() -> new BadRequestException("Không tìm thấy quầy bán với ID: " + account.getStallsWorkingId()));
     stallsSell.setMoney(stallsSell.getMoney() + total);
     stallsSellRepository.save(stallsSell);
 
@@ -239,7 +239,7 @@ public class BillService {
         if (optionalBill.isPresent()) {
             return optionalBill.get();
         } else {
-            throw new IllegalArgumentException("Invalid bill ID: " + id);
+            throw new BadRequestException("Invalid bill ID: " + id);
         }
     }
 
@@ -252,7 +252,7 @@ public class BillService {
         if (bill.isPresent()) {
             billRepository.deleteById(billId);
         } else {
-            throw new IllegalArgumentException("Invalid bill ID :" + billId);
+            throw new BadRequestException("Invalid bill ID :" + billId);
         }
     }
 

@@ -80,6 +80,8 @@ public List<Bill> getAllBillOfCustomerForBuy(String customerPhone) {
 
 @Transactional
 public BillBuyBack createBillAndProducts(String customerName, String customerPhone, List<BuyBackProductRequest> buyBackProductRequests) {
+
+
     // Kiểm tra xem khách hàng đã tồn tại hay chưa
     Optional<Customer> optionalCustomer = customerRepository.findByPhone(customerPhone);
     Customer customer;
@@ -108,6 +110,11 @@ public BillBuyBack createBillAndProducts(String customerName, String customerPho
     billBuyBack.setCashier(String.valueOf(account.getId()));
     billBuyBack.setStalls(account.getStallsWorkingId());
 
+    if (!account.isStaffWorkingStatus()) {
+        throw new BadRequestException("Staff is not in working status.");
+    }
+
+
     // Save the BillBuyBack first
     BillBuyBack savedBillBuyBack = billBuyBackRepository.save(billBuyBack);
 
@@ -130,6 +137,7 @@ public BillBuyBack createBillAndProducts(String customerName, String customerPho
         product.setStatus(false); // Assuming the status is false initially
         product.setBarcode(generateRandomBarcode()); // Auto-generate barcode
         product.setBillBuyBack(savedBillBuyBack); // Set the saved BillBuyBack
+        product.setStallId(account.getStallsWorkingId());
 
         // Set URLs
         if (buyBackProductRequest.getUrls() != null) {
@@ -237,7 +245,7 @@ public BillBuyBack createBillAndProducts(String customerName, String customerPho
 
     // Kiểm tra nếu số tiền trong quầy không đủ để trừ
     if (stallsSell.getMoney() < totalBillPrice) {
-        throw new InsufficientMoneyInStallException("Stall sell not enough money for buy back this product");
+        throw new BadRequestException("Stall sell not enough money for buy back this product");
     }
 
     // Trừ số tiền và lưu lại vào quầy

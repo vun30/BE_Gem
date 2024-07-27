@@ -19,6 +19,8 @@ public interface ProductsRepository extends JpaRepository<Product,Long> {
     @Query("SELECT p FROM Product p WHERE (SUBSTRING_INDEX(p.barcode, '|', -1) = :barcode) AND p.status = :status")
 Optional<Product> findByBarcodeAndStatus(@Param("barcode") String barcode, @Param("status") boolean status);
 
+     Optional<Product> findByBarcodeAndStatusAndStallId(String barcode, boolean status, long stallId);
+
     List<Product> findByPriceBetweenAndStatus(double minPrice, double maxPrice, boolean status);
 
     List<Product> findByStatus(boolean status);

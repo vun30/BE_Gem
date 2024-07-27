@@ -2,6 +2,7 @@ package online.gemfpt.BE.model;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import online.gemfpt.BE.enums.TypeEnum;
 import online.gemfpt.BE.enums.TypeOfProductEnum;
@@ -18,6 +19,9 @@ public class ProductsRequest {
     private TypeEnum category;
 
     private TypeOfProductEnum typeWhenBuyBack;
+
+    @NotNull
+    private long stallId;
 
 
     @Min(0)

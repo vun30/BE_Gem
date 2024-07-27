@@ -99,19 +99,25 @@ public class ProductAPI {
         }
     }
 
-    @GetMapping("/products")
+    @GetMapping("/products")  // get all for manager
     public ResponseEntity<List<Product>> getAllProducts() {
         List<Product> products = productServices.getAllProducts();
         return ResponseEntity.ok(products);
     }
 
-    @GetMapping("/products-true")
+    @GetMapping("/products-true")  // get true and for stall working stall in account staff
     public ResponseEntity<List<Product>> getAllProductsTrue() {
         List<Product> products = productServices.getAllProductsTrue();
         return ResponseEntity.ok(products);
     }
 
-     @GetMapping("/products/barcode/{barcode}")
+    @GetMapping("/mana-products-true")  // get true and for stall working stall in account staff
+    public ResponseEntity<List<Product>> getAllProductsTrueMana() {
+        List<Product> products = productServices.getAllProductsTrueForMana();
+        return ResponseEntity.ok(products);
+    }
+
+     @GetMapping("/products/barcode/{barcode}")   //  get by barcode for staff
     public ResponseEntity<?> getProductByBarcode(@PathVariable String barcode) {
         try {
             Product product = productServices.getProductByBarcode(barcode);
@@ -119,6 +125,12 @@ public class ProductAPI {
         } catch (ProductNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
+    }
+
+    @GetMapping("/all/{barcode}")  //  get by barcode for manager
+    public ResponseEntity<Product> getProductByBarcodeMG(@PathVariable String barcode) {
+        Product product = productServices .getProductByBarcodeMG(barcode);
+        return ResponseEntity.ok(product);
     }
 
     @GetMapping("/products/id/{productId}")
@@ -134,6 +146,11 @@ public class ProductAPI {
     @GetMapping("/search/name")
     public ResponseEntity<List<Product>> searchProductsByName(@RequestParam("name") String name) {
         List<Product> products = productServices.searchProductsByName(name);
+        return ResponseEntity.ok(products);
+    }
+    @GetMapping("/staff-search/name")
+    public ResponseEntity<List<Product>> StaffsearchProductsByName(@RequestParam("name") String name) {
+        List<Product> products = productServices.searchProductsByNameStaff(name);
         return ResponseEntity.ok(products);
     }
 

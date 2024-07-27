@@ -80,7 +80,7 @@ public class AuthenticationService implements UserDetailsService {
         account.setPhone(editAccountRequest.getPhone());
     }
     if (editAccountRequest.getDescription() != null) {
-        account.setDescription("Name: " + editAccountRequest.getName() + " " + "Details:  " + editAccountRequest.getDescription() + " " + "Phone: " + editAccountRequest.getPhone() + " " + "Role"  + " " + editAccountRequest.getRole());
+        account.setDescription("Name: " + editAccountRequest.getName() + "  " + "Details:  " + editAccountRequest.getDescription() + " " + "Phone: " + editAccountRequest.getPhone() + "  " + "Role"  + "  " + editAccountRequest.getRole() + "  " +"Stall Working : " + "  " + account.getStallsWorkingId() + "  " +  "Stall Working End Time : " + "  " + account.getEndWorkingDateTime());
     }
     if (editAccountRequest.isStatus() != account.isStatus()) {
         account.setStatus(editAccountRequest.isStatus());
@@ -153,7 +153,43 @@ public Account staffEditAccountByEmail(String email, StaffEditAccountRequest sta
         return accountResponse;
     }
 
-        public AccountResponse loginGoogle(LoginGoogleRequest loginGoogleRequest) {
+    public AccountResponse staffLoginGoogle(LoginGoogleRequest loginGoogleRequest) {
+    AccountResponse accountResponse = new AccountResponse();
+    try {
+        FirebaseToken firebaseToken = FirebaseAuth.getInstance().verifyIdToken(loginGoogleRequest.getToken());
+        String email = firebaseToken.getEmail();
+        Account account = authenticationRepository.findAccountByEmail(email);
+
+        if (account == null) {
+            // If account does not exist, throw an exception
+            throw new BadRequestException("Account does not exist. Please contact admin for account creation: 0335101045.");
+        } else if (!account.isStatus()) {
+            // If account status is false, do not allow login
+            throw new BadRequestException("Account is not active. Please contact admin for approval: 0335101045.");
+        }
+
+        // Account exists and is active, proceed with login
+        accountResponse.setEmail(account.getEmail());
+        accountResponse.setId(account.getId());
+        account.setUrl(firebaseToken.getPicture());
+        accountResponse.setRole(account.getRole());
+        accountResponse.setPhone(account.getPhone());
+        accountResponse.setName(account.getName());
+        accountResponse.setCreateDateNow(account.getCreateDate());
+        accountResponse.setEndWorkingDateTime(account.getEndWorkingDateTime());
+        accountResponse.setCreateDate(account.getCreateDate());
+        accountResponse.setDescription(account.getDescription());
+        String token = tokenService.generateToken(account);
+        accountResponse.setToken(token);
+    } catch (FirebaseAuthException e) {
+        // Handle specific exceptions and log or throw appropriate errors
+        System.out.println("Exception occurred during Google login: " + e.getMessage());
+        throw new RuntimeException("Error during Google login", e);
+    }
+    return accountResponse;
+}
+
+        public AccountResponse loginGoogle(LoginGoogleRequest loginGoogleRequest) {  // login for admin
     AccountResponse accountResponse = new AccountResponse();
     try {
         FirebaseToken firebaseToken = FirebaseAuth.getInstance().verifyIdToken(loginGoogleRequest.getToken());
@@ -245,7 +281,7 @@ public Account staffEditAccountByEmail(String email, StaffEditAccountRequest sta
     }
 
     String token = tokenService.generateToken(account);
-    String resetLink = "http://gemfpt.online/reset-password?token="+ token;
+    String resetLink = "http://143.198.92.27/reset-password?token="+ token;
 
     // Prepare email details
     EmailDetail emailDetail = new EmailDetail();

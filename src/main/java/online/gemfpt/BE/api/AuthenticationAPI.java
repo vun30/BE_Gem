@@ -33,6 +33,12 @@ public ResponseEntity<AccountResponse> loginGoogle(@RequestBody LoginGoogleReque
     AccountResponse accountResponse = authenticationService.loginGoogle(loginGoogleRequest);
     return ResponseEntity.ok(accountResponse);
 }
+
+@PostMapping("/staff-login_google")
+public ResponseEntity<AccountResponse>staffLoginGoogle(@RequestBody LoginGoogleRequest loginGoogleRequest) {
+    AccountResponse accountResponse = authenticationService.staffLoginGoogle(loginGoogleRequest);
+    return ResponseEntity.ok(accountResponse);
+}
        @PostMapping("/login")
     public ResponseEntity login (@RequestBody LoginRequest loginRequest){
         Account account = authenticationService.login(loginRequest);
