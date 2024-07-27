@@ -43,13 +43,14 @@ public class DiscountService {
     }
 
     @Transactional
-    public Discount respondToDiscountRequest(long discountRequestId, boolean approved, String managerResponse) {
+    public Discount respondToDiscountRequest(long discountRequestId, boolean approved, String managerResponse, int expirationTime) {
         Optional<Discount> optionalRequest = discountRepository.findById(discountRequestId);
         if (optionalRequest.isPresent()) {
             Discount discountRequest = optionalRequest.get();
             discountRequest.setApproved(approved);
             discountRequest.setManagerResponse(managerResponse);
             discountRequest.setResponseTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
+            discountRequest.setExpirationTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).plusMinutes(expirationTime));
             discountRequest.setStatusUse(false);  // not  use
             return discountRepository.save(discountRequest);
         } else {

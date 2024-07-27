@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -33,8 +34,8 @@ public class DiscountAPI {
     }
 
     @PostMapping("discount/respond")
-    public ResponseEntity<Discount> respondToDiscountRequest(@RequestParam long discountRequestId, @RequestParam boolean approved, @RequestParam String managerResponse) {
-        Discount discountRequest = discountService.respondToDiscountRequest(discountRequestId, approved, managerResponse);
+    public ResponseEntity<Discount> respondToDiscountRequest(@RequestParam long discountRequestId, @RequestParam boolean approved, @RequestParam String managerResponse, @RequestParam int expirationTime) {
+        Discount discountRequest = discountService.respondToDiscountRequest(discountRequestId, approved, managerResponse,expirationTime );
         return ResponseEntity.ok(discountRequest);
     }
 

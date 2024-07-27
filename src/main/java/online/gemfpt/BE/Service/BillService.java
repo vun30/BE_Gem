@@ -191,6 +191,10 @@ public class BillService {
                 throw new BadRequestException("Discount with id " + discountId + " is already used.");
             }
 
+            if (discount.getExpirationTime().isBefore(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")))) {
+                throw new BadRequestException("Discount with id " + discountId + " has expired.");
+            }
+
             discountRate = discount.getRequestedDiscount();
             discount.setStatusUse(true);
             discountRepository.save(discount);
