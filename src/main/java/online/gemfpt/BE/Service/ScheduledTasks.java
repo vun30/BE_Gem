@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -104,6 +105,18 @@ public void updateProductPricesByTypeOfMetal() {
 
     }
 }
+
+@Scheduled(fixedRate = 60000) // 60000 ms = 1 minute
+    public void updateMetalUpdateDate() {
+        List<TypeOfMetal> metals = typeOfMetalRepository.findByStatus(true);
+
+        for (TypeOfMetal metal : metals) {
+            metal.setUpdateDate(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
+        }
+
+        typeOfMetalRepository.saveAll(metals);
+       System.out.printf("Update metal time ");
+    }
 //     // Chạy phương thức này mỗi 10 giây
 //    @Scheduled(fixedRate = 10000)
 //    public void updateProductStatus() {
