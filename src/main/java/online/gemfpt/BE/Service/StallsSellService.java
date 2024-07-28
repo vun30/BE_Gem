@@ -403,6 +403,46 @@ public MoneyChangeHistory changeMoneyInStalls(MoneyChangeRequest moneyChangeRequ
         return result;
     }
 
+    public Map<String, Object> getMonthlyRevenueByStaffAndStall(Long stallId, String cashier, YearMonth yearMonth) {
+        List<Bill> bills = billRepository.findByCashier(cashier).stream()
+                .filter(bill -> bill.getStalls() == stallId &&
+                        YearMonth.from(bill.getCreateTime()).equals(yearMonth))
+                .collect(Collectors.toList());
+
+        double totalRevenue = bills.stream().mapToDouble(Bill::getTotalAmount).sum();
+        int orderCount = bills.size();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("stallId", stallId);
+        result.put("cashier", cashier);
+        result.put("yearMonth", yearMonth.toString());
+        result.put("totalRevenue", totalRevenue);
+        result.put("orderCount", orderCount);
+
+        return result;
+    }
+
+    public Map<String, Object> getYearlyRevenueByStaffAndStall(Long stallId, String cashier, Year year) {
+        List<Bill> bills = billRepository.findByCashier(cashier).stream()
+                .filter(bill -> bill.getStalls() == stallId &&
+                        Year.from(bill.getCreateTime()).equals(year))
+                .collect(Collectors.toList());
+
+        double totalRevenue = bills.stream().mapToDouble(Bill::getTotalAmount).sum();
+        int orderCount = bills.size();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("stallId", stallId);
+        result.put("cashier", cashier);
+        result.put("year", year.toString());
+        result.put("totalRevenue", totalRevenue);
+        result.put("orderCount", orderCount);
+
+        return result;
+    }
+
+
+
     public List<Account> getAccountsByStallsSellId(Long stallsSellId) {
     return authenticationRepository.findAll().stream()
             .filter(account -> stallsSellId.equals(account.getStallsWorkingId()) && account.isStaffWorkingStatus())

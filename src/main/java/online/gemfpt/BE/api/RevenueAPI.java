@@ -3,6 +3,7 @@ package online.gemfpt.BE.api;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import online.gemfpt.BE.Service.StallsSellService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -72,5 +73,23 @@ public class RevenueAPI {
     public ResponseEntity<Map<Long, List<Double>>> getYearlyRevenueForEachStall() {
         Map<Long, List<Double>> result = stallsSellService.getYearlyRevenueForEachStall();
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/monthly-revenue/stall/{stallId}/cashier/{cashier}")
+    public ResponseEntity<Map<String, Object>> getMonthlyRevenueByStaffAndStall(
+            @PathVariable Long stallId,
+            @PathVariable String cashier,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth) {
+        Map<String, Object> revenue = stallsSellService.getMonthlyRevenueByStaffAndStall(stallId, cashier, yearMonth);
+        return ResponseEntity.ok(revenue);
+    }
+
+    @GetMapping("/yearly-revenue/stall/{stallId}/cashier/{cashier}")
+    public ResponseEntity<Map<String, Object>> getYearlyRevenueByStaffAndStall(
+            @PathVariable Long stallId,
+            @PathVariable String cashier,
+            @RequestParam @DateTimeFormat(pattern = "yyyy") Year year) {
+        Map<String, Object> revenue = stallsSellService.getYearlyRevenueByStaffAndStall(stallId, cashier, year);
+        return ResponseEntity.ok(revenue);
     }
 }
