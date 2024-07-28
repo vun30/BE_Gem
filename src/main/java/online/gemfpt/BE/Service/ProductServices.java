@@ -180,7 +180,7 @@ public class ProductServices {
     }
 
     public Product getProductByBarcode(String barcode) {
-        // Extract the barcode part after the last '|'
+        // Tách phần barcode sau ký tự '|'
         String[] parts = barcode.split("\\|");
         String lastPart = parts[parts.length - 1];
 
@@ -188,7 +188,34 @@ public class ProductServices {
         if (!optionalProduct.isPresent()) {
             throw new ProductNotFoundException("Product not found with barcode: " + lastPart);
         }
-        return optionalProduct.get();
+
+        Product product = optionalProduct.get();
+
+        boolean hasActivePromotion = false;
+        double newPrice = product.getPrice();
+        List<Promotion> promotionList = new ArrayList<>();
+
+        // Kiểm tra các khuyến mãi liên quan đến sản phẩm
+        for (PromotionProduct promotionProduct : product.getPromotionProducts()) {
+            Promotion promotion = promotionProduct.getPromotion();
+            if (promotion.isStatus()) {
+                promotionList.add(promotion);
+                hasActivePromotion = true;
+            }
+        }
+
+        // Tính giá mới nếu có khuyến mãi đang hoạt động
+        if (hasActivePromotion) {
+            for (Promotion promotion : promotionList) {
+                double discountRate = promotion.getDiscountRate() / 100;
+                newPrice = newPrice - (product.getPrice() * discountRate);
+            }
+            product.setNewPrice(newPrice);
+        } else {
+            product.setNewPrice(null);
+        }
+
+        return product;
     }
 
 
@@ -321,10 +348,36 @@ public class ProductServices {
                         (carat == null || gemstone.getCarat() == carat))
                 .collect(Collectors.toList());
 
-        return filteredGemstones.stream()
+        List<Product> products = filteredGemstones.stream()
                 .map(Gemstone::getProduct)
                 .distinct()
                 .collect(Collectors.toList());
+
+        for (Product product : products) {
+            boolean hasActivePromotion = false;
+            double newPrice = product.getPrice();
+            List<Promotion> promotionList = new ArrayList<>();
+
+            for (PromotionProduct promotionProduct : product.getPromotionProducts()) {
+                Promotion promotion = promotionProduct.getPromotion();
+                if (promotion.isStatus()) {
+                    promotionList.add(promotion);
+                    hasActivePromotion = true;
+                }
+            }
+
+            if (hasActivePromotion) {
+                for (Promotion promotion : promotionList) {
+                    double discountRate = promotion.getDiscountRate() / 100;
+                    newPrice = newPrice - (product.getPrice() * discountRate);
+                }
+                product.setNewPrice(newPrice);
+            } else {
+                product.setNewPrice(null);
+            }
+        }
+
+        return products;
     }
 
     public List<Product> searchProductsByMetalType(String metalType) {
@@ -334,19 +387,97 @@ public class ProductServices {
                 .filter(metal -> metal.getTypeOfMetal().getMetalType().equals(metalType))
                 .collect(Collectors.toList());
 
-        return filteredMetals.stream()
+        List<Product> products = filteredMetals.stream()
                 .map(Metal::getProduct)
                 .distinct()
                 .collect(Collectors.toList());
+
+        for (Product product : products) {
+            boolean hasActivePromotion = false;
+            double newPrice = product.getPrice();
+            List<Promotion> promotionList = new ArrayList<>();
+
+            for (PromotionProduct promotionProduct : product.getPromotionProducts()) {
+                Promotion promotion = promotionProduct.getPromotion();
+                if (promotion.isStatus()) {
+                    promotionList.add(promotion);
+                    hasActivePromotion = true;
+                }
+            }
+
+            if (hasActivePromotion) {
+                for (Promotion promotion : promotionList) {
+                    double discountRate = promotion.getDiscountRate() / 100;
+                    newPrice = newPrice - (product.getPrice() * discountRate);
+                }
+                product.setNewPrice(newPrice);
+            } else {
+                product.setNewPrice(null);
+            }
+        }
+
+        return products;
     }
 
     public List<Product> searchProductsByName(String name) {
-        return productsRepository.findByNameContaining(name);
+        List<Product> products = productsRepository.findByNameContaining(name);
+
+        for (Product product : products) {
+            boolean hasActivePromotion = false;
+            double newPrice = product.getPrice();
+            List<Promotion> promotionList = new ArrayList<>();
+
+            for (PromotionProduct promotionProduct : product.getPromotionProducts()) {
+                Promotion promotion = promotionProduct.getPromotion();
+                if (promotion.isStatus()) {
+                    promotionList.add(promotion);
+                    hasActivePromotion = true;
+                }
+            }
+
+            if (hasActivePromotion) {
+                for (Promotion promotion : promotionList) {
+                    double discountRate = promotion.getDiscountRate() / 100;
+                    newPrice = newPrice - (product.getPrice() * discountRate);
+                }
+                product.setNewPrice(newPrice);
+            } else {
+                product.setNewPrice(null);
+            }
+        }
+
+        return products;
     }
 
 
     public List<Product> getProductsByTypeWhenBuyBack(TypeOfProductEnum typeWhenBuyBack) {
-        return productsRepository.findByTypeWhenBuyBack(typeWhenBuyBack);
+        List<Product> products = productsRepository.findByTypeWhenBuyBack(typeWhenBuyBack);
+
+        for (Product product : products) {
+            boolean hasActivePromotion = false;
+            double newPrice = product.getPrice();
+            List<Promotion> promotionList = new ArrayList<>();
+
+            for (PromotionProduct promotionProduct : product.getPromotionProducts()) {
+                Promotion promotion = promotionProduct.getPromotion();
+                if (promotion.isStatus()) {
+                    promotionList.add(promotion);
+                    hasActivePromotion = true;
+                }
+            }
+
+            if (hasActivePromotion) {
+                for (Promotion promotion : promotionList) {
+                    double discountRate = promotion.getDiscountRate() / 100;
+                    newPrice = newPrice - (product.getPrice() * discountRate);
+                }
+                product.setNewPrice(newPrice);
+            } else {
+                product.setNewPrice(null);
+            }
+        }
+
+        return products;
     }
 
     public Product getProductById(Long productId) {
@@ -383,8 +514,27 @@ public class ProductServices {
         List<Product> products = productsRepository.findByCategory(category);
 
         for (Product product : products) {
-            double newPrice = calculateNewPrice(product);
-            product.setNewPrice(newPrice);
+            boolean hasActivePromotion = false;
+            double newPrice = product.getPrice();
+            List<Promotion> promotionList = new ArrayList<>();
+
+            for (PromotionProduct promotionProduct : product.getPromotionProducts()) {
+                Promotion promotion = promotionProduct.getPromotion();
+                if (promotion.isStatus()) {
+                    promotionList.add(promotion);
+                    hasActivePromotion = true;
+                }
+            }
+
+            if (hasActivePromotion) {
+                for (Promotion promotion : promotionList) {
+                    double discountRate = promotion.getDiscountRate() / 100;
+                    newPrice = newPrice - (product.getPrice() * discountRate);
+                }
+                product.setNewPrice(newPrice);
+            } else {
+                product.setNewPrice(null);
+            }
         }
 
         return products;
