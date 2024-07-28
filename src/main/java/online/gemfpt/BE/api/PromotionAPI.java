@@ -51,6 +51,16 @@ public class PromotionAPI {
         }
     }
 
+    @GetMapping("/api/promotion/{id}")
+    public ResponseEntity<Promotion> findPromotionById(@RequestParam long promotionId) {
+        try {
+            Promotion promotion = promotionService.findDiscountByID(promotionId);
+            return ResponseEntity.ok(promotion);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
     @PutMapping("/api/promotion/{id}")
     public ResponseEntity<Promotion> getDiscountById(@PathVariable Long id,@Valid @RequestBody PromotionUpdateRequest discountRequest){
         Promotion promotion = promotionService.updatePromotion(discountRequest, id);
