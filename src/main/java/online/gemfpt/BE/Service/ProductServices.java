@@ -968,5 +968,21 @@ public List<Product> searchProductsByNameStaff(String name) {
                 .orElseThrow(() -> new EntityNotFoundException("Product not found with barcode: " + barcode));
     }
 
+    public List<Product> getProductsByStallId(Long stallId) {
+        List<Product> products = productsRepository.findByStallId(stallId);
+        if (products.isEmpty()) {
+            throw new BadRequestException("No products found for stall with ID: " + stallId);
+        }
+        return products;
+    }
+    public List<UpdateProductHistory> getProductUpdateHistoryByBarcode(String barcode) {
+        List<UpdateProductHistory> historyList = updateProductHistoryRepository.findByBarcodeOrderByCreateTimeAsc(barcode);
+        if (historyList.isEmpty()) {
+            throw new BadRequestException("No update history found for product with barcode: " + barcode);
+        }
+        return historyList;
+    }
+
+
 
 }
