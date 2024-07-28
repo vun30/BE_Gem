@@ -5,14 +5,13 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import online.gemfpt.BE.Repository.ProductsRepository;
 import online.gemfpt.BE.Repository.PromotionProductRepository;
-import online.gemfpt.BE.Service.GemService;
-import online.gemfpt.BE.Service.PromotionService;
-import online.gemfpt.BE.Service.UpdateProductHistoryService;
+import online.gemfpt.BE.Service.*;
+import online.gemfpt.BE.entity.Account;
 import online.gemfpt.BE.entity.Gemstone;
 import online.gemfpt.BE.entity.Product;
-import online.gemfpt.BE.Service.ProductServices;
 import online.gemfpt.BE.entity.UpdateProductHistory;
 import online.gemfpt.BE.enums.TypeEnum;
+import online.gemfpt.BE.exception.BadRequestException;
 import online.gemfpt.BE.exception.ProductNotFoundException;
 import online.gemfpt.BE.model.GemstoneRequest;
 import online.gemfpt.BE.model.ProductsRequest;
@@ -31,6 +30,10 @@ import java.util.stream.Collectors;
 @SecurityRequirement(name = "api")
 @CrossOrigin("*")
 public class ProductAPI {
+
+    @Autowired
+    AuthenticationService   authenticationService ;
+
     @Autowired
     ProductsRepository productsRepository;
 
@@ -59,6 +62,8 @@ public class ProductAPI {
 //            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
 //        }
 //    }
+
+
 
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER')")
     @PostMapping("products")
@@ -155,20 +160,32 @@ public class ProductAPI {
     }
 
     @GetMapping("/search/min-max")
-    public ResponseEntity<List<Product>> searchProductsByPriceRangeAndStatus(
-            @RequestParam("minPrice") double minPrice,
-            @RequestParam("maxPrice") double maxPrice) {
+public ResponseEntity<List<Product>> searchProductsByPriceRangeAndStatus(
+        @RequestParam("minPrice") double minPrice,
+        @RequestParam("maxPrice") double maxPrice) {
 
-        List<Product> allProducts = productServices.getAllProducts(); // Lấy tất cả sản phẩm có status true
+    // Lấy tài khoản đang đăng nhập
+    Account  account = authenticationService.getCurrentAccount();
 
-        // Tạo list mới chỉ chứa các sản phẩm có giá nằm trong khoảng minPrice đến maxPrice
-        List<Product> productsInPriceRange = allProducts.stream()
-                .filter(product -> product.getPrice() >= minPrice && product.getPrice() <= maxPrice)
-                .collect(Collectors.toList());
-
-        // Trả về danh sách sản phẩm nằm trong khoảng giá minPrice đến maxPrice cho client
-        return ResponseEntity.ok(productsInPriceRange);
+    // Kiểm tra trạng thái làm việc của nhân viên
+    if (!account.isStaffWorkingStatus()) {
+        throw new BadRequestException("Staff is not currently working or status is invalid!") ;
     }
+
+    // Lấy tất cả sản phẩm có status true
+    List<Product> allProducts = productServices.getAllProducts().stream()
+            .filter(product -> product.isStatus() && product.getStallId() == account.getStallsWorkingId())
+            .collect(Collectors.toList());
+
+    // Tạo list mới chỉ chứa các sản phẩm có giá nằm trong khoảng minPrice đến maxPrice
+    List<Product> productsInPriceRange = allProducts.stream()
+            .filter(product -> product.getPrice() >= minPrice && product.getPrice() <= maxPrice)
+            .collect(Collectors.toList());
+
+    // Trả về danh sách sản phẩm nằm trong khoảng giá minPrice đến maxPrice cho client
+    return ResponseEntity.ok(productsInPriceRange);
+}
+
 
     @GetMapping("/search/gemstone")
     public ResponseEntity<List<Product>> searchProductsByGemstoneAttributes(
@@ -199,17 +216,21 @@ public class ProductAPI {
         return ResponseEntity.ok(historyList);
     }
 
-    @GetMapping("/history-{barcode}")
-    public ResponseEntity<UpdateProductHistory> getHistoryByBarcode(@PathVariable String barcode) {
-        Optional<UpdateProductHistory> history = updateProductHistoryService.getHistoryByBarcode(barcode);
-        return history.map(ResponseEntity::ok)
-                      .orElseGet(() -> ResponseEntity.notFound().build());
+@GetMapping("/history/{barcode}")
+    public List<UpdateProductHistory> getProductUpdateHistory(@PathVariable String barcode) {
+        return productServices.getProductUpdateHistoryByBarcode(barcode);
     }
 
      @GetMapping("product-all/{barcode}")
     public ResponseEntity<Product> getProductByBarcodeAll(@PathVariable String barcode) {
         Product product = productServices .findProductByBarcode(barcode);
         return new ResponseEntity<>(product, HttpStatus.OK);
+    }
+
+ @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER')")
+    @GetMapping("/by-stall/{stallId}")
+    public List<Product> getProductsByStallId(@PathVariable Long stallId) {
+     return productServices.getProductsByStallId(stallId);
     }
 
 //     @DeleteMapping("/detach-by-barcode")
@@ -245,4 +266,5 @@ public class ProductAPI {
 //        }
 //    }
 
-}
+ }
+

@@ -18,7 +18,7 @@ public class UpdateProductHistoryService {
         return updateProductHistoryRepository.findAll();
     }
 
-    public Optional<UpdateProductHistory> getHistoryByBarcode(String barcode) {
-        return updateProductHistoryRepository.findByBarcode(barcode);
-    }
+//    public Optional<UpdateProductHistory> getHistoryByBarcode(String barcode) {
+//        return updateProductHistoryRepository.findByBarcode(barcode);
+//    }
 }

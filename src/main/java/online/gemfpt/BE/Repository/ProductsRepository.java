@@ -38,6 +38,9 @@ Optional<Product> findByBarcodeAndStatus(@Param("barcode") String barcode, @Para
 
      List<Product> findByTypeWhenBuyBack(TypeOfProductEnum  typeWhenBuyBack);
 
+      List<Product> findByStallId(Long stallId);
+
+
 
 
 }
