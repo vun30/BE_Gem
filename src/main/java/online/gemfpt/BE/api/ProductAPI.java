@@ -58,7 +58,12 @@ public class ProductAPI {
 //        } catch (EntityNotFoundException e) {
 //            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
 //        }
-//    }
+//    }\
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER')")
+    @GetMapping("/by-stall/{stallId}")
+    public List<Product> getProductsByStallId(@PathVariable Long stallId) {
+        return productServices.getProductsByStallId(stallId);
+    }
 
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER')")
     @PostMapping("products")
@@ -199,17 +204,16 @@ public class ProductAPI {
         return ResponseEntity.ok(historyList);
     }
 
-    @GetMapping("/history-{barcode}")
-    public ResponseEntity<UpdateProductHistory> getHistoryByBarcode(@PathVariable String barcode) {
-        Optional<UpdateProductHistory> history = updateProductHistoryService.getHistoryByBarcode(barcode);
-        return history.map(ResponseEntity::ok)
-                      .orElseGet(() -> ResponseEntity.notFound().build());
-    }
 
      @GetMapping("product-all/{barcode}")
     public ResponseEntity<Product> getProductByBarcodeAll(@PathVariable String barcode) {
         Product product = productServices .findProductByBarcode(barcode);
         return new ResponseEntity<>(product, HttpStatus.OK);
+    }
+
+    @GetMapping("/history/{barcode}")
+    public List<UpdateProductHistory> getProductUpdateHistory(@PathVariable String barcode) {
+        return productServices.getProductUpdateHistoryByBarcode(barcode);
     }
 
 //     @DeleteMapping("/detach-by-barcode")
