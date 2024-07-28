@@ -261,7 +261,21 @@ public class ProductServices {
         // Lấy thông tin sản phẩm hiện tại từ barcode
         Product existingProduct = productsRepository.findByBarcode(productBarcode)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found with barcode: " + productBarcode));
-
+//
+//    // Lưu thông tin sản phẩm hiện tại vào history (lưu tạm)
+//    Product historyProduct = new Product();
+//    historyProduct.setName(existingProduct.getName());
+//    historyProduct.setDescriptions(existingProduct.getDescriptions());
+//    historyProduct.setCategory(existingProduct.getCategory());
+//    historyProduct.setPriceRate(existingProduct.getPriceRate());
+//    historyProduct.setStock(existingProduct.getStock());
+//    historyProduct.setCreateTime(existingProduct.getCreateTime());
+//    historyProduct.setStatus(existingProduct.isStatus());
+//    historyProduct.setBarcode(existingProduct.getBarcode());
+//    historyProduct.setWage(existingProduct.getWage());
+//    historyProduct.setGemstones(existingProduct.getGemstones());
+        // Lưu các thuộc tính khác của sản phẩm cần thiết cho history
+        // Tạo thông tin lịch sử sản phẩm và lưu vào cơ sở dữ liệu
         UpdateProductHistory updateProductHistory = createUpdateProductHistory(existingProduct);
         updateProductHistoryRepository.save(updateProductHistory);
         // Xóa quan hệ với promotion
@@ -380,67 +394,33 @@ public List<Product> getAllProductsTrueForMana() {
 
 
     public List<Product> searchProductsByGemstoneAttributes(String color, String clarity, String cut, Double carat) {
-    // Lấy tài khoản đang đăng nhập
-    Account account = authenticationService.getCurrentAccount();
+        List<Gemstone> gemstones = gemstoneRepository.findAll();
 
-    // Kiểm tra trạng thái làm việc của nhân viên
-    if (!account.isStaffWorkingStatus()) {
-        throw new BadRequestException("Staff is not currently working or status is invalid!");
+        List<Gemstone> filteredGemstones = gemstones.stream()
+                .filter(gemstone -> (color == null || gemstone.getColor().equals(color)) &&
+                        (clarity == null || gemstone.getClarity().equals(clarity)) &&
+                        (cut == null || gemstone.getCut().equals(cut)) &&
+                        (carat == null || gemstone.getCarat() == carat))
+                .collect(Collectors.toList());
+
+        return filteredGemstones.stream()
+                .map(Gemstone::getProduct)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
-    List<Gemstone> gemstones = gemstoneRepository.findAll();
+    public List<Product> searchProductsByMetalType(String metalType) {
+        List<Metal> metals = metalRepository.findAll();
 
-    List<Gemstone> filteredGemstones = gemstones.stream()
-            .filter(gemstone -> (color == null || gemstone.getColor().equals(color)) &&
-                    (clarity == null || gemstone.getClarity().equals(clarity)) &&
-                    (cut == null || gemstone.getCut().equals(cut)) &&
-                    (carat == null || gemstone.getCarat() == carat))
-            .collect(Collectors.toList());
+        List<Metal> filteredMetals = metals.stream()
+                .filter(metal -> metal.getTypeOfMetal().getMetalType().equals(metalType))
+                .collect(Collectors.toList());
 
-    List<Product> products = filteredGemstones.stream()
-            .map(Gemstone::getProduct)
-            .filter(product -> product.getStallId() == account.getStallsWorkingId())
-            .distinct()
-            .collect(Collectors.toList());
-
-    // Tính và cập nhật newPrice cho mỗi sản phẩm trong danh sách đã lọc
-    for (Product product : products) {
-        double newPrice = calculateNewPrice(product);
-        product.setNewPrice(newPrice);
+        return filteredMetals.stream()
+                .map(Metal::getProduct)
+                .distinct()
+                .collect(Collectors.toList());
     }
-
-    return products;
-}
-
-public List<Product> searchProductsByMetalType(String metalType) {
-    // Lấy tài khoản đang đăng nhập
-    Account account = authenticationService.getCurrentAccount();
-
-    // Kiểm tra trạng thái làm việc của nhân viên
-    if (!account.isStaffWorkingStatus()) {
-        throw new BadRequestException("Staff is not currently working or status is invalid!");
-    }
-
-    List<Metal> metals = metalRepository.findAll();
-
-    List<Metal> filteredMetals = metals.stream()
-            .filter(metal -> metal.getTypeOfMetal().getMetalType().equals(metalType))
-            .collect(Collectors.toList());
-
-    List<Product> products = filteredMetals.stream()
-            .map(Metal::getProduct)
-            .filter(product -> product.getStallId() == account.getStallsWorkingId())
-            .distinct()
-            .collect(Collectors.toList());
-
-    // Tính và cập nhật newPrice cho mỗi sản phẩm trong danh sách đã lọc
-    for (Product product : products) {
-        double newPrice = calculateNewPrice(product);
-        product.setNewPrice(newPrice);
-    }
-
-    return products;
-}
 
     public List<Product> searchProductsByName(String name) {
     // Lấy tài khoản đang đăng nhập
@@ -448,22 +428,14 @@ public List<Product> searchProductsByMetalType(String metalType) {
 
     // Kiểm tra trạng thái làm việc của nhân viên
     if (!account.isStaffWorkingStatus()) {
-        throw new BadRequestException("Staff is not currently working or status is invalid!");
+        throw new IllegalStateException("Staff is not currently working or status is invalid!");
     }
 
     // Tìm sản phẩm theo tên và lọc theo quầy làm việc của tài khoản
     List<Product> products = productsRepository.findByNameContaining(name);
-    List<Product> filteredProducts = products.stream()
+    return products.stream()
             .filter(product -> product.getStallId() == account.getStallsWorkingId())
             .collect(Collectors.toList());
-
-    // Tính và cập nhật newPrice cho mỗi sản phẩm trong danh sách đã lọc
-    for (Product product : filteredProducts) {
-        double newPrice = calculateNewPrice(product);
-        product.setNewPrice(newPrice);
-    }
-
-    return filteredProducts;
 }
 
 public List<Product> searchProductsByNameStaff(String name) {
@@ -472,22 +444,14 @@ public List<Product> searchProductsByNameStaff(String name) {
 
     // Kiểm tra trạng thái làm việc của nhân viên
     if (!account.isStaffWorkingStatus()) {
-        throw new BadRequestException("Staff is not currently working or status is invalid!");
+        throw new IllegalStateException("Staff is not currently working or status is invalid!");
     }
 
     // Tìm sản phẩm theo tên và lọc theo quầy làm việc của tài khoản
     List<Product> products = productsRepository.findByNameContaining(name);
-    List<Product> filteredProducts = products.stream()
+    return products.stream()
             .filter(product -> product.getStallId() == account.getStallsWorkingId())
             .collect(Collectors.toList());
-
-    // Tính và cập nhật newPrice cho mỗi sản phẩm trong danh sách đã lọc
-    for (Product product : filteredProducts) {
-        double newPrice = calculateNewPrice(product);
-        product.setNewPrice(newPrice);
-    }
-
-    return filteredProducts;
 }
 
 
@@ -525,28 +489,16 @@ public List<Product> searchProductsByNameStaff(String name) {
     }
 
 
-   public List<Product> getProductsByCategory(TypeEnum category) {
-    // Lấy tài khoản đang đăng nhập
-    Account account = authenticationService.getCurrentAccount();
+    public List<Product> getProductsByCategory(TypeEnum category) {
+        List<Product> products = productsRepository.findByCategory(category);
 
-    // Kiểm tra trạng thái làm việc của nhân viên
-    if (!account.isStaffWorkingStatus()) {
-        throw new BadRequestException("Staff is not currently working or status is invalid!");
+        for (Product product : products) {
+            double newPrice = calculateNewPrice(product);
+            product.setNewPrice(newPrice);
+        }
+
+        return products;
     }
-
-    // Tìm sản phẩm theo danh mục và lọc theo quầy làm việc của tài khoản
-    List<Product> products = productsRepository.findByCategory(category);
-    List<Product> filteredProducts = products.stream()
-            .filter(product -> product.getStallId() == account.getStallsWorkingId())
-            .collect(Collectors.toList());
-
-    for (Product product : filteredProducts) {
-        double newPrice = calculateNewPrice(product);
-        product.setNewPrice(newPrice);
-    }
-
-    return filteredProducts;
-}
 
     public List<GemList> findGemByBarCodes(List<String> barcodes) {
         List<GemList> gemLists = gemListRepository.findByBarcodes(barcodes);
@@ -562,7 +514,7 @@ public List<Product> searchProductsByNameStaff(String name) {
 
         // Ném lỗi nếu có mã vạch không tồn tại
         if (!missingBarcodes.isEmpty()) {
-            throw new BadRequestException("The GemStone barcodes do not exist: " + String.join(", ", missingBarcodes));
+            throw new IllegalArgumentException("The GemStone barcodes do not exist: " + String.join(", ", missingBarcodes));
         }
 
 
@@ -613,8 +565,8 @@ public List<Product> searchProductsByNameStaff(String name) {
         UpdateProductHistory updateProductHistory = new UpdateProductHistory();
 
         // Tạo barcode cho lịch sử
-     //   String historyBarcode = generateUniqueBarcode(product.getBarcode()) + " - || Old barcode:" + " " + product.getBarcode();
-        updateProductHistory.setBarcode(product.getBarcode());
+        String historyBarcode = generateUniqueBarcode(product.getBarcode()) + " - || Old barcode:" + " " + product.getBarcode();
+        updateProductHistory.setBarcode(historyBarcode);
 
         // Thiết lập thời gian tạo và cập nhật
         updateProductHistory.setCreateTime(product.getCreateTime());
@@ -1016,20 +968,5 @@ public List<Product> searchProductsByNameStaff(String name) {
                 .orElseThrow(() -> new EntityNotFoundException("Product not found with barcode: " + barcode));
     }
 
-    public List<UpdateProductHistory> getProductUpdateHistoryByBarcode(String barcode) {
-        List<UpdateProductHistory> historyList = updateProductHistoryRepository.findByBarcodeOrderByCreateTimeAsc(barcode);
-        if (historyList.isEmpty()) {
-            throw new BadRequestException("No update history found for product with barcode: " + barcode);
-        }
-        return historyList;
-    }
-
-    public List<Product> getProductsByStallId(Long stallId) {
-        List<Product> products = productsRepository.findByStallId(stallId);
-        if (products.isEmpty()) {
-            throw new BadRequestException("No products found for stall with ID: " + stallId);
-        }
-        return products;
-    }
 
 }
