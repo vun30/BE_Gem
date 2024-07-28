@@ -399,7 +399,7 @@ public List<Product> getAllProductsTrueForMana() {
 
     List<Product> products = filteredGemstones.stream()
             .map(Gemstone::getProduct)
-            .filter(product -> product.getStallId() == account.getStallsWorkingId())
+            .filter(product -> product.getStallId() == account.getStallsWorkingId() && product.isStatus())
             .distinct()
             .collect(Collectors.toList());
 
@@ -421,15 +421,18 @@ public List<Product> searchProductsByMetalType(String metalType) {
         throw new BadRequestException("Staff is not currently working or status is invalid!");
     }
 
+    // Lấy tất cả các kim loại từ cơ sở dữ liệu
     List<Metal> metals = metalRepository.findAll();
 
+    // Lọc các kim loại theo loại metalType
     List<Metal> filteredMetals = metals.stream()
             .filter(metal -> metal.getTypeOfMetal().getMetalType().equals(metalType))
             .collect(Collectors.toList());
 
+    // Lọc các sản phẩm theo quầy làm việc của tài khoản và trạng thái true
     List<Product> products = filteredMetals.stream()
             .map(Metal::getProduct)
-            .filter(product -> product.getStallId() == account.getStallsWorkingId())
+            .filter(product -> product.getStallId() == account.getStallsWorkingId() && product.isStatus())
             .distinct()
             .collect(Collectors.toList());
 
@@ -441,6 +444,7 @@ public List<Product> searchProductsByMetalType(String metalType) {
 
     return products;
 }
+
 
     public List<Product> searchProductsByName(String name) {
     // Lấy tài khoản đang đăng nhập
@@ -478,7 +482,7 @@ public List<Product> searchProductsByNameStaff(String name) {
     // Tìm sản phẩm theo tên và lọc theo quầy làm việc của tài khoản
     List<Product> products = productsRepository.findByNameContaining(name);
     List<Product> filteredProducts = products.stream()
-            .filter(product -> product.getStallId() == account.getStallsWorkingId())
+            .filter(product -> product.getStallId() == account.getStallsWorkingId() && product.isStatus())
             .collect(Collectors.toList());
 
     // Tính và cập nhật newPrice cho mỗi sản phẩm trong danh sách đã lọc
@@ -525,7 +529,7 @@ public List<Product> searchProductsByNameStaff(String name) {
     }
 
 
-   public List<Product> getProductsByCategory(TypeEnum category) {
+ public List<Product> getProductsByCategory(TypeEnum category) {
     // Lấy tài khoản đang đăng nhập
     Account account = authenticationService.getCurrentAccount();
 
@@ -537,7 +541,7 @@ public List<Product> searchProductsByNameStaff(String name) {
     // Tìm sản phẩm theo danh mục và lọc theo quầy làm việc của tài khoản
     List<Product> products = productsRepository.findByCategory(category);
     List<Product> filteredProducts = products.stream()
-            .filter(product -> product.getStallId() == account.getStallsWorkingId())
+            .filter(product -> product.getStallId() == account.getStallsWorkingId() && product.isStatus())
             .collect(Collectors.toList());
 
     for (Product product : filteredProducts) {
@@ -1023,5 +1027,21 @@ public List<Product> searchProductsByNameStaff(String name) {
         }
         return historyList;
     }
+
+public List<Product> getProductsByStallId(Long stallId) {
+    List<Product> products = productsRepository.findByStallId(stallId);
+
+    if (products.isEmpty()) {
+        throw new BadRequestException("No products found for stall with ID: " + stallId);
+    }
+
+    // Tính và cập nhật newPrice cho mỗi sản phẩm trong danh sách đã lọc
+    for (Product product : products) {
+        double newPrice = calculateNewPrice(product);
+        product.setNewPrice(newPrice);
+    }
+
+    return products;
+}
 
 }
