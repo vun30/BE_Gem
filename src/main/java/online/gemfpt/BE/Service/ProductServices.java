@@ -185,28 +185,54 @@ public class ProductServices {
     }
 
     public Product getProductByBarcode(String barcode) {
-    // Lấy tài khoản đang đăng nhập
-    Account account = authenticationService.getCurrentAccount();
+        // Lấy tài khoản đang đăng nhập
+        Account account = authenticationService.getCurrentAccount();
 
-    // Kiểm tra trạng thái làm việc của nhân viên
-    if (!account.isStaffWorkingStatus()) {
-        throw new BadRequestException("Staff is not currently working or status is invalid!");
+        // Kiểm tra trạng thái làm việc của nhân viên
+        if (!account.isStaffWorkingStatus()) {
+            throw new BadRequestException("Staff is not currently working or status is invalid!");
+        }
+
+        // Extract the barcode part after the last '|'
+        String[] parts = barcode.split("\\|");
+        String lastPart = parts[parts.length - 1];
+
+        // Tìm sản phẩm theo barcode, status và stallId
+        Optional<Product> optionalProduct = productsRepository.findByBarcodeAndStatusAndStallId(lastPart, true, account.getStallsWorkingId());
+        if (!optionalProduct.isPresent()) {
+            throw new BadRequestException("Product not found with barcode: " + lastPart + " for the current stall.");
+        }
+
+        Product product = optionalProduct.get();
+
+        // Kiểm tra và cập nhật khuyến mãi nếu có
+        boolean hasActivePromotion = false;
+        double newPrice = product.getPrice();
+        List<Promotion> promotionList = new ArrayList<>();
+
+        for (PromotionProduct promotionProduct : product.getPromotionProducts()) {
+            Promotion promotion = promotionProduct.getPromotion();
+            if (promotion.isStatus()) {
+                promotionList.add(promotion);
+                hasActivePromotion = true;
+            }
+        }
+
+        if (hasActivePromotion) {
+            for (Promotion promotion : promotionList) {
+                double discountRate = promotion.getDiscountRate() / 100;
+                newPrice = newPrice - (product.getPrice() * discountRate);
+            }
+            product.setNewPrice(newPrice);
+        } else {
+            product.setNewPrice(null);
+        }
+
+        return product;
     }
 
-    // Extract the barcode part after the last '|'
-    String[] parts = barcode.split("\\|");
-    String lastPart = parts[parts.length - 1];
 
-    // Tìm sản phẩm theo barcode, status và stallId
-    Optional<Product> optionalProduct = productsRepository.findByBarcodeAndStatusAndStallId(lastPart, true, account.getStallsWorkingId());
-    if (!optionalProduct.isPresent()) {
-        throw new BadRequestException("Product not found with barcode: " + lastPart + " for the current stall.");
-    }
-
-    return optionalProduct.get();
-}
-
- public Product getProductByBarcodeMG(String barcode) {
+    public Product getProductByBarcodeMG(String barcode) {
         // Extract the barcode part after the last '|'
         String[] parts = barcode.split("\\|");
         String lastPart = parts[parts.length - 1];
