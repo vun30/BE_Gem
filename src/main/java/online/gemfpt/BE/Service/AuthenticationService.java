@@ -153,81 +153,86 @@ public Account staffEditAccountByEmail(String email, StaffEditAccountRequest sta
         return accountResponse;
     }
 
-    public AccountResponse staffLoginGoogle(LoginGoogleRequest loginGoogleRequest) {
-    AccountResponse accountResponse = new AccountResponse();
-    try {
-        FirebaseToken firebaseToken = FirebaseAuth.getInstance().verifyIdToken(loginGoogleRequest.getToken());
-        String email = firebaseToken.getEmail();
-        Account account = authenticationRepository.findAccountByEmail(email);
-
-        if (account == null) {
-            // If account does not exist, throw an exception
-            throw new BadRequestException("Account does not exist. Please contact admin for account creation: 0335101045.");
-        } else if (!account.isStatus()) {
-            // If account status is false, do not allow login
-            throw new BadRequestException("Account is not active. Please contact admin for approval: 0335101045.");
-        }
-
-        // Account exists and is active, proceed with login
-        accountResponse.setEmail(account.getEmail());
-        accountResponse.setId(account.getId());
-        account.setUrl(firebaseToken.getPicture());
-        accountResponse.setRole(account.getRole());
-        accountResponse.setPhone(account.getPhone());
-        accountResponse.setName(account.getName());
-        accountResponse.setCreateDateNow(account.getCreateDate());
-        accountResponse.setEndWorkingDateTime(account.getEndWorkingDateTime());
-        accountResponse.setCreateDate(account.getCreateDate());
-        accountResponse.setDescription(account.getDescription());
-        String token = tokenService.generateToken(account);
-        accountResponse.setToken(token);
-    } catch (FirebaseAuthException e) {
-        // Handle specific exceptions and log or throw appropriate errors
-        System.out.println("Exception occurred during Google login: " + e.getMessage());
-        throw new RuntimeException("Error during Google login", e);
-    }
-    return accountResponse;
-}
-
-        public AccountResponse loginGoogle(LoginGoogleRequest loginGoogleRequest) {  // login for admin
-    AccountResponse accountResponse = new AccountResponse();
-    try {
-        FirebaseToken firebaseToken = FirebaseAuth.getInstance().verifyIdToken(loginGoogleRequest.getToken());
-        String email = firebaseToken.getEmail();
-        Account account = authenticationRepository.findAccountByEmail(email);
-        if (account == null) {
-            account = new Account();
-            account.setName(firebaseToken.getName());
+   public AccountResponse loginGoogle(LoginGoogleRequest loginGoogleRequest) {
+        AccountResponse accountResponse = new AccountResponse();
+        try {
+            FirebaseToken firebaseToken = FirebaseAuth.getInstance().verifyIdToken(loginGoogleRequest.getToken());
+            String email = firebaseToken.getEmail();
+            Account account = authenticationRepository.findAccountByEmail(email);
+            if (account == null) {
+                account = new Account();
+                account.setName(firebaseToken.getName());
+                account.setUrl(firebaseToken.getPicture());
+                account.setEmail(email);
+                account.setRole(RoleEnum.STAFF);
+                account.setStatus(false);
+                account.setCreateDate(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
+                account = authenticationRepository.save(account);
+                throw new BadRequestException("Account created but not active. Please contact admin for approval: 0335101045.");
+            } else if (!account.isStatus()) {
+                // If account status is false, do not allow login
+                throw new BadRequestException("Account is un active pls contact with admin for accept account : 0335101045 .");
+            }
+            accountResponse.setEmail(account.getEmail());
+            accountResponse.setId(account.getId());
             account.setUrl(firebaseToken.getPicture());
-            account.setEmail(email);
-            account.setRole(RoleEnum.STAFF);
-            account.setStatus(false);
-            account.setCreateDate(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
-            account = authenticationRepository.save(account);
-            throw new BadRequestException("Account created but not active. Please contact admin for approval: 0335101045.");
-        }else if (!account.isStatus()) {
-            // If account status is false, do not allow login
-            throw new BadRequestException("Account is un active pls contact with admin for accept account : 0335101045 .");
+            accountResponse.setRole(account.getRole());
+            accountResponse.setPhone(account.getPhone());
+            accountResponse.setName(account.getName());
+            accountResponse.setCreateDateNow(account.getCreateDate());
+            accountResponse.setEndWorkingDateTime(account.getEndWorkingDateTime());
+            accountResponse.setCreateDate(account.getCreateDate());
+            accountResponse.setDescription(account.getDescription());
+            String token = tokenService.generateToken(account);
+            accountResponse.setToken(token);
+        } catch (FirebaseAuthException e) {
+            // Handle specific exceptions and log or throw appropriate errors
+            System.out.println("Exception occurred during Google login: " + e.getMessage());
+            throw new RuntimeException("Error during Google login", e);
         }
-        accountResponse.setEmail(account.getEmail());
-        accountResponse.setId(account.getId());
-        account.setUrl(firebaseToken.getPicture());
-        accountResponse.setRole(account.getRole());
-        accountResponse.setPhone(account.getPhone());
-        accountResponse.setName(account.getName());
-        accountResponse.setCreateDateNow(account.getCreateDate());
-        accountResponse.setEndWorkingDateTime(account.getEndWorkingDateTime());
-        accountResponse.setCreateDate(account.getCreateDate());
-        accountResponse.setDescription(account.getDescription());
-        String token = tokenService.generateToken(account);
-        accountResponse.setToken(token);
-    } catch (FirebaseAuthException e) {
-        // Handle specific exceptions and log or throw appropriate errors
-        System.out.println("Exception occurred during Google login: " + e.getMessage());
-        throw new RuntimeException("Error during Google login", e);
+        return accountResponse;
     }
-    return accountResponse;
-}
+
+    public AccountResponse staffLoginGoogle(LoginGoogleRequest loginGoogleRequest) {
+        AccountResponse accountResponse = new AccountResponse();
+        try {
+            FirebaseToken firebaseToken = FirebaseAuth.getInstance().verifyIdToken(loginGoogleRequest.getToken());
+            String email = firebaseToken.getEmail();
+            Account account = authenticationRepository.findAccountByEmail(email);
+            if (account == null) {
+                account = new Account();
+                account.setName(firebaseToken.getName());
+                account.setUrl(firebaseToken.getPicture());
+                account.setEmail(email);
+                account.setRole(RoleEnum.STAFF);
+                account.setStatus(false);
+                account.setCreateDate(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
+              //  account = authenticationRepository.save(account);
+                throw new BadRequestException("Account created but not active. Please contact admin for approval: 0335101045.");
+            } else if (!account.isStatus()) {
+                // If account status is false, do not allow login
+                throw new BadRequestException("Account is un active pls contact with admin for accept account : 0335101045 .");
+            }
+            accountResponse.setEmail(account.getEmail());
+            accountResponse.setId(account.getId());
+            account.setUrl(firebaseToken.getPicture());
+            accountResponse.setRole(account.getRole());
+            accountResponse.setPhone(account.getPhone());
+            accountResponse.setName(account.getName());
+            accountResponse.setCreateDateNow(account.getCreateDate());
+            accountResponse.setEndWorkingDateTime(account.getEndWorkingDateTime());
+            accountResponse.setCreateDate(account.getCreateDate());
+            accountResponse.setDescription(account.getDescription());
+            String token = tokenService.generateToken(account);
+            accountResponse.setToken(token);
+        } catch (FirebaseAuthException e) {
+            // Handle specific exceptions and log or throw appropriate errors
+            System.out.println("Exception occurred during Google login: " + e.getMessage());
+            throw new RuntimeException("Error during Google login", e);
+        }
+        return accountResponse;
+    }
+
 
     public List<Account> all() {
         return authenticationRepository.findAll();
