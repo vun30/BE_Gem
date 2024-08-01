@@ -1069,10 +1069,33 @@ public List<Product> searchProductsByNameStaff(String name) {
         }
     }
 
-     public Product findProductByBarcode(String barcode) {
-        return productsRepository.findByBarcode(barcode)
+    public Product findProductByBarcode(String barcode) {
+        // Find the product by barcode or throw an exception if not found
+        Product product = productsRepository.findByBarcode(barcode)
                 .orElseThrow(() -> new BadRequestException("Product not found with barcode: " + barcode));
+
+        // Initialize the new price as the original price
+        double newPrice = product.getPrice();
+
+        // Check for active promotions and update the new price if any
+        for (PromotionProduct promotionProduct : product.getPromotionProducts()) {
+            Promotion promotion = promotionProduct.getPromotion();
+            if (promotion.isStatus()) { // Only apply promotions that are active (status = true)
+                double discountRate = promotion.getDiscountRate() / 100;
+                newPrice -= product.getPrice() * discountRate;
+            }
+        }
+
+        // Update the new price if it has been changed by active promotions
+        if (newPrice != product.getPrice()) {
+            product.setNewPrice(newPrice);
+        } else {
+            product.setNewPrice(null); // If no promotion is active, set new price to null
+        }
+
+        return product;
     }
+
 
     public List<UpdateProductHistory> getProductUpdateHistoryByBarcode(String barcode) {
         List<UpdateProductHistory> historyList = updateProductHistoryRepository.findByBarcodeOrderByCreateTimeAsc(barcode);
