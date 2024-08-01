@@ -241,8 +241,36 @@ public class ProductServices {
         if (!optionalProduct.isPresent()) {
             throw new BadRequestException("Product not found with barcode: " + lastPart);
         }
-        return optionalProduct.get();
+
+        Product product = optionalProduct.get();
+        boolean hasActivePromotion = false;
+        double newPrice = product.getPrice();
+        List<Promotion> promotionList = new ArrayList<>();
+
+        // Check for active promotions
+        for (PromotionProduct promotionProduct : product.getPromotionProducts()) {
+            Promotion promotion = promotionProduct.getPromotion();
+            if (promotion.isStatus()) {
+                promotionList.add(promotion);
+                hasActivePromotion = true;
+            }
+        }
+
+        // Apply promotions to calculate the new price
+        if (hasActivePromotion) {
+            for (Promotion promotion : promotionList) {
+                double discountRate = promotion.getDiscountRate() / 100;
+                newPrice = newPrice - (product.getPrice() * discountRate);
+            }
+            product.setNewPrice(newPrice);
+        } else {
+            product.setNewPrice(null);
+        }
+
+        return product;
     }
+
+
 
 
     public Product toggleProductActive(String barcode) {
