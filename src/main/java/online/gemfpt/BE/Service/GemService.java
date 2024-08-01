@@ -62,7 +62,7 @@ public class GemService {
             String updatedBarcode = generateUniqueBarcode(gemBarcode);
             oldGemList.setUserStatus(GemStatus.FALSE);
             String oldBarcode = oldGemList.getGemBarcode();
-            oldGemList.setGemBarcode(updatedBarcode);
+            oldGemList.setGemBarcode(updatedBarcode + "--: " + gemBarcode);
             gemListRepository.save(oldGemList);
 
             // Tạo một viên đá quý mới với thông tin cập nhật và giữ nguyên barcode của viên đá quý cũ
