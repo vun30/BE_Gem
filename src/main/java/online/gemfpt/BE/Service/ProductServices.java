@@ -1043,7 +1043,7 @@ public List<Product> searchProductsByNameStaff(String name) {
 
      public Product findProductByBarcode(String barcode) {
         return productsRepository.findByBarcode(barcode)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found with barcode: " + barcode));
+                .orElseThrow(() -> new BadRequestException("Product not found with barcode: " + barcode));
     }
 
     public List<UpdateProductHistory> getProductUpdateHistoryByBarcode(String barcode) {

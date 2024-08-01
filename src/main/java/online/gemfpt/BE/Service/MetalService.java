@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import online.gemfpt.BE.Repository.TypeOfMetalRepository;
 import online.gemfpt.BE.entity.Metal;
 import online.gemfpt.BE.entity.TypeOfMetal;
+import online.gemfpt.BE.exception.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +23,7 @@ public class MetalService {
             metal.setTypeOfMetal(typeOfMetal);
             metal.setPricePerWeightUnit();
         } else {
-            throw new EntityNotFoundException("Type of metal not found for type: " + metal.getName());
+            throw new BadRequestException("Type of metal not found for type: " + metal.getName());
         }
         return 0;
     }
@@ -35,7 +36,7 @@ public class MetalService {
             metal.setPriceBuyPerWeightUnit();
             return metal.getPricePerWeightUnit();
         } else {
-            throw new EntityNotFoundException("Type of metal not found for type: " + metal.getName());
+            throw new BadRequestException("Type of metal not found for type: " + metal.getName());
         }
     }
 }
