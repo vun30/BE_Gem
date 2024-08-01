@@ -18,8 +18,6 @@ public class PromotionUpdateRequest {
     @NotBlank
     private String description;
 
-    private TypeEnum category;
-
     @NotBlank
     private String applicableProducts;
 
