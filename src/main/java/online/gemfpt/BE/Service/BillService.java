@@ -56,7 +56,7 @@ public class BillService {
     @Autowired
     DiscountRepository discountRepository ;
 
-
+    @Transactional
    public BillResponse addToCart(BillRequest billRequest) {
     String phone = billRequest.getCustomerPhone();
     List<String> barcodes = billRequest.getBarcodes();
@@ -187,12 +187,12 @@ public class BillService {
             Discount discount = discountRepository.findById(discountId)
                     .orElseThrow(() -> new IllegalStateException("Discount not found with id: " + discountId));
 
-            if (discount.isStatusUse()) {
-                throw new BadRequestException("Discount with id " + discountId + " is already used.");
+             if (discount.getExpirationTime().isBefore(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")))) {
+                throw new BadRequestException("Discount with id " + discountId + " has expired.");
             }
 
-            if (discount.getExpirationTime().isBefore(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")))) {
-                throw new BadRequestException("Discount with id " + discountId + " has expired.");
+            if (discount.isStatusUse()) {
+                throw new BadRequestException("Discount with id " + discountId + " is already used.");
             }
 
             discountRate = discount.getRequestedDiscount();
@@ -211,7 +211,7 @@ public class BillService {
 
     // Cộng tiền vào quầy và lưu lại
     StallsSell stallsSell = stallsSellRepository.findById(account.getStallsWorkingId())
-            .orElseThrow(() -> new BadRequestException("Không tìm thấy quầy bán với ID: " + account.getStallsWorkingId()));
+            .orElseThrow(() -> new BadRequestException("Stall id not found : " + account.getStallsWorkingId()));
     stallsSell.setMoney(stallsSell.getMoney() + total);
     stallsSellRepository.save(stallsSell);
 
