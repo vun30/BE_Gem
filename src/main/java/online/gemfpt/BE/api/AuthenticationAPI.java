@@ -117,17 +117,17 @@ public ResponseEntity<AccountResponse> loginGoogle(@RequestBody LoginGoogleReque
         emailService.sendMailTemplate(emailDetail);
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+   //@PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER')")
     @GetMapping("/getAll")
     public ResponseEntity Getallaccount (){
          // Lấy thông tin người dùng hiện tại từ context
         Account currentAccount = authenticationService.getCurrentAccount();
 
-        // Kiểm tra xem người dùng hiện tại có vai trò là ADMIN hay không
-        if (currentAccount.getRole() != RoleEnum .ADMIN) {
-            // Nếu không phải ADMIN, trả về lỗi hoặc xử lý phù hợp
-            return ResponseEntity.status(HttpStatus .FORBIDDEN).build();
-        }
+//        // Kiểm tra xem người dùng hiện tại có vai trò là ADMIN hay không
+//        if (currentAccount.getRole() != RoleEnum .ADMIN) {
+//            // Nếu không phải ADMIN, trả về lỗi hoặc xử lý phù hợp
+//            return ResponseEntity.status(HttpStatus .FORBIDDEN).build();
+//        }
 
         List<Account> account = authenticationService.all();
         return  ResponseEntity.ok(account);

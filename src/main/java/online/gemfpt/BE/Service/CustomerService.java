@@ -36,7 +36,7 @@ public class CustomerService {
         if(customer.isPresent()) {
             return customer.get();
         } else {
-            throw new BadRequestException("New customer!");
+            throw new BadRequestException("Customer phone not found !");
         }
     }
 
